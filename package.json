@@ -4,7 +4,8 @@
   "description": "Administration panel for a Globular server.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack --mode production && cp index.html dist  && cp style.css dist"
   },
   "repository": {
     "type": "git",
@@ -21,13 +22,19 @@
     "url": "https://github.com/davecourtois/globular_admin/issues"
   },
   "devDependencies": {
+    "css-loader": "^3.2.0",
+    "style-loader": "^1.0.0",
     "ts-loader": "^6.2.1",
     "typescript": "^3.6.4",
+    "typescript-plugin-css-modules": "^2.0.2",
     "webpack": "^4.41.2",
     "webpack-cli": "^3.3.9"
   },
   "dependencies": {
-    "globular-web-client": "^1.0.29"
+    "@davecourtois/elementui": "^1.0.18",
+    "@types/materialize-css": "^1.0.6",
+    "globular-web-client": "^1.0.29",
+    "materialize-css": "^1.0.0"
   },
   "homepage": "https://github.com/davecourtois/globular_admin#readme"
 }
