@@ -1,5 +1,9 @@
 import { MainPage } from './mainpage';
+import { initServices } from './backend';
 
-// Create the main page object.
-let mainPage = new MainPage();
+initServices(()=>{
+    // Create the main page object.
+    let mainPage = new MainPage();
+});
+
 
