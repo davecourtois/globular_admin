@@ -1,5 +1,4 @@
 import * as GlobularWebClient from "globular-web-client";
-import "globular-web-client/lib/echo/echopb/echo_pb";
 import { GetConfigRequest, SaveConfigRequest } from "globular-web-client/lib/admin/admin_pb";
 import { QueryRangeRequest, QueryRequest } from 'globular-web-client/lib/monitoring/monitoringpb/monitoring_pb';
 import { randomUUID } from './utility'
@@ -9,21 +8,27 @@ import { InsertOneRqst, FindOneRqst } from "globular-web-client/lib/persistence/
 
 // Create a new connection with the backend.
 export let globular: GlobularWebClient.Globular;
+export let eventHub: GlobularWebClient.EventHub;
 
 let config: any;
-export async function initServices(callback: ()=> void) {
+export async function initServices(callback: () => void) {
     // Set the basic configuration without services details.
+    // TODO get the value found from http://domain:10000
+    /*
+    fetch("https://" + window.location.hostname + ":10000")
+        .then(res => res.json())
+        .then((out) => {
+            console.log('Checkout this JSON! ', out);
+        })
+        .catch(err => { throw err }); 
+    */
+
     config = {
-        Name: "Globular",
-        PortHttp: 80,
+        Protocol: "https",
+        Domain: window.location.hostname,
         PortHttps: 443,
         AdminPort: 10001,
         AdminProxy: 10002,
-        RessourcePort: 10003,
-        RessourceProxy: 10004,
-        SessionTimeout: 900000,
-        Protocol: "https",
-        Domain: "globular3.omniscient.app",
         Services: {} // empty for start.
     };
 
@@ -36,6 +41,9 @@ export async function initServices(callback: ()=> void) {
             let config = JSON.parse(rsp.getResult())
             // init the services from the configuration retreived.
             globular = new GlobularWebClient.Globular(config);
+            // create the event hub and set globular.eventService to enable 
+            // network events.
+            eventHub = new GlobularWebClient.EventHub(globular.eventService);
             callback()
         }).catch((err) => {
             console.log("fail to get config ", err)
@@ -48,7 +56,7 @@ export function readFullConfig(callback: (config: GlobularWebClient.IConfig) => 
     let rqst = new GetConfigRequest();
 
     if (globular.adminService !== undefined) {
-        globular.adminService.getFullConfig(rqst).then((rsp) => {
+        globular.adminService.getFullConfig(rqst, { "token": localStorage.getItem("user_token") }).then((rsp) => {
             config = JSON.parse(rsp.getResult())
             callback(config)
         }).catch((err) => {
@@ -63,7 +71,7 @@ export function saveConfig(config: GlobularWebClient.IConfig, callback: (config:
     rqst.setConfig(JSON.stringify(config))
 
     if (globular.adminService !== undefined) {
-        globular.adminService.saveConfig(rqst).then((rsp) => {
+        globular.adminService.saveConfig(rqst, { "token": localStorage.getItem("user_token") }).then((rsp) => {
             config = JSON.parse(rsp.getResult())
             callback(config)
         }).catch((err) => {
@@ -175,6 +183,8 @@ export function authenticate(userName: string, password: string, callback: (valu
         localStorage.setItem("user_token", token)
         localStorage.setItem("user_name", (<any>decoded).username)
 
+        // Publish local login event.
+        eventHub.publish("onlogin", decoded, true);
         callback(decoded)
     }).catch((err) => {
         errorCallback(err)
@@ -189,7 +199,7 @@ export function appendUserData(data: any, callback: (id: string) => void) {
     let database = userName + "_db"
     let collection = "user_data"
 
-    let rqst = new  InsertOneRqst;
+    let rqst = new InsertOneRqst;
     rqst.setId(database)
     rqst.setDatabase(database)
     rqst.setCollection(collection)
