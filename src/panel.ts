@@ -13,8 +13,7 @@ export class Panel {
 
     // Here I will react to login information...
     onlogin(data: any) {
-        // That function will be called when user will be log into the application.
-        console.log("---> onlogin event received: ", data)
+        // overide...
     }
 
     close() {

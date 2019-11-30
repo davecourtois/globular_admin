@@ -30,6 +30,8 @@ export class MainPage {
       .appendElement({ "tag": "a", "id": "home-side-lnk", "href": "javascript:void(0)", "class": "waves-effect", "innerHtml": "Home" }).up()
       .appendElement({ "tag": "li" }).down()
       .appendElement({ "tag": "a", "id": "login-side-lnk", "href": "javascript:void(0)", "class": "waves-effect", "innerHtml": "Login" }).up()
+      .appendElement({ "tag": "li", "style":"display: none;" }).down()
+      .appendElement({ "tag": "a", "id": "login-side-lnk", "href": "javascript:void(0)", "class": "waves-effect", "innerHtml": "Logout" }).up()
 
     var elem = document.querySelector('.sidenav');
     var instance = M.Sidenav.init(elem, {
