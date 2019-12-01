@@ -7,7 +7,7 @@ import { saveConfig, readFullConfig, appendUserData } from './backend';
  * Domain -> globular3.globular.app
  */
 class ConfigurationLine {
-    // The panel where the line is display
+    // The panel inside where the line is display
     protected panel: ConfigurationPanel;
 
     // Must the name in the IConfig.
@@ -25,9 +25,8 @@ class ConfigurationLine {
     // The div that play editable values.
     protected valueEditor: any;
 
-    constructor(panel: ConfigurationPanel, name: string, label: string, config: IConfig, content: any){
+    constructor(panel: ConfigurationPanel, name: string, label: string, content: any){
         this.name = name;
-        this.config = config;
         this.content = content;
         this.panel = panel;
 
@@ -43,12 +42,12 @@ class ConfigurationLine {
 
     // Return the configuration values.
     protected getValue():any{
-        return (<any>this.config)[this.name]
+        return (<any>this.panel.config)[this.name]
     }
 
     // Set the configuration values.
     protected setValue(v :any){
-        (<any>this.config)[this.name] = v
+        (<any>this.panel.config)[this.name] = v
     }
 
     /**
@@ -86,19 +85,17 @@ class ConfigurationLine {
 
 class ConfigurationTextLine extends ConfigurationLine {
 
-    constructor(panel: ConfigurationPanel, name: string, label: string, config: IConfig, content: any, type?:string, step?:number,min?:number,max?:number){
-        super(panel, name, label, config, content);
+    constructor(panel: ConfigurationPanel, name: string, label: string, content: any, type?:string, step?:number,min?:number,max?:number){
+        super(panel, name, label, content);
         let value = this.getValue()
 
         // Type can be any type that input box can support.
         if(type == undefined){
             type = "text"
-        }else if (type == "number"){
-            value = value.toString()
         }
 
         // Set the value div.
-        this.valueDiv = this.content.appendElement({ "tag": "div", "id": name + "_div", "class": "col s12 m6", "innerHtml": value }).down()
+        this.valueDiv = this.content.appendElement({ "tag": "div", "id": name + "_div", "class": "col s12 m6", "innerHtml": value.toString() }).down()
 
         // Set the value editor.
         this.valueEditor = this.content.appendElement({ "tag": "input", "id": name + "_input", "style": "display: none;", "class": "col s12 m6", "type": type, "value":value }).down()
@@ -111,6 +108,9 @@ class ConfigurationTextLine extends ConfigurationLine {
 
         // Return the value of the input.
         this.valueEditor.getValue = function(){
+            if(type == "number"){
+                return parseFloat(this.element.value)
+            }
             return this.element.value
         }
 
@@ -131,8 +131,8 @@ class ConfigurationTextLine extends ConfigurationLine {
  */
 class ConfigurationMultipleOptionsSingleChoiceLine extends ConfigurationLine {
 
-    constructor(panel: ConfigurationPanel, name: string, options: Array<string>, label: string, config: IConfig, content: any){
-        super(panel, name, label, config, content);
+    constructor(panel: ConfigurationPanel, name: string, options: Array<string>, label: string, content: any){
+        super(panel, name, label, content);
         this.valueDiv = this.content.appendElement({ "tag": "div", "id": name + "_div", "class": "col s12 m6", "innerHtml": this.getValue() }).down()
         this.valueEditor = this.content.appendElement({ "tag": "div",  "class": "col s12 m6", "style": "display: none; justify-content: flex-start;"}).down()
 
@@ -186,8 +186,8 @@ class ConfigurationMultipleOptionsSingleChoiceLine extends ConfigurationLine {
  * Use to display a liste of string values in a configuration.
  */
 class ConfigurationStringListLine extends ConfigurationLine{
-    constructor(panel: ConfigurationPanel, name: string, label: string, config: IConfig, content: any){
-        super(panel, name, label, config, content);
+    constructor(panel: ConfigurationPanel, name: string, label: string, content: any){
+        super(panel, name, label, content);
 
         // The value div.
         this.valueDiv = this.content.appendElement({ "tag": "ul", "id": name + "_div", "class": "collection col s12 m6" }).down()
@@ -207,7 +207,10 @@ class ConfigurationStringListLine extends ConfigurationLine{
 
         // Return the value of the input.
         this.valueEditor.setValue = (values: any) => {
-            function appendEditor(index: number, value: string){
+            if(values == undefined){
+                return;
+            }
+            let appendEditor= (index: number, value: string) =>{
                 let li =ul.appendElement({"tag":"li", "class":"collection-item", "style":"padding: 0px;"}).down()
                 let removeBtn = li.appendElement({ "tag": "label", "id": index + "_label", "style":"display: flex; align-items: center;"}).down()
                 .appendElement({ "tag": "input", "id":  index + "_input", "name": name + "_group", "type": "text", "value":value})
@@ -219,8 +222,15 @@ class ConfigurationStringListLine extends ConfigurationLine{
                     removeBtn.element.style.cursor = "default"
                 }
                 removeBtn.element.onclick = ()=>{
+                    this.panel.hasChange()
                     li.element.parentNode.removeChild(li.element)
                 }
+                let input = this.content.getChildById(index + "_input")
+                input.element.onchange = () => {
+                    // set the value in the interface.
+                    this.valueDiv.setValue(this.valueEditor.getValue())
+                    this.panel.hasChange()
+                }  
             }
 
             this.valueEditor.removeAllChilds()
@@ -250,6 +260,9 @@ class ConfigurationStringListLine extends ConfigurationLine{
 
         // Return the value of the input.
         this.valueDiv.setValue = (values: any)=>{
+            if(values == undefined){
+                return;
+            }
             // Clear the content.
             this.valueDiv.removeAllChilds()
             // Apppend values.
@@ -268,7 +281,7 @@ class ConfigurationStringListLine extends ConfigurationLine{
  * That class will contain the general server information.
  */
 export class ConfigurationPanel extends Panel{
-    private config: IConfig;
+    public config: IConfig;
     private content: any;
     private saveBtn: any;
     private cancelBtn: any;
@@ -321,7 +334,7 @@ export class ConfigurationPanel extends Panel{
      * @param label The value to display as label.
      */
     appendTextualConfig(name: string, label?: string, type?:string, step?:number,min?:number,max?:number){
-        let configLine = new ConfigurationTextLine(this, name, label, this.config, this.content, type, step, min, max)
+        let configLine = new ConfigurationTextLine(this, name, label, this.content, type, step, min, max)
         this.configurationLines.push(configLine)
     }
 
@@ -331,7 +344,7 @@ export class ConfigurationPanel extends Panel{
      * @param label The display name
      */
     appendStringListConfig(name: string, label?: string){
-        let configLine = new ConfigurationStringListLine(this, name, label, this.config, this.content)
+        let configLine = new ConfigurationStringListLine(this, name, label, this.content)
         this.configurationLines.push(configLine)
     }
 
@@ -342,7 +355,7 @@ export class ConfigurationPanel extends Panel{
      * @param label The name to display in the interface.
      */
     appendMultipleOptionsSingleChoiceConfig(name: string, options: Array<string>, label?: string){
-        let configLine = new ConfigurationMultipleOptionsSingleChoiceLine(this, name, options, label, this.config, this.content)
+        let configLine = new ConfigurationMultipleOptionsSingleChoiceLine(this, name, options, label, this.content)
         this.configurationLines.push(configLine)
     }
 

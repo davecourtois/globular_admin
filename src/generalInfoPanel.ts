@@ -25,9 +25,9 @@ export class GeneralInfoPanel extends ConfigurationPanel {
     this.appendTextualConfig("PortHttps", "Https port", "number", 1, 0, 65535);
 
     // Display list of domains
-    this.appendStringListConfig("Discoveries")
+    this.appendStringListConfig("Discoveries", "Services Discorvery")
 
     // Display the list nameserver.
-    this.appendStringListConfig("Discoveries")
+    this.appendStringListConfig("DNS", "Domain Name Servers")
   }
 }
