@@ -13,9 +13,6 @@ class ConfigurationLine {
     // Must the name in the IConfig.
     private name: string;
 
-    // The reference to the configuraiton.
-    private config: IConfig;
-
     // The div that contain the line.
     protected content: any;
 

@@ -5,6 +5,7 @@ import { randomUUID } from './utility'
 import { RegisterAccountRqst, AuthenticateRqst, Account } from 'globular-web-client/lib/ressource/ressource_pb';
 import * as jwt from 'jwt-decode'
 import { InsertOneRqst, FindOneRqst } from "globular-web-client/lib/persistence/persistencepb/persistence_pb";
+import { FindServicesDescriptorRequest, FindServicesDescriptorResponse, ServiceDescriptor } from "globular-web-client/lib/services/services_pb";
 
 // Create a new connection with the backend.
 export let globular: GlobularWebClient.Globular;
@@ -239,6 +240,25 @@ export function readOneUserData(query: string, callback: (results: any) => void)
         .catch((err: any) => {
             console.log(err)
         })
+}
+
+/**
+ * Find services by keywords.
+ * @param query 
+ * @param callback 
+ */
+export function findServices(keywords: Array<string>, callback: (results: Array<ServiceDescriptor>)=> void){
+    let rqst = new FindServicesDescriptorRequest();
+    rqst.setKeywordsList(keywords)
+
+    // Find services by keywords.
+    globular.servicesDicovery.findServices(rqst).then((rsp: FindServicesDescriptorResponse)=>{
+        console.log(rsp)
+        callback(rsp.getResultsList())
+    })
+    .catch((err: any) => {
+        console.log(err)
+    })
 }
 
 /**
