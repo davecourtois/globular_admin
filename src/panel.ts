@@ -4,15 +4,22 @@ import { createElement } from "./element"
 export class Panel {
     protected div: any;
     private uuid: string;
+    protected id: string;
 
     constructor(id: string) {
         // Div is the html element div.
         this.div = createElement(null, { "tag": "div", "id": id, "style":"padding: 10px;" });
+        this.id = id;
         eventHub.subscribe("onlogin", (uuid: string) => { this.uuid = uuid; }, (data: any) => { this.onlogin(data) })
     }
 
     // Here I will react to login information...
     onlogin(data: any) {
+        // overide...
+        console.log("Panel --> onlogin: ", this.id)
+    }
+
+    onlogout() {
         // overide...
     }
 

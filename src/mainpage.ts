@@ -87,6 +87,7 @@ export class MainPage {
     ////////////////////////////// General informations //////////////////////////////
     // This will be the workspace...
     this.container = div.appendElement({ "tag": "div", "class": "container" }).down()
+    this.showSearchServicePanel() // must be call once to initialyse it
     this.showGeneralInfo()
 
     // Set the search input action.

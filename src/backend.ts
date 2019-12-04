@@ -1,5 +1,5 @@
 import * as GlobularWebClient from "globular-web-client";
-import { GetConfigRequest, SaveConfigRequest } from "globular-web-client/lib/admin/admin_pb";
+import { GetConfigRequest, SaveConfigRequest, InstallServiceRequest, InstallServiceResponse } from "globular-web-client/lib/admin/admin_pb";
 import { QueryRangeRequest, QueryRequest } from 'globular-web-client/lib/monitoring/monitoringpb/monitoring_pb';
 import { randomUUID } from './utility'
 import { RegisterAccountRqst, AuthenticateRqst, Account } from 'globular-web-client/lib/ressource/ressource_pb';
@@ -259,6 +259,21 @@ export function findServices(keywords: Array<string>, callback: (results: Array<
     .catch((err: any) => {
         console.log(err)
     })
+}
+
+export function installService(discoveryId: string, serviceId: string, publisherId: string, version: string, callback: ()=>void){
+    let rqst = new InstallServiceRequest
+    rqst.setPublisherid(publisherId)
+    rqst.setDicorveryid(discoveryId)
+    rqst.setServiceid(serviceId)
+    rqst.setVersion(version)
+
+    // Install the service.
+    globular.adminService.installService(rqst, { "token": localStorage.getItem("user_token") })
+        .then((rsp: InstallServiceResponse)=>{
+            console.log("---> service install")
+            callback()
+        })
 }
 
 /**
