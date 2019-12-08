@@ -22,13 +22,13 @@ class ConfigurationLine {
     // The div that play editable values.
     protected valueEditor: any;
 
-    constructor(panel: ConfigurationPanel, name: string, label: string, content: any){
+    constructor(panel: ConfigurationPanel, name: string, label: string, content: any) {
         this.name = name;
         this.content = content;
         this.panel = panel;
 
         // Name will be use if no label was given.
-        if(label == undefined){
+        if (label == undefined) {
             label = this.name
         }
 
@@ -38,19 +38,19 @@ class ConfigurationLine {
     }
 
     // Return the configuration values.
-    protected getValue():any{
-        return (<any>this.panel.config)[this.name]
+    protected getValue(): any {
+        return this.panel.config[this.name]
     }
 
     // Set the configuration values.
-    protected setValue(v :any){
-        (<any>this.panel.config)[this.name] = v
+    protected setValue(v: any) {
+        this.panel.config[this.name] = v
     }
 
     /**
      * Set the value of the configuration with the value contain in the editor.
      */
-    set(){
+    set() {
         this.setValue(this.valueEditor.getValue())
         this.valueDiv.setValue(this.valueEditor.getValue())
     }
@@ -58,7 +58,7 @@ class ConfigurationLine {
     /**
      * Reset the value of the configuration with it initial value.
      */
-    reset(){
+    reset() {
         this.valueEditor.setValue(this.getValue())
         this.valueDiv.setValue(this.getValue())
     }
@@ -66,7 +66,7 @@ class ConfigurationLine {
     /**
      * Non editable mode
      */
-    lock(){
+    lock() {
         this.valueEditor.element.style.display = "none"
         this.valueDiv.element.style.display = ""
     }
@@ -74,7 +74,7 @@ class ConfigurationLine {
     /**
      * Editable mode.
      */
-    unlock(){
+    unlock() {
         this.valueEditor.element.style.display = ""
         this.valueDiv.element.style.display = "none"
     }
@@ -82,12 +82,12 @@ class ConfigurationLine {
 
 class ConfigurationTextLine extends ConfigurationLine {
 
-    constructor(panel: ConfigurationPanel, name: string, label: string, content: any, type?:string, step?:number,min?:number,max?:number){
+    constructor(panel: ConfigurationPanel, name: string, label: string, content: any, type?: string, step?: number, min?: number, max?: number) {
         super(panel, name, label, content);
         let value = this.getValue()
 
         // Type can be any type that input box can support.
-        if(type == undefined){
+        if (type == undefined) {
             type = "text"
         }
 
@@ -95,7 +95,7 @@ class ConfigurationTextLine extends ConfigurationLine {
         this.valueDiv = this.content.appendElement({ "tag": "div", "id": name + "_div", "class": "col s12 m6", "innerHtml": value.toString() }).down()
 
         // Set the value editor.
-        this.valueEditor = this.content.appendElement({ "tag": "input", "id": name + "_input", "style": "display: none;", "class": "col s12 m6", "type": type, "value":value }).down()
+        this.valueEditor = this.content.appendElement({ "tag": "input", "id": name + "_input", "style": "display: none;", "class": "col s12 m6", "type": type, "value": value }).down()
 
         this.valueEditor.element.onchange = () => {
             // set the value in the interface.
@@ -104,20 +104,68 @@ class ConfigurationTextLine extends ConfigurationLine {
         }
 
         // Return the value of the input.
-        this.valueEditor.getValue = function(){
-            if(type == "number"){
+        this.valueEditor.getValue = function () {
+            if (type == "number") {
                 return parseFloat(this.element.value)
             }
             return this.element.value
         }
 
         // Return the value of the input.
-        this.valueEditor.setValue = function(v: any){
+        this.valueEditor.setValue = function (v: any) {
             this.element.value = v
         }
 
         // Return the value of the input.
-        this.valueDiv.setValue = function(v: any){
+        this.valueDiv.setValue = function (v: any) {
+            this.element.innerHTML = v
+        }
+    }
+}
+
+
+class ConfigurationToggleLine extends ConfigurationLine {
+
+    constructor(panel: ConfigurationPanel, name: string, label: string, content: any, labels: Array<string>) {
+        super(panel, name, label, content);
+        let value = this.getValue()
+
+        // Set the value div.
+        this.valueDiv = this.content.appendElement({ "tag": "div", "id": name + "_div", "class": "col s12 m6", "innerHtml": value.toString() }).down()
+
+        // Set the value editor.
+        this.valueEditor = this.content
+            .appendElement({ "tag": "div", "class": "switch col s12 m6", "style": "display: none;" }).down()
+
+        this.valueEditor.appendElement({ "tag": "label" }).down()
+            .appendElement({ "tag": "span", "innerHtml": labels[0] })
+            .appendElement({ "tag": "input", "id": name + "_input", "type": "checkbox"})
+            .appendElement({ "tag": "span", "class": "lever" })
+            .appendElement({ "tag": "span", "innerHtml": labels[1] })
+
+        if(value == true){
+            this.valueEditor.getChildById(name + "_input").element.click()
+        }
+        
+        this.valueEditor.element.onchange = () => {
+            // set the value in the interface.
+            this.valueDiv.setValue(this.valueEditor.getValue())
+            this.panel.hasChange()
+        }
+
+        // Return the value of the input.
+        this.valueEditor.getValue = function () {
+            return this.getChildById(name + "_input").element.value
+        }
+
+        // Return the value of the input.
+        this.valueEditor.setValue = function (v: any) {
+            this.getChildById(name + "_input").element.value = v
+            this.getChildById(name + "_input").element.disabled = v
+        }
+
+        // Return the value of the input.
+        this.valueDiv.setValue = function (v: any) {
             this.element.innerHTML = v
         }
     }
@@ -128,32 +176,32 @@ class ConfigurationTextLine extends ConfigurationLine {
  */
 class ConfigurationMultipleOptionsSingleChoiceLine extends ConfigurationLine {
 
-    constructor(panel: ConfigurationPanel, name: string, options: Array<string>, label: string, content: any){
+    constructor(panel: ConfigurationPanel, name: string, options: Array<string>, label: string, content: any) {
         super(panel, name, label, content);
         this.valueDiv = this.content.appendElement({ "tag": "div", "id": name + "_div", "class": "col s12 m6", "innerHtml": this.getValue() }).down()
-        this.valueEditor = this.content.appendElement({ "tag": "div",  "class": "col s12 m6", "style": "display: none; justify-content: flex-start;"}).down()
+        this.valueEditor = this.content.appendElement({ "tag": "div", "class": "col s12 m6", "style": "display: none; justify-content: flex-start;" }).down()
 
         // Set the choice from options...
-        for(var i=0; i < options.length; i++){
+        for (var i = 0; i < options.length; i++) {
             this.valueEditor
-            .appendElement({ "tag": "label", "id":  options[i] + "_label", "style":"padding-right: 15px;"}).down()
-            .appendElement({ "tag": "input", "id":  options[i] + "_input", "name": name + "_group", "type": "radio" })
-            .appendElement({ "tag": "span", "innerHtml": options[i] }).up()
+                .appendElement({ "tag": "label", "id": options[i] + "_label", "style": "padding-right: 15px;" }).down()
+                .appendElement({ "tag": "input", "id": options[i] + "_input", "name": name + "_group", "type": "radio" })
+                .appendElement({ "tag": "span", "innerHtml": options[i] }).up()
 
             let input = this.content.getChildById(options[i] + "_input")
             input.element.onchange = () => {
                 // set the value in the interface.
                 this.valueDiv.setValue(this.valueEditor.getValue())
                 this.panel.hasChange()
-            }  
+            }
         }
 
         // Return the value of the input.
-        this.valueEditor.getValue = ()=>{
+        this.valueEditor.getValue = () => {
             // That function will return the actual checked value.
-            for(var i=0; i < options.length; i++){
-                let input =  this.valueEditor.getChildById(options[i] + "_input")
-                if(input.element.checked==true){
+            for (var i = 0; i < options.length; i++) {
+                let input = this.valueEditor.getChildById(options[i] + "_input")
+                if (input.element.checked == true) {
                     return options[i]
                 }
             }
@@ -161,7 +209,7 @@ class ConfigurationMultipleOptionsSingleChoiceLine extends ConfigurationLine {
 
         // Return the value of the input.
         this.valueEditor.setValue = (v: any) => {
-            for(var i=0; i < options.length; i++){
+            for (var i = 0; i < options.length; i++) {
                 let input = this.content.getChildById(options[i] + "_input")
                 input.element.checked = false
             }
@@ -170,7 +218,7 @@ class ConfigurationMultipleOptionsSingleChoiceLine extends ConfigurationLine {
         }
 
         // Return the value of the input.
-        this.valueDiv.setValue = function(v: any){
+        this.valueDiv.setValue = function (v: any) {
             this.element.innerHTML = v
         }
 
@@ -182,21 +230,21 @@ class ConfigurationMultipleOptionsSingleChoiceLine extends ConfigurationLine {
 /**
  * Use to display a liste of string values in a configuration.
  */
-class ConfigurationStringListLine extends ConfigurationLine{
-    constructor(panel: ConfigurationPanel, name: string, label: string, content: any){
+class ConfigurationStringListLine extends ConfigurationLine {
+    constructor(panel: ConfigurationPanel, name: string, label: string, content: any) {
         super(panel, name, label, content);
 
         // The value div.
         this.valueDiv = this.content.appendElement({ "tag": "ul", "id": name + "_div", "class": "collection col s12 m6" }).down()
-       
+
         // The editor div.
         this.valueEditor = this.content.appendElement({ "tag": "div", "id": name + "_editor", "class": "col s12 m6", "style": "display: none; padding: 0px; margin: 0px; position: relative;" }).down()
 
         // Return the value of the input.
-        this.valueEditor.getValue = ()=>{
+        this.valueEditor.getValue = () => {
             let inputs = document.getElementsByName(name + "_group")
             let values = new Array<string>()
-            for(var i=0; i < inputs.length; i++){
+            for (var i = 0; i < inputs.length; i++) {
                 values.push((<any>inputs[i]).value)
             }
             return values;
@@ -204,21 +252,21 @@ class ConfigurationStringListLine extends ConfigurationLine{
 
         // Return the value of the input.
         this.valueEditor.setValue = (values: any) => {
-            if(values == undefined){
+            if (values == undefined) {
                 return;
             }
-            let appendEditor= (index: number, value: string) =>{
-                let li =ul.appendElement({"tag":"li", "class":"collection-item", "style":"padding: 0px;"}).down()
-                let removeBtn = li.appendElement({ "tag": "label", "id": index + "_label", "style":"display: flex; align-items: center;"}).down()
-                .appendElement({ "tag": "input", "id":  index + "_input", "name": name + "_group", "type": "text", "value":value})
-                .appendElement({"tag":"i", "class":"tiny material-icons", "innerHtml":"remove", "style":"z-index: 10;"}).down()
-                removeBtn.element.onmouseover = ()=>{
+            let appendEditor = (index: number, value: string) => {
+                let li = ul.appendElement({ "tag": "li", "class": "collection-item", "style": "padding: 0px;" }).down()
+                let removeBtn = li.appendElement({ "tag": "label", "id": index + "_label", "style": "display: flex; align-items: center;" }).down()
+                    .appendElement({ "tag": "input", "id": index + "_input", "name": name + "_group", "type": "text", "value": value })
+                    .appendElement({ "tag": "i", "class": "tiny material-icons", "innerHtml": "remove", "style": "z-index: 10;" }).down()
+                removeBtn.element.onmouseover = () => {
                     removeBtn.element.style.cursor = "pointer"
                 }
-                removeBtn.element.onmouseout = ()=>{
+                removeBtn.element.onmouseout = () => {
                     removeBtn.element.style.cursor = "default"
                 }
-                removeBtn.element.onclick = ()=>{
+                removeBtn.element.onclick = () => {
                     this.panel.hasChange()
                     li.element.parentNode.removeChild(li.element)
                 }
@@ -227,27 +275,27 @@ class ConfigurationStringListLine extends ConfigurationLine{
                     // set the value in the interface.
                     this.valueDiv.setValue(this.valueEditor.getValue())
                     this.panel.hasChange()
-                }  
+                }
             }
 
             this.valueEditor.removeAllChilds()
-            let newLineBtn = this.valueEditor.appendElement({"tag":"i", "class":"tiny material-icons", "innerHtml":"add_circle_outline", "style":"position: absolute; top: 12px; left: 4px; z-index: 10;"}).down()
-            newLineBtn.element.onmouseover = ()=>{
+            let newLineBtn = this.valueEditor.appendElement({ "tag": "i", "class": "tiny material-icons", "innerHtml": "add_circle_outline", "style": "position: absolute; top: 12px; left: 4px; z-index: 10;" }).down()
+            newLineBtn.element.onmouseover = () => {
                 newLineBtn.element.style.cursor = "pointer"
             }
-            newLineBtn.element.onmouseout = ()=>{
+            newLineBtn.element.onmouseout = () => {
                 newLineBtn.element.style.cursor = "default"
             }
 
             // Here I will set the list of control to edit the values.
-            var ul = this.valueEditor.appendElement({ "tag": "ul", "id": name + "_editor", "class": "collection", "style":"padding: 15px;" }).down()
+            var ul = this.valueEditor.appendElement({ "tag": "ul", "id": name + "_editor", "class": "collection", "style": "padding: 15px;" }).down()
 
             // Apppend values.
-            for(var i=0; i < values.length; i++){
+            for (var i = 0; i < values.length; i++) {
                 appendEditor(i, values[i])
             }
 
-            newLineBtn.element.onclick = ()=>{
+            newLineBtn.element.onclick = () => {
                 // append a new line element.
                 appendEditor(this.getValue().length, "")
                 this.valueEditor.getChildById(this.getValue().length + "_input").element.focus()
@@ -256,15 +304,15 @@ class ConfigurationStringListLine extends ConfigurationLine{
         }
 
         // Return the value of the input.
-        this.valueDiv.setValue = (values: any)=>{
-            if(values == undefined){
+        this.valueDiv.setValue = (values: any) => {
+            if (values == undefined) {
                 return;
             }
             // Clear the content.
             this.valueDiv.removeAllChilds()
             // Apppend values.
-            for(var i=0; i < values.length; i++){
-                this.valueDiv.appendElement({"tag":"li", "class":"collection-item", "id": name + "_div_" + i, "innerHtml" : values[i]})
+            for (var i = 0; i < values.length; i++) {
+                this.valueDiv.appendElement({ "tag": "li", "class": "collection-item", "id": name + "_div_" + i, "innerHtml": values[i] })
             }
         }
 
@@ -277,15 +325,15 @@ class ConfigurationStringListLine extends ConfigurationLine{
 /**
  * That class will contain the general server information.
  */
-export class ConfigurationPanel extends Panel{
-    public config: IConfig;
-    private content: any;
+export class ConfigurationPanel extends Panel {
+    public config: any;
+    public content: any;
+    public btnGroup: any;
     private saveBtn: any;
     private cancelBtn: any;
-    private btnGroup: any;
     private configurationLines: Array<ConfigurationLine>
 
-    constructor(config: IConfig, title: string, id:string){
+    constructor(config: any, title: string, id: string) {
         super(id);
 
         // Keep a pointer to the config.
@@ -296,25 +344,27 @@ export class ConfigurationPanel extends Panel{
 
         // Display general information.
         this.div.appendElement({ "tag": "div", "class": "row configuration_panel" }).down()
-        .appendElement({"tag":"div", "class":"col s12 m8 offset-m2"}).down()
-        .appendElement({"tag":"div", "class":"card"}).down()
-        .appendElement({"tag":"div", "class":"card-content"}).down()
-        .appendElement({"tag":"span", "class":"card-title" , "style":"font-size: 1.5em;", "innerHtml":title})
-        .appendElement({"tag":"div", "id":"content"})
-        // The action buttons.
-        .appendElement({"tag":"div", "class":"card-action", "id":"btn_group", "style":"text-align: right; display: none;"}).down()
-        .appendElement({ "tag":"a", "id":"save_btn", "href": "javascript:void(0)", "class":"waves-effect waves-light btn disabled", "innerHtml":"Save"})
-        .appendElement({ "tag":"a", "id":"cancel_btn", "href": "javascript:void(0)", "class":"waves-effect waves-light btn disabled", "innerHtml":"Cancel"})
+            .appendElement({ "tag": "div", "class": "col s12 m8 offset-m2" }).down()
+            .appendElement({ "tag": "div", "class": "card" }).down()
+            .appendElement({ "tag": "div", "class": "card-content" }).down()
+
+
+            .appendElement({ "tag": "span", "class": "card-title", "style": "font-size: 1.5em;", "innerHtml": title })
+            .appendElement({ "tag": "div", "id": "content" })
+            // The action buttons.
+            .appendElement({ "tag": "div", "class": "card-action", "id": "btn_group", "style": "text-align: right; display: none;" }).down()
+            .appendElement({ "tag": "a", "id": "save_btn", "href": "javascript:void(0)", "class": "waves-effect waves-light btn disabled", "innerHtml": "Save" })
+            .appendElement({ "tag": "a", "id": "cancel_btn", "href": "javascript:void(0)", "class": "waves-effect waves-light btn disabled", "innerHtml": "Cancel" })
 
         // The save button
         this.saveBtn = this.div.getChildById("save_btn")
-        this.saveBtn.element.onclick = ()=>{
+        this.saveBtn.element.onclick = () => {
             this.save()
         }
 
         // The cancel button
         this.cancelBtn = this.div.getChildById("cancel_btn")
-        this.cancelBtn.element.onclick = ()=>{
+        this.cancelBtn.element.onclick = () => {
             this.cancel()
         }
 
@@ -330,8 +380,19 @@ export class ConfigurationPanel extends Panel{
      * @param name The name of the property in the configuration object.
      * @param label The value to display as label.
      */
-    appendTextualConfig(name: string, label?: string, type?:string, step?:number,min?:number,max?:number){
+    appendTextualConfig(name: string, label?: string, type?: string, step?: number, min?: number, max?: number) {
         let configLine = new ConfigurationTextLine(this, name, label, this.content, type, step, min, max)
+        this.configurationLines.push(configLine)
+    }
+
+    /**
+     * Append a boolean configuration (on/off true/false male/female...)
+     * @param name The name of the property
+     * @param labels The labels to display beside the switch
+     * @param label Alternative property name in case the property name is a compose name.
+     */
+    appendBooleanConfig(name: string, labels: Array<string>, label?: string) {
+        let configLine = new ConfigurationToggleLine(this, name, label, this.content, labels)
         this.configurationLines.push(configLine)
     }
 
@@ -340,7 +401,7 @@ export class ConfigurationPanel extends Panel{
      * @param name The name of the configuration
      * @param label The display name
      */
-    appendStringListConfig(name: string, label?: string){
+    appendStringListConfig(name: string, label?: string) {
         let configLine = new ConfigurationStringListLine(this, name, label, this.content)
         this.configurationLines.push(configLine)
     }
@@ -351,63 +412,56 @@ export class ConfigurationPanel extends Panel{
      * @param options The list of possible values.
      * @param label The name to display in the interface.
      */
-    appendMultipleOptionsSingleChoiceConfig(name: string, options: Array<string>, label?: string){
+    appendMultipleOptionsSingleChoiceConfig(name: string, options: Array<string>, label?: string) {
         let configLine = new ConfigurationMultipleOptionsSingleChoiceLine(this, name, options, label, this.content)
         this.configurationLines.push(configLine)
     }
 
     // create control...
-    onlogin(data: any){
+    onlogin(data: any) {
         // Display textual input
-        for(var i=0; i < this.configurationLines.length; i++){
+        for (var i = 0; i < this.configurationLines.length; i++) {
             this.configurationLines[i].unlock()
         }
 
         this.btnGroup.element.style.display = ""
-        readFullConfig((config: IConfig)=>{
+        readFullConfig((config: IConfig) => {
             // read the full configuration...
             this.config = config
         })
     }
 
-    onlogout(){
+    onlogout() {
         // display values.
-        for(var i=0; i < this.configurationLines.length; i++){
+        for (var i = 0; i < this.configurationLines.length; i++) {
             this.configurationLines[i].lock()
-        }  
+        }
 
         this.btnGroup.element.style.display = "none"
         this.cancel()
     }
 
     // That function is the same for all configuration panels.
-    save(){
-        for(var i=0; i < this.configurationLines.length; i++){
+    save() {
+        for (var i = 0; i < this.configurationLines.length; i++) {
             this.configurationLines[i].set()
-        }    
+        }
 
         this.cancelBtn.element.classList.add("disabled")
         this.saveBtn.element.classList.add("disabled")
-
-        // Now I will save the configuration.
-        saveConfig(this.config, (config: IConfig)=>{
-            M.toast({html: 'The configuration was saved!'})
-            this.config = config // set back the config...
-        })
-  
     }
 
     // must be overide by each panel.
-    cancel(){
-        for(var i=0; i < this.configurationLines.length; i++){
+    cancel() {
+        for (var i = 0; i < this.configurationLines.length; i++) {
             this.configurationLines[i].reset()
-        }  
-        
+        }
+
         this.cancelBtn.element.classList.add("disabled")
         this.saveBtn.element.classList.add("disabled")
     }
 
-    hasChange(){
+    hasChange() {
         this.cancelBtn.element.classList.remove("disabled")
         this.saveBtn.element.classList.remove("disabled")
     }

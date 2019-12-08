@@ -4,6 +4,7 @@ import { createElement } from "./element"
 import { globular, authenticate } from "./backend";
 import { GeneralInfoPanel } from "./generalInfoPanel";
 import { SearchServicesPanel } from "./searchServicesPanel";
+import { ServicePanel } from "./servicePanel";
 
 export class MainPage {
   // The outer most div.
@@ -232,6 +233,37 @@ export class MainPage {
       this.generalInfoPanel = new GeneralInfoPanel(globular.config)
     }
     this.generalInfoPanel.setParent(this.container)
+
+    // also show the list of services.
+    this.showServicesPanel()
+  }
+
+  showServicesPanel(){
+    // The tab div...
+    let div = this.container.appendElement({"tag":"div", "class":"row"}).down()
+    .appendElement({"tag":"div", "id":"service_tabs", "class":"col s8 offset-s2 "}).down()
+    .appendElement({"tag":"ul", "class":"collapsible"}).down()
+
+    for(var key in globular.config.Services){
+      if(globular.config.Services[key].PublisherId != null){
+      let title = key.replace("_", " ")
+      let servicePanel = new ServicePanel(globular.config.Services[key], title)
+      // Here I will create the tab...
+      let panel = div.appendElement({"tag":"li"}).down()
+        .appendElement({"tag":"div","class":"collapsible-header", "style":"display: flex; align-items: center;"}).down()
+        .appendElement({"tag":"span", "class":"col s6", "innerHtml":title})
+        .appendElement(servicePanel.actionBtnGroup).up()
+        .appendElement({"tag":"div",  "class":"collapsible-body"}).down()
+        // servicePanel.setParent(panel)
+
+        panel.appendElement(servicePanel.content)
+        panel.appendElement(servicePanel.btnGroup)
+      }
+    }
+
+    // initialyse the tab component.
+    var elem = document.querySelector('.collapsible');
+    M.Collapsible.init(elem);
   }
 
   showSearchServicePanel() {

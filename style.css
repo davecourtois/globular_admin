@@ -22,3 +22,15 @@
 .card-action .btn{
     margin-right: 4px;
 }
+
+::-webkit-scrollbar{
+    height: 4px;
+    width: 4px;
+    background: white;
+    padding: 10px;
+}
+
+::-webkit-scrollbar-thumb:horizontal{
+    background: lightgrey;
+    border-radius: 10px;
+}
