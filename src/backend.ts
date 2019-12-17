@@ -1,5 +1,5 @@
 import * as GlobularWebClient from "globular-web-client";
-import { GetConfigRequest, SaveConfigRequest, InstallServiceRequest, InstallServiceResponse } from "globular-web-client/lib/admin/admin_pb";
+import { GetConfigRequest, SaveConfigRequest, InstallServiceRequest, InstallServiceResponse, StopServiceRequest, StartServiceRequest, SaveConfigResponse } from "globular-web-client/lib/admin/admin_pb";
 import { QueryRangeRequest, QueryRequest } from 'globular-web-client/lib/monitoring/monitoringpb/monitoring_pb';
 import { randomUUID } from './utility'
 import { RegisterAccountRqst, AuthenticateRqst, Account } from 'globular-web-client/lib/ressource/ressource_pb';
@@ -13,19 +13,8 @@ export let eventHub: GlobularWebClient.EventHub;
 
 let config: any;
 export async function initServices(callback: () => void) {
-    // Set the basic configuration without services details.
-    // TODO get the value found from http://domain:10000
-    /*
-    fetch("https://" + window.location.hostname + ":10000")
-        .then(res => res.json())
-        .then((out) => {
-            console.log('Checkout this JSON! ', out);
-        })
-        .catch(err => { throw err }); 
-    */
-
     config = {
-        Protocol: "https",
+        Protocol: "http",
         Domain: window.location.hostname,
         PortHttps: 443,
         AdminPort: 10001,
@@ -274,6 +263,51 @@ export function installService(discoveryId: string, serviceId: string, publisher
             console.log("---> service install")
             callback()
         })
+}
+
+/**
+ * Stop a service.
+ */
+export function stopService(serviceId: string, callback:()=>void){
+    let rqst = new StopServiceRequest
+    rqst.setServiceId(serviceId)
+    globular.adminService.stopService(rqst, { "token": localStorage.getItem("user_token") }).then(()=>{
+        callback()
+    }).catch((err: any)=>{
+        console.log("fail to stop service ", serviceId)
+        console.log(err)
+    })
+}
+
+/**
+ * Start a service
+ * @param serviceId The id of the service to start.
+ * @param callback  The callback on success.
+ */
+export function startService(serviceId: string, callback:()=>void){
+    let rqst = new StartServiceRequest
+    rqst.setServiceId(serviceId)
+    globular.adminService.startService(rqst, { "token": localStorage.getItem("user_token") }).then(()=>{
+        callback()
+    }).catch((err: any)=>{
+        console.log("fail to start service ", serviceId)
+        console.log(err)
+    })
+}
+
+/**
+ * Here I will save the service configuration.
+ * @param service The configuration to save.
+ */
+export function saveService(service: GlobularWebClient.IServiceConfig, callback:(config: any)=>void){
+    let rqst = new SaveConfigRequest
+    
+    rqst.setConfig(JSON.stringify(service))
+    globular.adminService.saveConfig(rqst, { "token": localStorage.getItem("user_token") }).then((rsp:SaveConfigResponse)=>{
+        // The service with updated values...
+        let service =  JSON.parse(rsp.getResult())
+        callback(service)
+    })
 }
 
 /**

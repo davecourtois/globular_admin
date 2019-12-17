@@ -163,7 +163,7 @@ export class MainPage {
     }
 
     // Here I will create the login dialog.
-    let loginDialog = createElement(null, { "tag": "div", "id": "login-dialog", "style": "position: absolute; top: 0px; left: 0px; right: 0px; bottom: 0px; background-color: rgba(0.0, 0.0, 0.0, 0.5); z-index: 10;" })
+    let loginDialog = createElement(null, { "tag": "div", "id": "login-dialog", "style": "position: fixed; top: 0px; left: 0px; right: 0px; bottom: 0px; background-color: rgba(0.0, 0.0, 0.0, 0.5); z-index: 10;" })
     loginDialog.element.innerHTML = `<div class="col s12 z-depth-6 card-panel" style="position: absolute; margin:auto; top: 57px; left: 0px; right: 0px; bottom: 0px;">
           <form class="login-form">
             <div class="row">
@@ -204,7 +204,7 @@ export class MainPage {
     this.loginLnk.element.onclick = () => {
       if (document.getElementById("login-dialog") == null) {
         this.showLogin()
-      }else{
+      } else {
         this.login((<HTMLInputElement>document.getElementById("email")).value, (<HTMLInputElement>document.getElementById("password")).value)
         loginDialog.element.parentNode.removeChild(loginDialog.element)
       }
@@ -238,26 +238,28 @@ export class MainPage {
     this.showServicesPanel()
   }
 
-  showServicesPanel(){
+  showServicesPanel() {
     // The tab div...
-    let div = this.container.appendElement({"tag":"div", "class":"row"}).down()
-    .appendElement({"tag":"div", "id":"service_tabs", "class":"col s8 offset-s2 "}).down()
-    .appendElement({"tag":"ul", "class":"collapsible"}).down()
+    let div = this.container.appendElement({ "tag": "div", "class": "row" }).down()
+      .appendElement({ "tag": "div", "id": "service_tabs", "class": "col s8 offset-s2 " }).down()
+      .appendElement({ "tag": "ul", "class": "collapsible" }).down()
 
-    for(var key in globular.config.Services){
-      if(globular.config.Services[key].PublisherId != null){
-      let title = key.replace("_", " ")
-      let servicePanel = new ServicePanel(globular.config.Services[key], title)
-      // Here I will create the tab...
-      let panel = div.appendElement({"tag":"li"}).down()
-        .appendElement({"tag":"div","class":"collapsible-header", "style":"display: flex; align-items: center;"}).down()
-        .appendElement({"tag":"span", "class":"col s6", "innerHtml":title})
-        .appendElement(servicePanel.actionBtnGroup).up()
-        .appendElement({"tag":"div",  "class":"collapsible-body"}).down()
-        // servicePanel.setParent(panel)
+    for (var key in globular.config.Services) {
+      if (globular.config.Services[key].PublisherId != null) {
+        let title = key.replace("_", " ")
+        let servicePanel = new ServicePanel(globular.config.Services[key], title, key)
+        // Here I will create the tab...
+        let panel = div.appendElement({ "tag": "li" }).down()
+        .appendElement({ "tag": "div", "class": "collapsible-header", "style": "display: flex; align-items: center;" }).down()
+          .appendElement({ "tag": "span", "class": "col s6", "innerHtml": title })
+          .appendElement({ "tag": "span", "id": key + "_state", "class": "col s6 right-align", "innerHtml": globular.config.Services[key].State })
+          .appendElement(servicePanel.actionBtnGroup).up()
+          .appendElement({ "tag": "div", "class": "collapsible-body" }).down()
 
         panel.appendElement(servicePanel.content)
         panel.appendElement(servicePanel.btnGroup)
+        servicePanel.btnGroup.element.style.display = "none"
+        servicePanel.stateDiv = div.getChildById( key + "_state")
       }
     }
 

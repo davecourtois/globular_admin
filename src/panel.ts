@@ -10,7 +10,7 @@ export class Panel {
         // Div is the html element div.
         this.div = createElement(null, { "tag": "div", "id": id, "style":"padding: 10px;" });
         this.id = id;
-        eventHub.subscribe("onlogin", (uuid: string) => { this.uuid = uuid; }, (data: any) => { this.onlogin(data) })
+        eventHub.subscribe("onlogin", (uuid: string) => { this.uuid = uuid; }, (data: any) => { this.onlogin(data) }, true)
     }
 
     // Here I will react to login information...

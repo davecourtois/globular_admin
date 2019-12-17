@@ -1,5 +1,4 @@
 import { Panel } from './panel';
-import { IConfig } from "globular-web-client";
 import { saveConfig, readFullConfig, appendUserData } from './backend';
 
 /**
@@ -50,7 +49,7 @@ class ConfigurationLine {
     /**
      * Set the value of the configuration with the value contain in the editor.
      */
-    set() {
+    public set() {
         this.setValue(this.valueEditor.getValue())
         this.valueDiv.setValue(this.valueEditor.getValue())
     }
@@ -58,7 +57,7 @@ class ConfigurationLine {
     /**
      * Reset the value of the configuration with it initial value.
      */
-    reset() {
+    public reset() {
         this.valueEditor.setValue(this.getValue())
         this.valueDiv.setValue(this.getValue())
     }
@@ -138,15 +137,15 @@ class ConfigurationToggleLine extends ConfigurationLine {
             .appendElement({ "tag": "div", "class": "switch col s12 m6", "style": "display: none;" }).down()
 
         this.valueEditor.appendElement({ "tag": "label" }).down()
-            .appendElement({ "tag": "span", "innerHtml": labels[0] })
-            .appendElement({ "tag": "input", "id": name + "_input", "type": "checkbox"})
-            .appendElement({ "tag": "span", "class": "lever" })
             .appendElement({ "tag": "span", "innerHtml": labels[1] })
+            .appendElement({ "tag": "input", "id": name + "_input", "type": "checkbox" })
+            .appendElement({ "tag": "span", "class": "lever" })
+            .appendElement({ "tag": "span", "innerHtml": labels[0] })
 
-        if(value == true){
+        if (value == true) {
             this.valueEditor.getChildById(name + "_input").element.click()
         }
-        
+
         this.valueEditor.element.onchange = () => {
             // set the value in the interface.
             this.valueDiv.setValue(this.valueEditor.getValue())
@@ -155,7 +154,7 @@ class ConfigurationToggleLine extends ConfigurationLine {
 
         // Return the value of the input.
         this.valueEditor.getValue = function () {
-            return this.getChildById(name + "_input").element.value
+            return this.getChildById(name + "_input").element.checked
         }
 
         // Return the value of the input.
@@ -380,9 +379,10 @@ export class ConfigurationPanel extends Panel {
      * @param name The name of the property in the configuration object.
      * @param label The value to display as label.
      */
-    appendTextualConfig(name: string, label?: string, type?: string, step?: number, min?: number, max?: number) {
+    appendTextualConfig(name: string, label?: string, type?: string, step?: number, min?: number, max?: number): any {
         let configLine = new ConfigurationTextLine(this, name, label, this.content, type, step, min, max)
         this.configurationLines.push(configLine)
+        return configLine
     }
 
     /**
@@ -391,9 +391,10 @@ export class ConfigurationPanel extends Panel {
      * @param labels The labels to display beside the switch
      * @param label Alternative property name in case the property name is a compose name.
      */
-    appendBooleanConfig(name: string, labels: Array<string>, label?: string) {
+    appendBooleanConfig(name: string, labels: Array<string>, label?: string): any {
         let configLine = new ConfigurationToggleLine(this, name, label, this.content, labels)
         this.configurationLines.push(configLine)
+        return configLine
     }
 
     /**
@@ -401,9 +402,10 @@ export class ConfigurationPanel extends Panel {
      * @param name The name of the configuration
      * @param label The display name
      */
-    appendStringListConfig(name: string, label?: string) {
+    appendStringListConfig(name: string, label?: string): any {
         let configLine = new ConfigurationStringListLine(this, name, label, this.content)
         this.configurationLines.push(configLine)
+        return configLine
     }
 
     /**
@@ -412,23 +414,20 @@ export class ConfigurationPanel extends Panel {
      * @param options The list of possible values.
      * @param label The name to display in the interface.
      */
-    appendMultipleOptionsSingleChoiceConfig(name: string, options: Array<string>, label?: string) {
+    appendMultipleOptionsSingleChoiceConfig(name: string, options: Array<string>, label?: string): any {
         let configLine = new ConfigurationMultipleOptionsSingleChoiceLine(this, name, options, label, this.content)
         this.configurationLines.push(configLine)
+        return configLine
     }
 
     // create control...
     onlogin(data: any) {
+        super.onlogin(data)
         // Display textual input
         for (var i = 0; i < this.configurationLines.length; i++) {
             this.configurationLines[i].unlock()
         }
-
         this.btnGroup.element.style.display = ""
-        readFullConfig((config: IConfig) => {
-            // read the full configuration...
-            this.config = config
-        })
     }
 
     onlogout() {

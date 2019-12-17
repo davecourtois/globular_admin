@@ -1,6 +1,6 @@
 import { IConfig } from "globular-web-client";
 import { ConfigurationPanel } from "./configurationPanel";
-import { saveConfig } from "./backend";
+import { saveConfig, readFullConfig } from "./backend";
 
 /**
  * That class will contain the general server information.
@@ -30,6 +30,16 @@ export class GeneralInfoPanel extends ConfigurationPanel {
 
     // Display the list nameserver.
     this.appendStringListConfig("DNS", "Domain Name Servers")
+  }
+
+  // create control...
+  onlogin(data: any) {
+    // Display textual input
+    super.onlogin(data)
+    readFullConfig((config: IConfig) => {
+      // read the full configuration...
+      this.config = config
+    })
   }
 
   // That function is the same for all configuration panels.
