@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "webpack --mode production && cp index.html dist  && cp style.css dist && Globular deploy -u=sa -p=adminadmin -name=admin -path=E:/globular_admin/dist -a=localhost"
+    "build": "webpack --mode production && cp index.html dist  && cp style.css dist && /media/dave/ssd/Project/src/github.com/davecourtois/Globular/Globular deploy -u=sa -p=adminadmin -name=admin -path=/media/dave/ssd/globular_admin/dist -a=globular3.omniscient.app"
   },
   "repository": {
     "type": "git",
@@ -16,16 +16,22 @@
     "Configuration",
     "Panel"
   ],
-  "author": "Dave Courtois, Steve Queron",
+  "author": "Dave Courtois",
   "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/davecourtois/globular_admin/issues"
   },
   "devDependencies": {
+    "css-loader": "^3.4.0",
+    "file-loader": "^5.0.2",
+    "mini-css-extract-plugin": "^0.9.0",
+    "node-sass": "^4.13.0",
+    "sass-loader": "^8.0.0",
+    "style-loader": "^1.1.1",
     "ts-loader": "^6.2.1",
     "typescript": "^3.6.4",
     "typescript-plugin-css-modules": "^2.0.2",
-    "webpack": "^4.41.2",
+    "webpack": "^4.41.4",
     "webpack-cli": "^3.3.9"
   },
   "dependencies": {

@@ -1,5 +1,6 @@
 
 import * as M from "materialize-css";
+import 'materialize-css/sass/materialize.scss';
 import { createElement } from "./element"
 import { globular, authenticate } from "./backend";
 import { GeneralInfoPanel } from "./generalInfoPanel";

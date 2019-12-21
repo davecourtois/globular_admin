@@ -159,8 +159,7 @@ class ConfigurationToggleLine extends ConfigurationLine {
 
         // Return the value of the input.
         this.valueEditor.setValue = function (v: any) {
-            this.getChildById(name + "_input").element.value = v
-            this.getChildById(name + "_input").element.disabled = v
+            this.getChildById(name + "_input").element.checked = v
         }
 
         // Return the value of the input.

@@ -14,9 +14,9 @@ export let eventHub: GlobularWebClient.EventHub;
 let config: any;
 export async function initServices(callback: () => void) {
     config = {
-        Protocol: "http",
+        Protocol: window.location.protocol.replace(":",""),
         Domain: window.location.hostname,
-        PortHttps: 443,
+        PortHttps: window.location.port,
         AdminPort: 10001,
         AdminProxy: 10002,
         Services: {} // empty for start.
