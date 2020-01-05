@@ -6,6 +6,8 @@ import { globular, authenticate } from "./backend";
 import { GeneralInfoPanel } from "./generalInfoPanel";
 import { SearchServicesPanel } from "./searchServicesPanel";
 import { ServicePanel } from "./servicePanel";
+import { RolePanel } from "./rolePanel";
+import { randomUUID } from "./utility";
 
 export class MainPage {
   // The outer most div.
@@ -26,6 +28,7 @@ export class MainPage {
   // The general information panel.
   private generalInfoPanel: GeneralInfoPanel;
   private searchServicesPanel: SearchServicesPanel;
+  private rolePanel: RolePanel;
 
   constructor() {
     // Here I will create the main container.
@@ -57,8 +60,8 @@ export class MainPage {
     });
 
     ////////////////////////////// Login //////////////////////////////
-    //  The large menu...
-    this.loginLnk = navBar.appendElement({ "tag": "div", "class": "nav-wrapper teal", "style": "display: flex;" }).down()
+    //  The large menu...indigo darken-4
+    this.loginLnk = navBar.appendElement({ "tag": "div", "class": "nav-wrapper indigo darken-4", "style": "display: flex;" }).down()
       //.appendElement({ "tag": "a", "id": "logo_btn", "class": "flow-text", "innerHtml": "Globular" })
       .appendElement({ "tag": "ul", "class": "left" }).down()
       .appendElement({ "tag": "li" }).down()
@@ -171,21 +174,21 @@ export class MainPage {
             </div>
             <div class="row">
               <div class="input-field col s12">
-                <i class="material-icons prefix">mail_outline</i>
+                <i class="material-icons prefix indigo-text text-darken-3">mail_outline</i>
                 <input class="validate" id="email" type="email">
                 <label for="email" data-error="wrong" data-success="right">Email</label>
               </div>
             </div>
             <div class="row">
               <div class="input-field col s12">
-                <i class="material-icons prefix">lock_outline</i>
+                <i class="material-icons prefix indigo-text text-darken-3">lock_outline</i>
                 <input id="password" type="password">
                 <label for="password">Password</label>
               </div>
             </div>
             <div class="row">
               <div class="input-field col s12">
-                <a id="login-lnk" href="#" class="btn waves-effect waves-light col s12">Login</a>
+                <a id="login-lnk" href="#" class="btn waves-effect waves-light col s12 indigo darken-3">Login</a>
               </div>
             </div>
             <div class="row">
@@ -229,21 +232,62 @@ export class MainPage {
 
   showGeneralInfo() {
     this.container.removeAllChilds()
+
+    // Show the tabs...
+    this.container.appendElement({ "tag": "div", "class": "row", "style": "margin-bottom: 0px; margin-top:10px;" }).down()
+      .appendElement({ "tag": "div", "class": "col s12 m8 offset-m2" }).down()
+      .appendElement({ "tag": "ul", "id": "main_tabs", "class": "tabs" }).down()
+      .appendElement({ "tag": "li", "class": "tab col s3" }).down()
+      .appendElement({ "tag": "a", "id": "main_tabs_tab_0", "class": "grey-text text-darken-3", "href": "#", "innerHtml": "Services" }).up()
+      .appendElement({ "tag": "li", "class": "tab col s3" }).down()
+      .appendElement({ "tag": "a", "id": "main_tabs_tab_1", "class": "grey-text text-darken-3", "href": "#", "innerHtml": "Roles" }).up()
+
     // set the general info panel if it not exist.
     if (this.generalInfoPanel == null) {
       this.generalInfoPanel = new GeneralInfoPanel(globular.config)
     }
-    this.generalInfoPanel.setParent(this.container)
 
-    // also show the list of services.
-    this.showServicesPanel()
+    let tab_0_content = this.container.appendElement({ "tag": "div" }).down()
+    this.generalInfoPanel.setParent(tab_0_content)
+    this.showServicesPanel(tab_0_content)
+
+    if (this.rolePanel == null) {
+      this.rolePanel = new RolePanel(randomUUID())
+    }
+
+    // The tab content.
+    let tab_1_content = this.container.appendElement({ "tag": "div", "style": "display: none" }).down()
+    this.rolePanel.setParent(tab_1_content)
+    this.showRolesPanel(tab_1_content)
+
+    // Init the materialyse tabs.
+    M.Tabs.init(document.getElementById("main_tabs"))
+
+    // hide and show tab content.
+    this.container.getChildById("main_tabs_tab_0").element.onclick = () => {
+      tab_0_content.element.style.display = ""
+      tab_1_content.element.style.display = "none"
+    }
+
+    this.container.getChildById("main_tabs_tab_1").element.onclick = () => {
+      tab_0_content.element.style.display = "none"
+      tab_1_content.element.style.display = ""
+      M.Collapsible.init(document.getElementById("roles_list"));
+    }
+
+
+
   }
 
-  showServicesPanel() {
+  showRolesPanel(container: any) {
+    M.Collapsible.init(document.getElementById("roles_list"));
+  }
+
+  showServicesPanel(container: any) {
     // The tab div...
-    let div = this.container.appendElement({ "tag": "div", "class": "row" }).down()
+    let div = container.appendElement({ "tag": "div", "class": "row" }).down()
       .appendElement({ "tag": "div", "id": "service_tabs", "class": "col s8 offset-s2 " }).down()
-      .appendElement({ "tag": "ul", "class": "collapsible" }).down()
+      .appendElement({ "tag": "ul", "id": "services_list", "class": "collapsible" }).down()
 
     for (var key in globular.config.Services) {
       if (globular.config.Services[key].PublisherId != null) {
@@ -251,7 +295,7 @@ export class MainPage {
         let servicePanel = new ServicePanel(globular.config.Services[key], title, key)
         // Here I will create the tab...
         let panel = div.appendElement({ "tag": "li" }).down()
-        .appendElement({ "tag": "div", "class": "collapsible-header", "style": "display: flex; align-items: center;" }).down()
+          .appendElement({ "tag": "div", "class": "collapsible-header", "style": "display: flex; align-items: center;" }).down()
           .appendElement({ "tag": "span", "class": "col s6", "innerHtml": title })
           .appendElement({ "tag": "span", "id": key + "_state", "class": "col s6 right-align", "innerHtml": globular.config.Services[key].State })
           .appendElement(servicePanel.actionBtnGroup).up()
@@ -260,13 +304,11 @@ export class MainPage {
         panel.appendElement(servicePanel.content)
         panel.appendElement(servicePanel.btnGroup)
         servicePanel.btnGroup.element.style.display = "none"
-        servicePanel.stateDiv = div.getChildById( key + "_state")
+        servicePanel.stateDiv = div.getChildById(key + "_state")
       }
     }
-
     // initialyse the tab component.
-    var elem = document.querySelector('.collapsible');
-    M.Collapsible.init(elem);
+    M.Collapsible.init(document.getElementById("services_list"));
   }
 
   showSearchServicePanel() {

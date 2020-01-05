@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "webpack --mode production && cp index.html dist  && cp style.css dist && /media/dave/ssd/Project/src/github.com/davecourtois/Globular/Globular deploy -u=sa -p=adminadmin -name=admin -path=/media/dave/ssd/globular_admin/dist -a=globular3.omniscient.app"
+    "build": "webpack --mode production && cp index.html dist  && cp style.css dist && /media/dave/ssd/Project/src/github.com/davecourtois/Globular/Globular deploy -u=sa -p=adminadmin -name=admin -path=/media/dave/ssd/globular_admin/dist -a=globular4.omniscient.app"
   },
   "repository": {
     "type": "git",
@@ -37,7 +37,7 @@
   "dependencies": {
     "@davecourtois/elementui": "^1.0.18",
     "@types/materialize-css": "^1.0.6",
-    "globular-web-client": "^1.0.48",
+    "globular-web-client": "^1.0.49",
     "materialize-css": "^1.0.0",
     "@types/jwt-decode": "^2.2.1",
     "jwt-decode": "^2.2.0"

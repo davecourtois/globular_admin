@@ -34,3 +34,25 @@
     background: lightgrey;
     border-radius: 10px;
 }
+
+.tabs .tab a {
+    color: #e8eaf6;
+    /*Custom Text Color*/
+  }
+  
+  .tabs .tab a:hover {
+    color:#e8eaf6;
+    /*Custom Color On Hover*/
+  }
+  
+  .tabs .tab a:focus.active {
+    color:#e8eaf6;
+    /*Custom Text Color While Active*/
+    background-color: #e8eaf6;
+    /*Custom Background Color While Active*/
+  }
+  
+  .tabs .indicator {
+    background-color:#1a237e;
+    /*Custom Color Of Indicator*/
+  }

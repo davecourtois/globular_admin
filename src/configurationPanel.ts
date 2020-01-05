@@ -1,5 +1,4 @@
 import { Panel } from './panel';
-import { saveConfig, readFullConfig, appendUserData } from './backend';
 
 /**
  * That represent a single configuration information ex.

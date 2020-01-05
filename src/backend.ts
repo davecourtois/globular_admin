@@ -2,9 +2,9 @@ import * as GlobularWebClient from "globular-web-client";
 import { GetConfigRequest, SaveConfigRequest, InstallServiceRequest, InstallServiceResponse, StopServiceRequest, StartServiceRequest, SaveConfigResponse } from "globular-web-client/lib/admin/admin_pb";
 import { QueryRangeRequest, QueryRequest } from 'globular-web-client/lib/monitoring/monitoringpb/monitoring_pb';
 import { randomUUID } from './utility'
-import { RegisterAccountRqst, AuthenticateRqst, Account } from 'globular-web-client/lib/ressource/ressource_pb';
+import { RegisterAccountRqst, AuthenticateRqst, Account, GetAllActionsRqst, GetAllActionsRsp } from 'globular-web-client/lib/ressource/ressource_pb';
 import * as jwt from 'jwt-decode'
-import { InsertOneRqst, FindOneRqst } from "globular-web-client/lib/persistence/persistencepb/persistence_pb";
+import { InsertOneRqst, FindOneRqst, FindRqst, FindResp } from "globular-web-client/lib/persistence/persistencepb/persistence_pb";
 import { FindServicesDescriptorRequest, FindServicesDescriptorResponse, ServiceDescriptor } from "globular-web-client/lib/services/services_pb";
 
 // Create a new connection with the backend.
@@ -102,7 +102,6 @@ export function queryRange(connectionId: string, query: string, startTime: numbe
     request.setStarttime(startTime);
     request.setEndtime(endTime);
     request.setStep(step);
-    var uuid = randomUUID()
 
     let buffer = { "value": "", "warning": "" }
 
@@ -125,6 +124,7 @@ export function queryRange(connectionId: string, query: string, startTime: numbe
 }
 
 ///////////////////////////////////// Account //////////////////////////////////////
+
 /**
  * Register a new user.
  * @param userName The name of the account
@@ -230,6 +230,58 @@ export function readOneUserData(query: string, callback: (results: any) => void)
             console.log(err)
         })
 }
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+// Roles
+///////////////////////////////////////////////////////////////////////////////////////////////
+/**
+ * Retreive all available actions on the server.
+ * @param callback That function is call in case of success.
+ * @param errorCallback That function is call in case error.
+ */
+export function getAllActions(callback:(ations:Array<string>)=>void, errorCallback:(err:any)=>void){
+    let rqst = new GetAllActionsRqst
+    globular.ressourceService.getAllActions(rqst)
+        .then((rsp:GetAllActionsRsp)=>{
+            callback(rsp.getActionsList())
+        })
+        .catch((err:any)=>{
+            errorCallback(err)
+        })
+}
+
+/**
+ * Retreive the list of all available roles on the server.
+ * @param callback That function is call in case of success.
+ * @param errorCallback That function is call in case error.
+ */
+export function getAllRoles(callback:(roles: Array<any>)=>void, errorCallback:(err:any)=>void){
+    let rqst = new FindRqst
+    rqst.setCollection("Roles")
+    rqst.setDatabase("local_ressource")
+    rqst.setId("local_ressource")
+    rqst.setQuery("{}") // means all values.
+
+    var stream = globular.persistenceService.find(rqst)
+    var jsonStr = ""
+
+    stream.on('data', (rsp:FindResp) => {
+        jsonStr += rsp.getJsonstr()
+    });
+
+    stream.on('status',
+        function (status) {
+            if (status.code == 0) {
+                callback(JSON.parse(jsonStr))
+            }else{
+                errorCallback({})
+            }
+        })
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////
+// Services
+///////////////////////////////////////////////////////////////////////////////////////////////
 
 /**
  * Find services by keywords.
