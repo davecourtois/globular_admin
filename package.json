@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "webpack --mode production && cp index.html dist  && cp style.css dist && /media/dave/ssd/Project/src/github.com/davecourtois/Globular/Globular deploy -u=sa -p=adminadmin -name=admin -path=/media/dave/ssd/globular_admin/dist -a=globular4.omniscient.app"
+    "build": "webpack --mode production && cp index.html dist  && cp style.css dist && Globular deploy -u=sa -p=adminadmin -name=admin -path=dist -a=globular4.omniscient.app"
   },
   "repository": {
     "type": "git",

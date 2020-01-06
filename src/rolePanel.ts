@@ -63,7 +63,6 @@ export class RolePanel extends Panel {
             for(var j=0; j < this.roles[i].actions.length; j++){
                 actionsList.appendElement({"tag":"li", "class":"collection-item", "innerHtml": this.roles[i].actions[j]})
             }
-
         }
     }
 }
