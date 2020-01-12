@@ -43,7 +43,12 @@ import {
   FindServicesDescriptorResponse,
   ServiceDescriptor
 } from "globular-web-client/lib/services/services_pb";
-import { RenameRequest, RenameResponse } from "globular-web-client/lib/file/filepb/file_pb";
+import {
+  RenameRequest,
+  RenameResponse,
+  DeleteFileRequest,
+  DeleteDirRequest
+} from "globular-web-client/lib/file/filepb/file_pb";
 
 // Create a new connection with the backend.
 export let globular: GlobularWebClient.Globular;
@@ -130,28 +135,109 @@ export function saveConfig(
 }
 
 ///////////////////////////////////// File operations /////////////////////////////////
-export function renameFile(path: string, newName: string, oldName: string, callback:()=>void, errorCallback:(err:any)=>void){
-  let rqst = new RenameRequest
-  path = path.replace("/webroot", "") // remove the /webroot part.
-  if(path.length == 0){
-    path = "/"
+/**
+ * Rename a file or a directorie with given name.
+ * @param path The path inside webroot
+ * @param newName The new file name
+ * @param oldName  The old file name
+ * @param callback  The success callback.
+ * @param errorCallback The error callback.
+ */
+export function renameFile(
+  path: string,
+  newName: string,
+  oldName: string,
+  callback: () => void,
+  errorCallback: (err: any) => void
+) {
+  let rqst = new RenameRequest();
+  path = path.replace("/webroot", ""); // remove the /webroot part.
+  if (path.length == 0) {
+    path = "/";
   }
-  rqst.setPath(path)
-  rqst.setOldName(oldName)
-  rqst.setNewName(newName)
+  rqst.setPath(path);
+  rqst.setOldName(oldName);
+  rqst.setNewName(newName);
 
-  globular.fileService.rename(rqst, {
-    token: localStorage.getItem("user_token"),
-    application: application
-  }).then((rsp: RenameResponse)=>{
-    callback();
-  }).catch(error => {
-    if (errorCallback != undefined) {
-      errorCallback(error);
-    }
-  });
+  globular.fileService
+    .rename(rqst, {
+      token: localStorage.getItem("user_token"),
+      application: application
+    })
+    .then((rsp: RenameResponse) => {
+      callback();
+    })
+    .catch(error => {
+      if (errorCallback != undefined) {
+        errorCallback(error);
+      }
+    });
 }
 
+/**
+ * Delete a file with a given path.
+ * @param path The path of the file to be deleted.
+ * @param callback The success callback.
+ * @param errorCallback The error callback.
+ */
+export function deleteFile(
+  path: string,
+  callback: () => void,
+  errorCallback: (err: any) => void
+) {
+  let rqst = new DeleteFileRequest();
+  path = path.replace("/webroot", ""); // remove the /webroot part.
+  if (path.length == 0) {
+    path = "/";
+  }
+  rqst.setPath(path);
+
+  globular.fileService
+    .deleteFile(rqst, {
+      token: localStorage.getItem("user_token"),
+      application: application
+    })
+    .then((rsp: RenameResponse) => {
+      callback();
+    })
+    .catch(error => {
+      if (errorCallback != undefined) {
+        errorCallback(error);
+      }
+    });
+}
+
+/**
+ * 
+ * @param path The path of the directory to be deleted.
+ * @param callback The success callback
+ * @param errorCallback The error callback.
+ */
+export function deleteDir(
+  path: string,
+  callback: () => void,
+  errorCallback: (err: any) => void
+) {
+  let rqst = new DeleteDirRequest();
+  path = path.replace("/webroot", ""); // remove the /webroot part.
+  if (path.length == 0) {
+    path = "/";
+  }
+  rqst.setPath(path);
+  globular.fileService
+    .deleteDir(rqst, {
+      token: localStorage.getItem("user_token"),
+      application: application
+    })
+    .then((rsp: RenameResponse) => {
+      callback();
+    })
+    .catch(error => {
+      if (errorCallback != undefined) {
+        errorCallback(error);
+      }
+    });
+}
 ///////////////////////////////////// Monitoring //////////////////////////////////////
 // Run a query.
 export function query(

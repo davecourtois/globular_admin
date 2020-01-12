@@ -1,8 +1,6 @@
 import { Panel } from "./panel";
-import { GetAllFilesInfo, eventHub, renameFile } from "./backend";
-import { randomUUID, rgbToHsl } from "./utility";
-import { LabelNamesRequest } from "globular-web-client/lib/monitoring/monitoringpb/monitoring_pb";
-import { createElement } from "./element";
+import { GetAllFilesInfo, eventHub, renameFile, deleteDir, deleteFile } from "./backend";
+import { randomUUID } from "./utility";
 
 export class FileManager extends Panel {
   private pathNavigator: PathNavigator;
@@ -62,6 +60,30 @@ export class FileManager extends Panel {
             // Set the dir to display.
             // Here I must retreive the directory from the given path.
             this.setDirectory(this.directories.get(evt.path));
+          },
+          true
+        );
+        
+        // emit delete dire event.
+        eventHub.subscribe(
+          "delete_file_event",
+          (uuid: string) => {},
+          (evt: any) => {
+            GetAllFilesInfo(
+              (filesInfo: any) => {
+                this.directories = new Map<string, any>();
+                this.webRoot = filesInfo;
+                // put all directories in the directories map.
+                this.directories.set(this.webRoot.path, this.webRoot);
+                setDirectories(this.webRoot);
+
+                this.setDirectory(this.directories.get(evt.path));
+              },
+              (err: any) => {
+                let msg = JSON.parse(err.message);
+                M.toast({ html: msg.ErrorMsg, displayLength: 2000 });
+              }
+            );
           },
           true
         );
@@ -274,7 +296,7 @@ class FilePanel {
         edit_lnk.element.style.display = "";
         edit_input.element.style.display = "none";
         save_lnk.element.style.display = "none";
-        lnk.element.innerHTML = edit_input.element.value;
+
         // Save the file...
         let path = file.path.substring(0, file.path.lastIndexOf("/"));
         renameFile(
@@ -282,10 +304,19 @@ class FilePanel {
           edit_input.element.value,
           file.name,
           () => {
+            M.toast({
+              html:
+                "file " +
+                lnk.element.innerHTML +
+                " was rename to " +
+                edit_input.element.value,
+              displayLength: 2000
+            });
+            lnk.element.innerHTML = edit_input.element.value;
             // emit event.
             eventHub.publish(
               "rename_file_event",
-              { file: file, path: path},
+              { file: file, path: path },
               true
             );
           },
@@ -338,7 +369,7 @@ class FilePanel {
       }
 
       // I will append a delete button in that particular case.
-      let deleteFile = this.div
+      let deleteFileBtn = this.div
         .appendElement({
           tag: "i",
           class: "Small material-icons col s1",
@@ -346,16 +377,61 @@ class FilePanel {
         })
         .down();
 
-      save_lnk.element.onmouseenter = deleteFile.element.onmouseenter = edit_lnk.element.onmouseenter = ico.element.onmouseenter = lnk.element.onmouseenter = function() {
+      save_lnk.element.onmouseenter = deleteFileBtn.element.onmouseenter = edit_lnk.element.onmouseenter = ico.element.onmouseenter = lnk.element.onmouseenter = function() {
         this.style.cursor = "pointer";
       };
 
-      save_lnk.element.onmouseleave = deleteFile.element.onmouseleave = edit_lnk.element.onmouseleave = ico.element.onmouseleave = lnk.element.onmouseleave = function() {
+      save_lnk.element.onmouseleave = deleteFileBtn.element.onmouseleave = edit_lnk.element.onmouseleave = ico.element.onmouseleave = lnk.element.onmouseleave = function() {
         this.style.cursor = "default";
       };
 
-      deleteFile.element.onclick = () => {
-        alert("delete " + file.path!);
+      deleteFileBtn.element.onclick = () => {
+        let path = file.path.substring(0, file.path.lastIndexOf("/"));
+        if (file.files != undefined) {
+          // here I will delete a directory
+          deleteDir(
+            file.path,
+            () => {
+              M.toast({
+                html: "Dir " + file.name + " was deleted!",
+                displayLength: 2000
+              });
+              lnk.element.innerHTML = edit_input.element.value;
+              // emit event.
+              eventHub.publish(
+                "delete_file_event",
+                { file: file, path: path },
+                true
+              );
+            },
+            (err: any) => {
+              let msg = JSON.parse(err.message);
+              M.toast({ html: msg.ErrorMsg, displayLength: 2000 });
+            }
+          );
+        } else {
+          // here I will delete a file.
+          deleteFile(
+            file.path,
+            () => {
+              M.toast({
+                html: "file " + file.name + " was deleted!",
+                displayLength: 2000
+              });
+              lnk.element.innerHTML = edit_input.element.value;
+              // emit event.
+              eventHub.publish(
+                "delete_file_event",
+                { file: file, path: path },
+                true
+              );
+            },
+            (err: any) => {
+              let msg = JSON.parse(err.message);
+              M.toast({ html: msg.ErrorMsg, displayLength: 2000 });
+            }
+          );
+        }
       };
     } else {
       // Not editable.
