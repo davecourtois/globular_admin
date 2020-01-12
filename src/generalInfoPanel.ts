@@ -26,31 +26,30 @@ export class GeneralInfoPanel extends ConfigurationPanel {
     this.appendTextualConfig("PortHttps", "Https port", "number", 1, 0, 65535);
 
     // Display list of domains
-    this.appendStringListConfig("Discoveries", "Services Discorvery")
+    this.appendStringListConfig("Discoveries", "Services Discorvery");
 
     // Display the list nameserver.
-    this.appendStringListConfig("DNS", "Domain Name Servers")
+    this.appendStringListConfig("DNS", "Domain Name Servers");
   }
 
   // create control...
   onlogin(data: any) {
     // Display textual input
-    super.onlogin(data)
+    super.onlogin(data);
     readFullConfig((config: IConfig) => {
       // read the full configuration...
-      this.config = config
-    })
+      this.config = config;
+    });
   }
 
   // That function is the same for all configuration panels.
   save() {
-    super.save()
+    super.save();
 
     // Now I will save the configuration.
     saveConfig(this.config, (config: IConfig) => {
-      M.toast({ html: 'The configuration was saved!' })
-      this.config = config // set back the config...
-    })
-
+      M.toast({ html: "The configuration was saved!" });
+      this.config = config; // set back the config...
+    });
   }
 }
