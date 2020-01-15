@@ -1,6 +1,7 @@
 import { Panel } from "./panel";
-import { GetAllFilesInfo, eventHub, renameFile, deleteDir, deleteFile } from "./backend";
-import { randomUUID } from "./utility";
+import { GetAllFilesInfo, eventHub, renameFile, deleteDir, deleteFile, downloadDir, createDir } from "./backend";
+import { randomUUID, generateUUID } from "./utility";
+import { DisconnectRqst } from "globular-web-client/lib/persistence/persistencepb/persistence_pb";
 
 export class FileManager extends Panel {
   private pathNavigator: PathNavigator;
@@ -44,7 +45,7 @@ export class FileManager extends Panel {
         // Emit when the user click on file icon.
         eventHub.subscribe(
           "set_dir_event",
-          (uuid: string) => {},
+          (uuid: string) => { },
           (evt: any) => {
             // Set the dir to display.
             this.setDirectory(evt.dir);
@@ -55,7 +56,7 @@ export class FileManager extends Panel {
         // Emit when user click on the path
         eventHub.subscribe(
           "set_path_event",
-          (uuid: string) => {},
+          (uuid: string) => { },
           (evt: any) => {
             // Set the dir to display.
             // Here I must retreive the directory from the given path.
@@ -63,11 +64,37 @@ export class FileManager extends Panel {
           },
           true
         );
-        
+
+        // When new file is created.
+        eventHub.subscribe(
+          "new_dir_event",
+          (uuid: string) => { },
+          (evt: any) => {
+            GetAllFilesInfo(
+              (filesInfo: any) => {
+                this.directories = new Map<string, any>();
+                this.webRoot = filesInfo;
+                // put all directories in the directories map.
+                this.directories.set(this.webRoot.path, this.webRoot);
+                setDirectories(this.webRoot);
+                this.setDirectory(this.directories.get(evt.path));
+
+                // Now I will select the new dir to set it name in edit mode.
+                
+              },
+              (err: any) => {
+                let msg = JSON.parse(err.message);
+                M.toast({ html: msg.ErrorMsg, displayLength: 2000 });
+              }
+            );
+          },
+          true
+        );
+
         // emit delete dire event.
         eventHub.subscribe(
           "delete_file_event",
-          (uuid: string) => {},
+          (uuid: string) => { },
           (evt: any) => {
             GetAllFilesInfo(
               (filesInfo: any) => {
@@ -91,7 +118,7 @@ export class FileManager extends Panel {
         // emit when a user change a file name.
         eventHub.subscribe(
           "rename_file_event",
-          (uuid: string) => {},
+          (uuid: string) => { },
           (evt: any) => {
             GetAllFilesInfo(
               (filesInfo: any) => {
@@ -138,10 +165,13 @@ export class FileManager extends Panel {
 /**
  * Navigator from the path.
  */
-class PathNavigator {
-  private div: any;
+class PathNavigator extends Panel {
+  private editable: boolean;
+  private path: string;
 
   constructor(parent: any) {
+    super(randomUUID())
+
     this.div = parent
       .appendElement({
         tag: "nav",
@@ -157,11 +187,14 @@ class PathNavigator {
   // Set the active path.
   setPath(path: string) {
     this.div.removeAllChilds();
+    this.path = path;
 
     let values = path.split("/");
+    let div = this.div.appendElement({tag: "div", class:"col s12"}).down()
+
     for (var i = 0; i < values.length; i++) {
       if (values[i].length > 0) {
-        let lnk = this.div
+        let lnk = div
           .appendElement({
             tag: "a",
             innerHtml: values[i],
@@ -169,10 +202,10 @@ class PathNavigator {
           })
           .down();
 
-        lnk.element.onmouseenter = function() {
+        lnk.element.onmouseenter = function () {
           this.style.cursor = "pointer";
         };
-        lnk.element.onmouseleave = function() {
+        lnk.element.onmouseleave = function () {
           this.style.cursor = "default";
         };
         let index = i + 1;
@@ -189,6 +222,135 @@ class PathNavigator {
         };
       }
     }
+
+    if (this.editable) {
+      // Set the col value.
+      div.element.className = "col s9"
+
+      let downloadDirBtn = this.div
+        .appendElement({
+          tag: "i",
+          class: "Small material-icons col s1",
+          innerHtml: "file_download",
+          title: "download " + path  + " as .tgz archive file"
+        })
+        .down();
+
+      let uploadFileBtn = this.div
+        .appendElement({
+          tag:"input",
+          type:"file",
+          id:"file_input",
+          style:"display: none;",
+          multiple:true
+        })
+        .appendElement({
+          tag: "i",
+          class: "Small material-icons col s1",
+          innerHtml: "file_upload",
+          title: "upload a file in " + path
+        })
+        .down();
+
+
+      let createDirBtn = this.div
+        .appendElement({
+          tag: "i",
+          class: "Small material-icons col s1",
+          innerHtml: "create_new_folder",
+          title: "create a subdirectory in " + path
+        })
+        .down();
+
+      // Now The actions.
+      downloadDirBtn.element.onmouseenter = uploadFileBtn.element.onmouseenter = createDirBtn.element.onmouseenter = function () {
+        this.style.cursor = "pointer"
+      }
+
+      downloadDirBtn.element.onmouseleave = uploadFileBtn.element.onmouseleave = createDirBtn.element.onmouseleave = function () {
+        this.style.cursor = "default"
+      }
+
+      // The dowload file action.
+      downloadDirBtn.element.onclick = () => {
+        // Download the folder as a tar.gz file.
+        console.log("download dir " + this.path)
+        downloadDir(this.path,
+          () => {
+            console.log("file was download successfully!")
+          },
+          (err: any) => {
+            let msg = JSON.parse(err.message);
+            M.toast({ html: msg.ErrorMsg, displayLength: 2000 });
+          })
+      }
+
+      // The create directory button.
+      createDirBtn.element.onclick = ()=>{
+        createDir(path, (dirName: string)=>{
+          // publish new dir event.
+          eventHub.publish(
+            "new_dir_event",
+            { path: path, name:dirName },
+            true
+          );
+        },
+        (err: any) => {
+          let msg = JSON.parse(err.message);
+          M.toast({ html: msg.ErrorMsg, displayLength: 2000 });
+        })
+      }
+
+      // T
+      this.div.getChildById("file_input").element.onchange = (e:any) => {
+
+        const fd = new FormData();
+        path = this.path.replace("/webroot", ""); // remove the /webroot part.
+        if (path.length == 0) {
+          path = "/";
+        }
+      
+        // add all selected files
+        for(var i=0; i < e.target.files.length; i++){
+          let file = e.target.files[i];
+          fd.append(e.target.name, file, file.name);  
+        }
+
+        // create the request
+        const xhr = new XMLHttpRequest();
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+              // we done!
+              console.log("---> file uploads!")
+
+          }
+        };
+      
+        // path to server would be where you'd normally post the form to
+        xhr.open('POST', /*path*/ "/uploads", true);
+        xhr.send(fd);
+      }
+
+      // The upload file btn.
+      uploadFileBtn.element.onclick = ()=>{
+        this.div.getChildById("file_input").element.click()
+
+      }
+    }
+  }
+
+  // Here I will react to login information...
+  onlogin(data: any) {
+    // overide...
+    this.editable = true;
+    this.setPath(this.path)
+
+  }
+  
+  onlogout() {
+    // overide...
+    this.editable = false;
+    this.setPath(this.path) // reset to actual path.
   }
 }
 
@@ -211,7 +373,6 @@ class FilePanel {
    */
   setFile(file: any, editable: boolean) {
     this.div.removeAllChilds();
-
     // In that case I will set the
     if (editable) {
       let ico: any;
@@ -377,11 +538,11 @@ class FilePanel {
         })
         .down();
 
-      save_lnk.element.onmouseenter = deleteFileBtn.element.onmouseenter = edit_lnk.element.onmouseenter = ico.element.onmouseenter = lnk.element.onmouseenter = function() {
+      save_lnk.element.onmouseenter = deleteFileBtn.element.onmouseenter = edit_lnk.element.onmouseenter = ico.element.onmouseenter = lnk.element.onmouseenter = function () {
         this.style.cursor = "pointer";
       };
 
-      save_lnk.element.onmouseleave = deleteFileBtn.element.onmouseleave = edit_lnk.element.onmouseleave = ico.element.onmouseleave = lnk.element.onmouseleave = function() {
+      save_lnk.element.onmouseleave = deleteFileBtn.element.onmouseleave = edit_lnk.element.onmouseleave = ico.element.onmouseleave = lnk.element.onmouseleave = function () {
         this.style.cursor = "default";
       };
 
@@ -505,11 +666,11 @@ class FilePanel {
         };
       }
 
-      ico.element.onmouseenter = lnk.element.onmouseenter = function() {
+      ico.element.onmouseenter = lnk.element.onmouseenter = function () {
         this.style.cursor = "pointer";
       };
 
-      ico.element.onmouseleave = lnk.element.onmouseleave = function() {
+      ico.element.onmouseleave = lnk.element.onmouseleave = function () {
         this.style.cursor = "default";
       };
     }

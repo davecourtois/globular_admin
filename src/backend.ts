@@ -12,7 +12,7 @@ import {
   QueryRangeRequest,
   QueryRequest
 } from "globular-web-client/lib/monitoring/monitoringpb/monitoring_pb";
-import { randomUUID } from "./utility";
+import { randomUUID, includeJavascript } from "./utility";
 import {
   RegisterAccountRqst,
   AuthenticateRqst,
@@ -47,7 +47,12 @@ import {
   RenameRequest,
   RenameResponse,
   DeleteFileRequest,
-  DeleteDirRequest
+  DeleteDirRequest,
+  CreateArchiveRequest,
+  CreateArchiveResponse,
+  CreateDirRequest,
+  ReadDirRequest,
+
 } from "globular-web-client/lib/file/filepb/file_pb";
 
 // Create a new connection with the backend.
@@ -238,6 +243,201 @@ export function deleteDir(
       }
     });
 }
+
+/**
+ * Create a dir archive.
+ * @param path 
+ * @param name 
+ * @param callback 
+ * @param errorCallback 
+ */
+export function createArchive(path: string, name: string, callback: (path: string) => void, errorCallback: (err: any) => void) {
+  let rqst = new CreateArchiveRequest;
+  path = path.replace("/webroot", ""); // remove the /webroot part.
+  if (path.length == 0) {
+    path = "/";
+  }
+  rqst.setPath(path)
+  rqst.setName(name)
+
+  globular.fileService.createAchive(rqst, {
+    token: localStorage.getItem("user_token"),
+    application: application
+  }).then(
+    (rsp: CreateArchiveResponse) => {
+      callback(rsp.getResult())
+    }
+  ).catch(error => {
+    if (errorCallback != undefined) {
+      errorCallback(error);
+    }
+  });
+}
+
+/**
+ * 
+ * @param urlToSend 
+ */
+function downloadFileHttp(urlToSend: string, fileName: string, callback: () => void) {
+  var req = new XMLHttpRequest();
+  req.open("GET", urlToSend, true);
+  req.responseType = "blob";
+  req.onload = function (event) {
+    var blob = req.response;
+    var link = document.createElement('a');
+    link.href = window.URL.createObjectURL(blob);
+    link.download = fileName;
+    link.click();
+    callback();
+  };
+
+  req.send();
+}
+
+/**
+ * Download a directory as archive file. (.tar.gz)
+ * @param path The path of the directory to dowload.
+ * @param callback The success callback.
+ * @param errorCallback The error callback.
+ */
+export function downloadDir(path: string, callback: () => void, errorCallback: (err: any) => void) {
+  let name = path.split("/")[path.split("/").length - 1]
+  path = path.replace("/webroot", ""); // remove the /webroot part.
+  if (path.length == 0) {
+    path = "/";
+  }
+
+  // Create an archive-> download it-> delete it...
+  createArchive(path, name, (path: string) => {
+    let name = path.split("/")[path.split("/").length - 1]
+    // display the archive path...
+    downloadFileHttp(window.location.origin + path, name, () => {
+      // Here the file was downloaded I will now delete it.
+      setTimeout(() => {
+        // wait a little and remove the archive from the server.
+        let rqst = new DeleteFileRequest
+        rqst.setPath(path)
+        globular.fileService.deleteFile(rqst, {
+          token: localStorage.getItem("user_token"),
+          application: application
+        }).then(callback)
+          .catch(errorCallback)
+      }, 5000); // wait 5 second, arbritary...
+    });
+
+  }, errorCallback)
+}
+
+// Merge tow array together.
+function mergeTypedArraysUnsafe(a: any, b: any) {
+  var c = new a.constructor(a.length + b.length);
+  c.set(a);
+  c.set(b, a.length);
+  return c;
+}
+
+/**
+ * Read the content of a dir from a given path.
+ * @param path The parent path of the dir to be read.
+ * @param callback  Return the path of the dir with more information.
+ * @param errorCallback Return a error if the file those not contain the value.
+ */
+export function readDir(path: string, callback: (dir: any) => void, errorCallback: (err: any) => void) {
+  path = path.replace("/webroot", ""); // remove the /webroot part.
+  if (path.length == 0) {
+    path = "/";
+  }
+
+  let rqst = new ReadDirRequest
+  rqst.setPath(path)
+  rqst.setRecursive(true)
+  rqst.setThumnailheight(256)
+  rqst.setThumnailwidth(256)
+
+  var uint8array = new Uint8Array();
+
+  var stream = globular.fileService.readDir(rqst, {
+    token: localStorage.getItem("user_token"),
+    application: application
+  });
+
+  stream.on("data", rsp => {
+    uint8array = mergeTypedArraysUnsafe(uint8array, rsp.getData())
+  });
+
+  stream.on("status", function (status) {
+    if (status.code == 0) {
+      var jsonStr = new TextDecoder("utf-8").decode(uint8array);
+      var content = JSON.parse(jsonStr)
+      callback(content)
+    } else {
+      // error here...
+    }
+  });
+
+  stream.on("end", () => {
+    // stream end signal
+  });
+}
+
+/**
+ * 
+ * @param files 
+ */
+function fileExist(fileName: string, files: Array<any>): boolean {
+  if (files != null) {
+    for (var i = 0; i < files.length; i++) {
+      if (files[i].Name == fileName) {
+        return true;
+      }
+    }
+  }
+  return false
+}
+
+/**
+ * Create a new directory inside existing one.
+ * @param path The path of the directory
+ * @param callback The callback
+ * @param errorCallback The error callback
+ */
+export function createDir(path: string, callback: (dirName: string) => void, errorCallback: (err: any) => void) {
+  path = path.replace("/webroot", ""); // remove the /webroot part.
+  if (path.length == 0) {
+    path = "/";
+  }
+  // first of all I will read the directory content...
+  readDir(path, (dir: any) => {
+    let newDirName = "New Folder"
+    for (var i = 0; i < 1024; i++) {
+      if (!fileExist(newDirName, dir.Files)) {
+        break
+      }
+      newDirName = "New Folder (" + i + ")"
+    }
+
+    // Set the request.
+    let rqst = new CreateDirRequest
+    rqst.setPath(path)
+    rqst.setName(newDirName)
+
+    // Create a directory at the given path.
+    globular.fileService.createDir(rqst, {
+      token: localStorage.getItem("user_token"),
+      application: application
+    }).then(() => {
+      // The new directory was created.
+      callback(newDirName)
+    })
+      .catch(
+        (err: any) => {
+          errorCallback(err)
+        }
+      )
+
+  }, errorCallback)
+}
+
 ///////////////////////////////////// Monitoring //////////////////////////////////////
 // Run a query.
 export function query(
@@ -300,7 +500,7 @@ export function queryRange(
     buffer.warning = rsp.getWarnings();
   });
 
-  stream.on("status", function(status) {
+  stream.on("status", function (status) {
     if (status.code == 0) {
       callback(JSON.parse(buffer.value));
     }
@@ -531,7 +731,7 @@ export function getAllRoles(
     jsonStr += rsp.getJsonstr();
   });
 
-  stream.on("status", function(status) {
+  stream.on("status", function (status) {
     if (status.code == 0) {
       callback(JSON.parse(jsonStr));
     } else {
