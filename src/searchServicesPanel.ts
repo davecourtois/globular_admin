@@ -76,7 +76,7 @@ class ServiceDescriptorPanel extends Panel {
     this.installBtn = this.div
       .appendElement({ tag: "div", class: "row service_descriptor_panel" })
       .down()
-      .appendElement({ tag: "div", class: "col s12 m8 offset-m2" })
+      .appendElement({ tag: "div", class: "col s12 m10 offset-m1" })
       .down()
       .appendElement({ tag: "div", class: "card" })
       .down()

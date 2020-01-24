@@ -1,7 +1,6 @@
 import { Panel } from "./panel";
-import { GetAllFilesInfo, eventHub, renameFile, deleteDir, deleteFile, downloadDir, createDir } from "./backend";
-import { randomUUID, generateUUID } from "./utility";
-import { DisconnectRqst } from "globular-web-client/lib/persistence/persistencepb/persistence_pb";
+import { GetAllFilesInfo, eventHub, renameFile, deleteDir, deleteFile, downloadDir, createDir, downloadFileHttp } from "./backend";
+import { randomUUID } from "./utility";
 
 export class FileManager extends Panel {
   private pathNavigator: PathNavigator;
@@ -10,8 +9,8 @@ export class FileManager extends Panel {
   private webRoot: any; // contain all file information.
   private directories: Map<string, any>;
 
-  constructor() {
-    super(randomUUID());
+  constructor(id:string) {
+    super(id);
     this.div.element.className = "row";
     this.directories = new Map<string, any>();
 
@@ -20,6 +19,9 @@ export class FileManager extends Panel {
 
     // Create the file navigator.
     this.fileNavigator = new FileNavigator(this.div);
+
+    // Create the permission explorer.
+    this.permissionExplorer = new PermissionExplorer(this.div);
 
     // first off all will get the file info that contain all directory and file information.
     GetAllFilesInfo(
@@ -80,7 +82,7 @@ export class FileManager extends Panel {
                 this.setDirectory(this.directories.get(evt.path));
 
                 // Now I will select the new dir to set it name in edit mode.
-                
+
               },
               (err: any) => {
                 let msg = JSON.parse(err.message);
@@ -127,7 +129,6 @@ export class FileManager extends Panel {
                 // put all directories in the directories map.
                 this.directories.set(this.webRoot.path, this.webRoot);
                 setDirectories(this.webRoot);
-
                 this.setDirectory(this.directories.get(evt.path));
               },
               (err: any) => {
@@ -149,6 +150,7 @@ export class FileManager extends Panel {
   setDirectory(dir: any) {
     this.pathNavigator.setPath(dir.path);
     this.fileNavigator.setDir(dir);
+    this.permissionExplorer.setFile(dir)
   }
 
   // Here I will react to login information...
@@ -175,7 +177,7 @@ class PathNavigator extends Panel {
     this.div = parent
       .appendElement({
         tag: "nav",
-        class: "card col s12 m8 offset-m2 indigo darken-4"
+        class: "card col s12 m10 offset-m1 indigo darken-4"
       })
       .down()
       .appendElement({ tag: "div", class: "nav-wrapper" })
@@ -190,7 +192,7 @@ class PathNavigator extends Panel {
     this.path = path;
 
     let values = path.split("/");
-    let div = this.div.appendElement({tag: "div", class:"col s12"}).down()
+    let div = this.div.appendElement({ tag: "div", class: "col s12" }).down()
 
     for (var i = 0; i < values.length; i++) {
       if (values[i].length > 0) {
@@ -232,17 +234,17 @@ class PathNavigator extends Panel {
           tag: "i",
           class: "Small material-icons col s1",
           innerHtml: "file_download",
-          title: "download " + path  + " as .tgz archive file"
+          title: "download " + path + " as .tgz archive file"
         })
         .down();
 
       let uploadFileBtn = this.div
         .appendElement({
-          tag:"input",
-          type:"file",
-          id:"file_input",
-          style:"display: none;",
-          multiple:true
+          tag: "input",
+          type: "file",
+          id: "file_input",
+          style: "display: none;",
+          multiple: true
         })
         .appendElement({
           tag: "i",
@@ -286,53 +288,57 @@ class PathNavigator extends Panel {
       }
 
       // The create directory button.
-      createDirBtn.element.onclick = ()=>{
-        createDir(path, (dirName: string)=>{
+      createDirBtn.element.onclick = () => {
+        createDir(path, (dirName: string) => {
           // publish new dir event.
           eventHub.publish(
             "new_dir_event",
-            { path: path, name:dirName },
+            { path: path, name: dirName },
             true
           );
         },
-        (err: any) => {
-          let msg = JSON.parse(err.message);
-          M.toast({ html: msg.ErrorMsg, displayLength: 2000 });
-        })
+          (err: any) => {
+            let msg = JSON.parse(err.message);
+            M.toast({ html: msg.ErrorMsg, displayLength: 2000 });
+          })
       }
 
       // T
-      this.div.getChildById("file_input").element.onchange = (e:any) => {
+      this.div.getChildById("file_input").element.onchange = (e: any) => {
 
-        const fd = new FormData();
-        path = this.path.replace("/webroot", ""); // remove the /webroot part.
+
+        let path = this.path.replace("/webroot", ""); // remove the /webroot part.
         if (path.length == 0) {
           path = "/";
         }
-      
+
+        const fd = new FormData();
+
         // add all selected files
-        for(var i=0; i < e.target.files.length; i++){
+        for (var i = 0; i < e.target.files.length; i++) {
           let file = e.target.files[i];
-          fd.append(e.target.name, file, file.name);  
+          fd.append("multiplefiles", file, file.name);
+          fd.append("path", path)
         }
 
         // create the request
         const xhr = new XMLHttpRequest();
+
         xhr.onload = () => {
           if (xhr.status >= 200 && xhr.status < 300) {
-              // we done!
-              console.log("---> file uploads!")
-
+            // we done! I will use the rename file event to refresh the directory...
+            eventHub.publish("rename_file_event", { path: this.path }, true);
           }
         };
-      
+
         // path to server would be where you'd normally post the form to
-        xhr.open('POST', /*path*/ "/uploads", true);
+        xhr.open('POST', "/uploads", true);
+        xhr.setRequestHeader("token", localStorage.getItem("user_token"))
         xhr.send(fd);
       }
 
       // The upload file btn.
-      uploadFileBtn.element.onclick = ()=>{
+      uploadFileBtn.element.onclick = () => {
         this.div.getChildById("file_input").element.click()
 
       }
@@ -346,7 +352,7 @@ class PathNavigator extends Panel {
     this.setPath(this.path)
 
   }
-  
+
   onlogout() {
     // overide...
     this.editable = false;
@@ -522,6 +528,9 @@ class FilePanel {
         } else {
           fileSizeDiv.element.innerHTML = file.size + " bytes";
         }
+        ico.element.onclick = () => {
+          eventHub.publish("set_file_event", { file: file }, true);
+        }
       } else {
         // publish local event.
         ico.element.onclick = () => {
@@ -621,7 +630,8 @@ class FilePanel {
           tag: "a",
           heref: "javascript:void(0)",
           innerHtml: file.name,
-          class: "col s6"
+          class: "col s6",
+          title: "Download file."
         })
         .down();
 
@@ -659,6 +669,31 @@ class FilePanel {
         } else {
           fileSizeDiv.element.innerHTML = file.size + " bytes";
         }
+
+        ico.element.onclick = () => {
+          eventHub.publish("set_file_event", { file: file }, true);
+        }
+
+        // On follow link
+        lnk.element.onclick = () => {
+          let path = file.path.replace("/webroot", ""); // remove the /webroot part.
+          if (path.length == 0) {
+            path = "/";
+          }
+          // Download the file in question.
+          downloadFileHttp(window.location.origin + path, file.name, () => {
+
+          })
+        }
+
+        lnk.element.onmouseenter = function () {
+          this.style.cursor = "pointer";
+        };
+  
+        lnk.element.onmouseleave = function () {
+          this.style.cursor = "default";
+        };
+
       } else {
         // publish local event.
         ico.element.onclick = () => {
@@ -666,13 +701,14 @@ class FilePanel {
         };
       }
 
-      ico.element.onmouseenter = lnk.element.onmouseenter = function () {
+      ico.element.onmouseenter =  function () {
         this.style.cursor = "pointer";
       };
 
-      ico.element.onmouseleave = lnk.element.onmouseleave = function () {
+      ico.element.onmouseleave = function () {
         this.style.cursor = "default";
       };
+
     }
   }
 }
@@ -686,7 +722,7 @@ class FileNavigator extends Panel {
 
   constructor(parent: any) {
     super(randomUUID());
-    this.div.element.className = "card col s12 m8 offset-m2";
+    this.div.element.className = "card col s12 m10 offset-m1";
     parent.appendElement(this.div);
   }
 
@@ -769,9 +805,68 @@ class FileNavigator extends Panel {
   }
 }
 
+/**
+ * Control permission.
+ */
 class PermissionExplorer extends Panel {
+  // The file information.
+  fileInfo: any;
+  editable: boolean;
+
   constructor(parent: any) {
     super(randomUUID());
+    //parent.appendElement(this.div);
+    super(randomUUID());
+    this.div.element.className = "card col s12 m10 offset-m1";
+    this.div.element.style.display = "none"
     parent.appendElement(this.div);
+
+    eventHub.subscribe(
+      "set_file_event",
+      (uuid: string) => { },
+      (evt: any) => {
+        // Set the dir to display.
+        // Here I must retreive the directory from the given path.
+        this.setFile(evt.file);
+      },
+      true
+    );
   }
+
+  setFile(fileInfo: any) {
+    if(fileInfo == undefined){
+      return
+    }
+    
+    if (fileInfo.name == "webroot") {
+      this.div.element.style.display = "none"
+      this.div.element.innerHTML = ""
+      return
+    }
+
+    this.fileInfo = fileInfo;
+    this.div.element.style.display = ""
+    this.div.element.innerHTML = ""
+
+    // The name of the file.
+    this.div.appendElement({ tag: "div", class: "row" }).down()
+      .appendElement({ tag: "span", innerHtml: fileInfo.name, class: "col s12" })
+
+    // Now I will get the permission for the file/folder... and diplay it.
+
+  }
+
+  // Here I will react to login information...
+  onlogin(data: any) {
+    // overide...
+    this.editable = true;
+    this.setFile(this.fileInfo)
+  }
+
+  onlogout() {
+    // overide...
+    this.editable = false;
+    this.setFile(this.fileInfo)
+  }
+
 }

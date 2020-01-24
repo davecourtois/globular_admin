@@ -29,7 +29,17 @@ import {
   RefreshTokenRqst,
   RefreshTokenRsp,
   GetAllFilesInfoRqst,
-  GetAllFilesInfoRsp
+  GetAllFilesInfoRsp,
+  GetAllApplicationsInfoRqst,
+  GetAllApplicationsInfoRsp,
+  AddApplicationActionRqst,
+  AddApplicationActionRsp,
+  RemoveApplicationActionRqst,
+  RemoveApplicationActionRsp,
+  RemoveApplicationRqst,
+  DeleteAccountRqst,
+  AddAccountRoleRqst,
+  RemoveAccountRoleRqst
 } from "globular-web-client/lib/ressource/ressource_pb";
 import * as jwt from "jwt-decode";
 import {
@@ -75,7 +85,6 @@ export async function initServices(callback: () => void) {
 
   // Create a new connection with the backend.
   globular = new GlobularWebClient.Globular(config);
-  console.log("init globular services.");
   let rqst = new GetConfigRequest();
   if (globular.adminService !== undefined) {
     globular.adminService
@@ -278,7 +287,7 @@ export function createArchive(path: string, name: string, callback: (path: strin
  * 
  * @param urlToSend 
  */
-function downloadFileHttp(urlToSend: string, fileName: string, callback: () => void) {
+export function downloadFileHttp(urlToSend: string, fileName: string, callback: () => void) {
   var req = new XMLHttpRequest();
   req.open("GET", urlToSend, true);
   req.responseType = "blob";
@@ -550,6 +559,88 @@ export function registerAccount(
 }
 
 /**
+ * Remove an account from the server.
+ * @param name  The _id of the account.
+ * @param callback The callback when the action succed
+ * @param errorCallback The error callback.
+ */
+export function DeleteAccount(
+  name: string,
+  callback: (value: any) => void,
+  errorCallback: (err: any) => void) {
+  let rqst = new DeleteAccountRqst
+  rqst.setName(name)
+
+  // Remove the account from the database.
+  globular.ressourceService
+    .deleteAccount(rqst, { token: localStorage.getItem("user_token"), application: application })
+    .then(rsp => {
+      callback(rsp.getResult());
+    })
+    .catch(err => {
+      errorCallback(err);
+    });
+}
+
+/**
+ * Remove a role from an account.
+ * @param accountId The account id
+ * @param roleId The role name (id)
+ * @param callback The success callback
+ * @param errorCallback The error callback
+ */
+export function RemoveRoleFromAccount(
+  accountId: string,
+  roleId: string,
+  callback: (value: any) => void,
+  errorCallback: (err: any) => void
+) {
+
+  let rqst = new RemoveAccountRoleRqst
+  rqst.setAccountid(accountId)
+  rqst.setRoleid(roleId)
+
+  globular.ressourceService
+    .removeAccountRole(rqst, { token: localStorage.getItem("user_token"), application: application })
+    .then(rsp => {
+      callback(rsp.getResult());
+    })
+    .catch(err => {
+      errorCallback(err);
+    });
+
+}
+
+/**
+ * Append a role to an account.
+ * @param accountId The account id
+ * @param roleId The role name (id)
+ * @param callback The success callback
+ * @param errorCallback The error callback.
+ */
+export function AppendRoleToAccount(
+  accountId: string,
+  roleId: string,
+  callback: (value: any) => void,
+  errorCallback: (err: any) => void
+) {
+
+  let rqst = new AddAccountRoleRqst
+  rqst.setAccountid(accountId)
+  rqst.setRoleid(roleId)
+
+  globular.ressourceService
+    .addAccountRole(rqst, { token: localStorage.getItem("user_token"), application: application })
+    .then(rsp => {
+      callback(rsp.getResult());
+    })
+    .catch(err => {
+      errorCallback(err);
+    });
+
+}
+
+/**
  * Authenticate the user and get the token
  * @param userName The account name or email
  * @param password  The user password
@@ -588,6 +679,7 @@ export function authenticate(
       }, globular.config.SessionTimeout.valueOf()); // 1 second before token expire.
     })
     .catch(err => {
+      console.log(err)
       errorCallback(err);
     });
 }
@@ -687,6 +779,39 @@ export function readOneUserData(
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // Roles
 ///////////////////////////////////////////////////////////////////////////////////////////////
+
+/**
+ * Return the list of all account on the server, guest and admin are new account...
+ * @param callback 
+ */
+export function GetAllAccountsInfo(callback: (
+  accounts: Array<any>) => void,
+  errorCallback: (err: any) => void
+) {
+  let rqst = new FindRqst();
+  rqst.setCollection("Accounts");
+  rqst.setDatabase("local_ressource");
+  rqst.setId("local_ressource");
+  rqst.setQuery("{}"); // means all values.
+
+  var stream = globular.persistenceService.find(rqst, {
+    application: application
+  });
+  var jsonStr = "";
+
+  stream.on("data", (rsp: FindResp) => {
+    jsonStr += rsp.getJsonstr();
+  });
+
+  stream.on("status", function (status) {
+    if (status.code == 0) {
+      callback(JSON.parse(jsonStr));
+    } else {
+      errorCallback({});
+    }
+  });
+}
+
 /**
  * Retreive all available actions on the server.
  * @param callback That function is call in case of success.
@@ -748,8 +873,8 @@ export function getAllRoles(
  * @param errorCallback The error callback.
  */
 export function AppendActionToRole(
-  action: string,
   role: string,
+  action: string,
   callback: () => void,
   errorCallback: (err: any) => void
 ) {
@@ -778,8 +903,8 @@ export function AppendActionToRole(
  * @param errorCallback error callback
  */
 export function RemoveActionFromRole(
-  action: string,
   role: string,
+  action: string,
   callback: () => void,
   errorCallback: (err: any) => void
 ) {
@@ -861,6 +986,80 @@ export function GetAllFilesInfo(
     .catch((err: any) => {
       errorCallback(err);
     });
+}
+
+export function GetAllApplicationsInfo(
+  callback: (infos: any) => void,
+  errorCallback: (err: any) => void
+) {
+  let rqst = new GetAllApplicationsInfoRqst();
+  globular.ressourceService
+    .getAllApplicationsInfo(rqst)
+    .then((rsp: GetAllApplicationsInfoRsp) => {
+      let infos = JSON.parse(rsp.getResult());
+      callback(infos);
+    })
+    .catch((err: any) => {
+      errorCallback(err);
+    });
+}
+
+export function AppendActionToApplication(
+  applicationId: string,
+  action: string,
+  callback: () => void,
+  errorCallback: (err: any) => void
+) {
+  let rqst = new AddApplicationActionRqst;
+  rqst.setApplicationid(applicationId)
+  rqst.setAction(action)
+  globular.ressourceService.addApplicationAction(rqst, { token: localStorage.getItem("user_token"), application: application })
+    .then((rsp: AddApplicationActionRsp) => {
+      callback()
+    })
+    .catch((err: any) => {
+      console.log(err)
+      errorCallback(err);
+    });
+
+}
+
+export function RemoveActionFromApplication(
+  applicationId: string,
+  action: string,
+  callback: () => void,
+  errorCallback: (err: any) => void
+) {
+  let rqst = new RemoveApplicationActionRqst;
+  rqst.setApplicationid(applicationId)
+  rqst.setAction(action)
+  globular.ressourceService.removeApplicationAction(rqst, { token: localStorage.getItem("user_token"), application: application })
+    .then((rsp: AddApplicationActionRsp) => {
+      callback()
+    })
+    .catch((err: any) => {
+      console.log(err)
+      errorCallback(err);
+    });
+
+}
+
+export function DeleteApplication(
+  applicationId: string,
+  callback: () => void,
+  errorCallback: (err: any) => void
+) {
+  let rqst = new RemoveApplicationRqst;
+  rqst.setApplicationid(applicationId)
+  globular.ressourceService.removeApplication(rqst, { token: localStorage.getItem("user_token"), application: application })
+    .then((rsp: AddApplicationActionRsp) => {
+      callback()
+    })
+    .catch((err: any) => {
+      console.log(err)
+      errorCallback(err);
+    });
+
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////

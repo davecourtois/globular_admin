@@ -9,6 +9,8 @@ import { RolePanel } from "./rolePanel";
 import { randomUUID } from "./utility";
 import { AccountManager } from "./accountPanel";
 import { FileManager } from "./filePanel";
+import { ApplicationManager } from "./applicationPanel";
+import { LogManager } from "./logPanel";
 
 export class MainPage {
   // The outer most div.
@@ -32,6 +34,8 @@ export class MainPage {
   private rolePanel: RolePanel;
   private accountPanel: AccountManager;
   private filePanel: FileManager;
+  private applicationPanel: ApplicationManager;
+  private logPanel: LogManager;
 
   constructor() {
     // Here I will create the main container.
@@ -376,11 +380,11 @@ export class MainPage {
         style: "margin-bottom: 0px; margin-top:10px;"
       })
       .down()
-      .appendElement({ tag: "div", class: "col s12 m8 offset-m2" })
+      .appendElement({ tag: "div", class: "col s12 m10 offset-m1" })
       .down()
       .appendElement({ tag: "ul", id: "main_tabs", class: "tabs" })
       .down()
-      .appendElement({ tag: "li", class: "tab col s3" })
+      .appendElement({ tag: "li", class: "tab col s2" })
       .down()
       .appendElement({
         tag: "a",
@@ -390,7 +394,7 @@ export class MainPage {
         innerHtml: "Services"
       })
       .up()
-      .appendElement({ tag: "li", class: "tab col s3" })
+      .appendElement({ tag: "li", class: "tab col s2" })
       .down()
       .appendElement({
         tag: "a",
@@ -400,7 +404,7 @@ export class MainPage {
         innerHtml: "Roles"
       })
       .up()
-      .appendElement({ tag: "li", class: "tab col s3" })
+      .appendElement({ tag: "li", class: "tab col s2" })
       .down()
       .appendElement({
         tag: "a",
@@ -410,16 +414,35 @@ export class MainPage {
         innerHtml: "Accounts"
       })
       .up()
-      .appendElement({ tag: "li", class: "tab col s3" })
+      .appendElement({ tag: "li", class: "tab col s2" })
       .down()
       .appendElement({
         tag: "a",
         id: "main_tabs_tab_3",
-        class: "grey-text text-darken-3",
+        class: "grey-text text-darken-4",
+        href: "javascript:void(0)",
+        innerHtml: "Applications"
+      })
+      .up()
+      .appendElement({ tag: "li", class: "tab col s2" })
+      .down()
+      .appendElement({
+        tag: "a",
+        id: "main_tabs_tab_4",
+        class: "grey-text text-darken-4",
         href: "javascript:void(0)",
         innerHtml: "Files"
       })
-      .up();
+      .up()
+      .appendElement({ tag: "li", class: "tab col s2" })
+      .down()
+      .appendElement({
+        tag: "a",
+        id: "main_tabs_tab_5",
+        class: "grey-text text-darken-3",
+        href: "javascript:void(0)",
+        innerHtml: "Logs"
+      })
 
     // Initialyse various panels.
     if (this.generalInfoPanel == null) {
@@ -431,15 +454,22 @@ export class MainPage {
     }
 
     if (this.filePanel == null) {
-      this.filePanel = new FileManager();
+      this.filePanel = new FileManager(randomUUID());
     }
 
     if (this.accountPanel == null) {
       this.accountPanel = new AccountManager(randomUUID());
     }
 
-    // Set tabs.
+    if (this.logPanel == null) {
+      this.logPanel = new LogManager(randomUUID());
+    }
 
+    if (this.applicationPanel == null) {
+      this.applicationPanel = new ApplicationManager(randomUUID());
+    }
+
+    // Set tabs.
     let tab_0_content = this.container.appendElement({ tag: "div" }).down();
     this.generalInfoPanel.setParent(tab_0_content);
     this.showServicesPanel(tab_0_content);
@@ -458,7 +488,17 @@ export class MainPage {
     let tab_3_content = this.container
       .appendElement({ tag: "div", style: "display: none" })
       .down();
-    this.filePanel.setParent(tab_3_content);
+    this.applicationPanel.setParent(tab_3_content);
+
+    let tab_4_content = this.container
+      .appendElement({ tag: "div", style: "display: none" })
+      .down();
+    this.filePanel.setParent(tab_4_content);
+
+    let tab_5_content = this.container
+      .appendElement({ tag: "div", style: "display: none" })
+      .down();
+    this.logPanel.setParent(tab_5_content);
 
     // Init the materialyse tabs.
     M.Tabs.init(document.getElementById("main_tabs"));
@@ -469,6 +509,8 @@ export class MainPage {
       tab_1_content.element.style.display = "none";
       tab_2_content.element.style.display = "none";
       tab_3_content.element.style.display = "none";
+      tab_4_content.element.style.display = "none";
+      tab_5_content.element.style.display = "none";
     };
 
     this.container.getChildById("main_tabs_tab_1").element.onclick = () => {
@@ -476,6 +518,8 @@ export class MainPage {
       tab_1_content.element.style.display = "";
       tab_2_content.element.style.display = "none";
       tab_3_content.element.style.display = "none";
+      tab_4_content.element.style.display = "none";
+      tab_5_content.element.style.display = "none";
     };
 
     this.container.getChildById("main_tabs_tab_2").element.onclick = () => {
@@ -483,6 +527,8 @@ export class MainPage {
       tab_1_content.element.style.display = "none";
       tab_2_content.element.style.display = "";
       tab_3_content.element.style.display = "none";
+      tab_4_content.element.style.display = "none";
+      tab_5_content.element.style.display = "none";
     };
 
     this.container.getChildById("main_tabs_tab_3").element.onclick = () => {
@@ -490,19 +536,39 @@ export class MainPage {
       tab_1_content.element.style.display = "none";
       tab_2_content.element.style.display = "none";
       tab_3_content.element.style.display = "";
+      tab_4_content.element.style.display = "none";
+      tab_5_content.element.style.display = "none";
+    };
+
+    this.container.getChildById("main_tabs_tab_4").element.onclick = () => {
+      tab_0_content.element.style.display = "none";
+      tab_1_content.element.style.display = "none";
+      tab_2_content.element.style.display = "none";
+      tab_3_content.element.style.display = "none";
+      tab_4_content.element.style.display = "";
+      tab_5_content.element.style.display = "none";
+    };
+
+    this.container.getChildById("main_tabs_tab_5").element.onclick = () => {
+      tab_0_content.element.style.display = "none";
+      tab_1_content.element.style.display = "none";
+      tab_2_content.element.style.display = "none";
+      tab_3_content.element.style.display = "none";
+      tab_4_content.element.style.display = "none";
+      tab_5_content.element.style.display = "";
     };
   }
 
   showServicesPanel(container: any) {
     // The tab div...
     let div = container
-      .appendElement({ tag: "div", class: "row" })
-      .down()
       .appendElement({
         tag: "div",
-        id: "service_tabs",
-        class: "col s8 offset-s2 "
+        class: "row",
+        style: "margin-bottom: 0px; margin-top:10px; margin-left: 10px; margin-right: 10px;"
       })
+      .down()
+      .appendElement({ id: "service_tabs", tag: "div", class: "col s12 m10 offset-m1" })
       .down()
       .appendElement({ tag: "ul", id: "services_list", class: "collapsible" })
       .down();

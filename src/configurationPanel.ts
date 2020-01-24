@@ -127,7 +127,7 @@ class ConfigurationToggleLine extends ConfigurationLine {
     constructor(panel: ConfigurationPanel, name: string, label: string, content: any, labels: Array<string>) {
         super(panel, name, label, content);
         let value = this.getValue()
-
+        console.log("---> ", name, value, label, this)
         // Set the value div.
         this.valueDiv = this.content.appendElement({ "tag": "div", "id": name + "_div", "class": "col s12 m6", "innerHtml": value.toString() }).down()
 
@@ -341,13 +341,12 @@ export class ConfigurationPanel extends Panel {
 
         // Display general information.
         this.div.appendElement({ "tag": "div", "class": "row configuration_panel" }).down()
-            .appendElement({ "tag": "div", "class": "col s12 m8 offset-m2" }).down()
+            .appendElement({ "tag": "div", "class": "col s12 m10 offset-m1" }).down()
             .appendElement({ "tag": "div", "class": "card" }).down()
             .appendElement({ "tag": "div", "class": "card-content" }).down()
-
-
             .appendElement({ "tag": "span", "class": "card-title", "style": "font-size: 1.5em;", "innerHtml": title })
             .appendElement({ "tag": "div", "id": "content" })
+            
             // The action buttons.
             .appendElement({ "tag": "div", "class": "card-action", "id": "btn_group", "style": "text-align: right; display: none;" }).down()
             .appendElement({ "tag": "a", "id": "save_btn", "href": "javascript:void(0)", "class": "waves-effect waves-light btn disabled", "innerHtml": "Save" })
