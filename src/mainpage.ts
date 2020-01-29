@@ -264,7 +264,6 @@ export class MainPage {
       instance.close();
     };
 
-    console.log(globular);
   }
 
   login(email: string, password: string) {

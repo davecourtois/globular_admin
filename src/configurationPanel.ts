@@ -127,7 +127,6 @@ class ConfigurationToggleLine extends ConfigurationLine {
     constructor(panel: ConfigurationPanel, name: string, label: string, content: any, labels: Array<string>) {
         super(panel, name, label, content);
         let value = this.getValue()
-        console.log("---> ", name, value, label, this)
         // Set the value div.
         this.valueDiv = this.content.appendElement({ "tag": "div", "id": name + "_div", "class": "col s12 m6", "innerHtml": value.toString() }).down()
 

@@ -29,7 +29,6 @@ export class Panel {
   // Here I will react to login information...
   onlogin(data: any) {
     // overide...
-    console.log("Panel --> onlogin: ", this.id);
   }
 
   onlogout() {

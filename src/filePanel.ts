@@ -1,7 +1,11 @@
 import { Panel } from "./panel";
 import { GetAllFilesInfo, eventHub, renameFile, deleteDir, deleteFile, downloadDir, createDir, downloadFileHttp } from "./backend";
 import { randomUUID } from "./utility";
+import { PermissionExplorer } from "./permissionPanel";
 
+/**
+ * The file panel give necessary functionalities to manages server files.
+ */
 export class FileManager extends Panel {
   private pathNavigator: PathNavigator;
   private fileNavigator: FileNavigator;
@@ -803,70 +807,4 @@ class FileNavigator extends Panel {
     this.editable = false;
     this.setDir(this.currentDirectory);
   }
-}
-
-/**
- * Control permission.
- */
-class PermissionExplorer extends Panel {
-  // The file information.
-  fileInfo: any;
-  editable: boolean;
-
-  constructor(parent: any) {
-    super(randomUUID());
-    //parent.appendElement(this.div);
-    super(randomUUID());
-    this.div.element.className = "card col s12 m10 offset-m1";
-    this.div.element.style.display = "none"
-    parent.appendElement(this.div);
-
-    eventHub.subscribe(
-      "set_file_event",
-      (uuid: string) => { },
-      (evt: any) => {
-        // Set the dir to display.
-        // Here I must retreive the directory from the given path.
-        this.setFile(evt.file);
-      },
-      true
-    );
-  }
-
-  setFile(fileInfo: any) {
-    if(fileInfo == undefined){
-      return
-    }
-    
-    if (fileInfo.name == "webroot") {
-      this.div.element.style.display = "none"
-      this.div.element.innerHTML = ""
-      return
-    }
-
-    this.fileInfo = fileInfo;
-    this.div.element.style.display = ""
-    this.div.element.innerHTML = ""
-
-    // The name of the file.
-    this.div.appendElement({ tag: "div", class: "row" }).down()
-      .appendElement({ tag: "span", innerHtml: fileInfo.name, class: "col s12" })
-
-    // Now I will get the permission for the file/folder... and diplay it.
-
-  }
-
-  // Here I will react to login information...
-  onlogin(data: any) {
-    // overide...
-    this.editable = true;
-    this.setFile(this.fileInfo)
-  }
-
-  onlogout() {
-    // overide...
-    this.editable = false;
-    this.setFile(this.fileInfo)
-  }
-
 }

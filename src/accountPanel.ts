@@ -28,7 +28,7 @@ export class AccountManager extends Panel {
     // Emit when user click on the path
     eventHub.subscribe(
       "update_role_event",
-      (uuid: string) => {},
+      (uuid: string) => { },
       (evt: any) => {
         // Set the dir to display.
         // Here I must retreive the directory from the given path.
@@ -115,7 +115,6 @@ export class AccountManager extends Panel {
             for (var i = 0; i < roles.length; i++) {
               let exist = false;
               for (var j = 0; j < account.roles.length; j++) {
-                console.log("---> ", account.roles[j]);
                 if (account.roles[j].$id == roles[i]._id) {
                   exist = true;
                   break;
@@ -200,11 +199,11 @@ export class AccountManager extends Panel {
             })
             .down();
 
-          deleteBtn.element.onmouseenter = function() {
+          deleteBtn.element.onmouseenter = function () {
             this.style.cursor = "pointer";
           };
 
-          deleteBtn.element.onmouseleave = function() {
+          deleteBtn.element.onmouseleave = function () {
             this.style.cursor = "default";
           };
 
@@ -269,11 +268,11 @@ export class AccountManager extends Panel {
       })
       .down();
 
-    newRoleBtn.element.onmouseenter = function() {
+    newRoleBtn.element.onmouseenter = function () {
       this.style.cursor = "pointer";
     };
 
-    newRoleBtn.element.onmouseout = function() {
+    newRoleBtn.element.onmouseout = function () {
       this.style.cursor = "default";
     };
 
@@ -391,7 +390,7 @@ export class AccountManager extends Panel {
         let div = this.div.appendElement({ tag: "div", class: "row" }).down();
         // Here I will get the list of all accounts.
         let ul = div
-          .appendElement({ tag: "div", class: "col s12 m10 offset-m1" })
+          .appendElement({ tag: "div", class: "col s12 m10 offset-m1", style: "padding: 0px;" })
           .down()
           .appendElement({ tag: "ul", class: "collapsible" })
           .down();
@@ -448,7 +447,6 @@ export class AccountManager extends Panel {
             });
           }
           // Display the account.
-          console.log(account);
           this.displayAccount(content, account);
         }
 

@@ -149,7 +149,7 @@ export class ServicePanel extends ConfigurationPanel {
       "stop_service_event_" + id,
       (uuid: string) => {
         /** Subscriber id. todo diconnect on logout...*/
-        console.log("stop_service_event_" + id, uuid);
+        //console.log("stop_service_event_" + id, uuid);
       },
       (evt: any) => {
         this.stopBtn.element.style.display = "none";
@@ -171,7 +171,7 @@ export class ServicePanel extends ConfigurationPanel {
     eventHub.subscribe(
       "start_service_event_" + id,
       (uuid: string) => {
-        console.log("start_service_event_" + id, uuid);
+        //console.log("start_service_event_" + id, uuid);
       },
       (evt: any) => {
         this.stopBtn.element.style.display = "";
@@ -185,7 +185,7 @@ export class ServicePanel extends ConfigurationPanel {
     eventHub.subscribe(
       "save_service_config_event_" + id,
       (uuid: string) => {
-        console.log("save_service_config_event_" + id, uuid);
+        //console.log("save_service_config_event_" + id, uuid);
       },
       (configStr: string) => {
         this.config = JSON.parse(configStr);

@@ -39,7 +39,14 @@ import {
   RemoveApplicationRqst,
   DeleteAccountRqst,
   AddAccountRoleRqst,
-  RemoveAccountRoleRqst
+  RemoveAccountRoleRqst,
+  GetPermissionsRqst,
+  GetPermissionsRsp,
+  DeletePermissionsRqst,
+  DeletePermissionsRsp,
+  SetPermissionRqst,
+  FilePermission,
+  SetPermissionRsp
 } from "globular-web-client/lib/ressource/ressource_pb";
 import * as jwt from "jwt-decode";
 import {
@@ -146,6 +153,142 @@ export function saveConfig(
         console.log("fail to save config ", err);
       });
   }
+}
+
+///////////////////////////////////// Permissions /////////////////////////////////////
+
+/**
+ * Retreive the permission for a given file.
+ * @param path 
+ * @param callback 
+ * @param errorCallback 
+ */
+export function getFilePermissions(
+  path: string,
+  callback: (infos:Array<any>) => void,
+  errorCallback: (err: any) => void
+) {
+  let rqst = new GetPermissionsRqst
+  path = path.replace("/webroot", ""); // remove the /webroot part.
+  if (path.length == 0) {
+    path = "/";
+  }
+  rqst.setPath(path);
+
+  globular.ressourceService
+    .getPermissions(rqst, {
+      application: application
+    })
+    .then((rsp: GetPermissionsRsp) => {
+      let permissions = JSON.parse(rsp.getPermissions())
+      callback(permissions);
+
+    })
+    .catch(error => {
+      if (errorCallback != undefined) {
+        errorCallback(error);
+      }
+    });
+}
+
+/**
+ * The permission can be assigned to 
+ * a User, a Role or an Application.
+ */
+export enum OwnerType{
+  User = 1,
+  Role = 2,
+  Application = 3
+}
+
+/**
+ * Create a file permission.
+ * @param path The path on the server from the root.
+ * @param owner The owner of the permission
+ * @param ownerType The owner type
+ * @param number The (unix) permission number.
+ * @param callback The success callback
+ * @param errorCallback The error callback
+ */
+export function setFilePermission(
+  path: string,
+  owner: string,
+  ownerType: OwnerType,
+  number: number,
+  callback: () => void,
+  errorCallback: (err: any) => void
+) {
+  let rqst = new SetPermissionRqst
+  path = path.replace("/webroot", ""); // remove the /webroot part.
+
+  if (path.length == 0) {
+    path = "/";
+  }
+
+  let permission = new FilePermission
+  permission.setPath(path)
+  permission.setNumber(number)
+  if(ownerType == OwnerType.User){
+    permission.setUser(owner)
+  }else if(ownerType == OwnerType.Role){
+    permission.setRole(owner)
+  }else if(ownerType == OwnerType.Application){
+    permission.setApplication(owner)
+  }
+
+  rqst.setPermission(permission)
+
+  globular.ressourceService
+    .setPermission(rqst, {
+      token: localStorage.getItem("user_token"),
+      application: application
+    })
+    .then((rsp: SetPermissionRsp) => {
+      callback();
+    })
+    .catch(error => {
+      if (errorCallback != undefined) {
+        errorCallback(error);
+      }
+    });
+}
+
+/**
+ * Delete a file permission for a give user.
+ * @param path The path of the file on the server.
+ * @param owner The owner of the file
+ * @param callback The success callback.
+ * @param errorCallback The error callback.
+ */
+export function deleteFilePermissions(
+  path: string,
+  owner: string,
+  callback: () => void,
+  errorCallback: (err: any) => void
+) {
+
+  let rqst = new DeletePermissionsRqst
+  path = path.replace("/webroot", ""); // remove the /webroot part.
+  if (path.length == 0) {
+    path = "/";
+  }
+
+  rqst.setPath(path);
+  rqst.setOwner(owner);
+
+  globular.ressourceService
+    .deletePermissions(rqst, {
+      token: localStorage.getItem("user_token"),
+      application: application
+    })
+    .then((rsp: DeletePermissionsRsp) => {
+      callback();
+    })
+    .catch(error => {
+      if (errorCallback != undefined) {
+        errorCallback(error);
+      }
+    });
 }
 
 ///////////////////////////////////// File operations /////////////////////////////////
