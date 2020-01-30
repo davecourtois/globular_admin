@@ -4,7 +4,7 @@
 import { Panel } from "./panel";
 import * as M from "materialize-css";
 import "materialize-css/sass/materialize.scss";
-import { eventHub } from './backend';
+import { eventHub, updateAccountEmail, updateAccountPassword } from './backend';
 import {
   getAllRoles,
   GetAllAccountsInfo,
@@ -13,6 +13,7 @@ import {
   RemoveRoleFromAccount,
   registerAccount
 } from "./backend";
+import { SetEmailRequest } from "globular-web-client/lib/admin/admin_pb";
 
 /**
  * This class is use to manage file on the server.
@@ -62,9 +63,12 @@ export class AccountManager extends Panel {
 
     // The start and end time.
     content
-      //.appendElement({ tag: "div", class: "row" }).down()
-      //.appendElement({ tag: "div", class: "col s2", innerHtml: "path" })
-      //.appendElement({ tag: "div", class: "col s10", innerHtml: path }).up()
+      .appendElement({ tag: "div", class: "row" }).down()
+      .appendElement({ tag: "div", class: "col s2", innerHtml: "email" })
+      .appendElement({ tag: "div", class: "col s10", id: "email_div", innerHtml: account.email }).up()
+      .appendElement({ tag: "div", id: "password_div" })
+      .appendElement({ tag: "div", id: "new_password_div" })
+      .appendElement({ tag: "div", id: "confirm_password_div" })
       .appendElement({ tag: "div", class: "row" })
       .down()
       .appendElement({ tag: "div", class: "col s2", innerHtml: "roles" })
@@ -78,8 +82,87 @@ export class AccountManager extends Panel {
         class: "collection col s12"
       });
 
+    let email_div = content.getChildById("email_div");
+    let password_div = content.getChildById("password_div");
+    let new_password_div = content.getChildById("new_password_div");
+    let confirm_password_div = content.getChildById("confirm_password_div");
     let roles_div = content.getChildById("roles_div");
     let roles_ul = content.getChildById("roles_ul");
+
+    if (this.editable) {
+      // Here i will set the email input...
+      email_div.removeAllChilds()
+      email_div.element.innerHTML = ""
+
+      email_div.appendElement({ tag: "input-field" }).down()
+        .appendElement({ tag: "input", id: "email_input", value: account.email, type: "email", class: "validate" })
+        .appendElement({ tag: "span" })
+
+      // Set the password change button.
+      new_password_div.element.className = confirm_password_div.element.className = password_div.element.className = "row"
+
+      // The password div
+      password_div.appendElement({ tag: "input-field" }).down()
+        .appendElement({ tag: "div", class: "col s2", innerHtml: "password" })
+        .appendElement({ tag: "div", class: "col s10" }).down()
+        .appendElement({ tag: "input", type: "password", id: "password_input", class: "validate" })
+        .appendElement({ tag: "span" })
+
+      new_password_div.appendElement({ tag: "input-field" }).down()
+        .appendElement({ tag: "div", class: "col s2", innerHtml: "new password" })
+        .appendElement({ tag: "div", class: "col s10" }).down()
+        .appendElement({ tag: "input", type: "password", id: "new_password_input", class: "validate" })
+        .appendElement({ tag: "span" })
+
+      // The confirmation password
+      confirm_password_div
+        .appendElement({ tag: "div", class: "col s2", innerHtml: "confirm password" })
+        .appendElement({ tag: "div", class: "col s10" }).down()
+        .appendElement({ tag: "input-field" }).down()
+        .appendElement({ tag: "input", type: "password", id: "confirm_password_input", class: "validate" })
+        .appendElement({ tag: "span" })
+
+      // Now  i will set the action.
+      email_div.getChildById("email_input").element.onkeyup = (evt: any) => {
+        if (evt.keyCode == 13) {
+          // here the user want to change it email.
+          updateAccountEmail(account._id, account.email, email_div.getChildById("email_input").element.value,
+            () => {
+              // keep the email in the account!
+              account.email = email_div.getChildById("email_input").element.value
+              M.toast({ html: "your email was updated!", displayLength: 2000 });
+            },
+            (err: any) => {
+              let msg = JSON.parse(err.message);
+              M.toast({ html: msg.ErrorMsg, displayLength: 2000 });
+            }
+          );
+        }
+      }
+
+      // Now the update password...
+      confirm_password_div.getChildById("confirm_password_input").element.onkeyup = (evt: any) => {
+        if (evt.keyCode == 13) {
+          // here the user want to change it email.
+          let confirm_pwd = confirm_password_div.getChildById("confirm_password_input").element.value
+          let old_pwd = password_div.getChildById("password_input").element.value
+          let new_pwd = new_password_div.getChildById("new_password_input").element.value
+
+          // Update the account password.
+          updateAccountPassword(account._id, old_pwd, new_pwd, confirm_pwd,
+            () => {
+              // keep the email in the account!
+              M.toast({ html: "your password was updated!", displayLength: 2000 });
+            },
+            (err: any) => {
+              let msg = JSON.parse(err.message);
+              M.toast({ html: msg.ErrorMsg, displayLength: 2000 });
+            }
+          );
+        }
+      }
+
+    }
 
     // append the roles list.
     if (!this.editable) {
@@ -373,7 +456,7 @@ export class AccountManager extends Panel {
           pwd,
           pwd_,
           (result: any) => {
-            console.log(result);
+            this.displayAccounts();
           },
           (err: any) => {
             let msg = JSON.parse(err.message);

@@ -555,6 +555,7 @@ export class MainPage {
       tab_3_content.element.style.display = "none";
       tab_4_content.element.style.display = "none";
       tab_5_content.element.style.display = "";
+      M.Tabs.init(document.getElementById("logs_tabs"));
     };
   }
 

@@ -6,7 +6,9 @@ import {
   InstallServiceResponse,
   StopServiceRequest,
   StartServiceRequest,
-  SaveConfigResponse
+  SaveConfigResponse,
+  SetEmailRequest,
+  SetPasswordRequest
 } from "globular-web-client/lib/admin/admin_pb";
 import {
   QueryRangeRequest,
@@ -165,7 +167,7 @@ export function saveConfig(
  */
 export function getFilePermissions(
   path: string,
-  callback: (infos:Array<any>) => void,
+  callback: (infos: Array<any>) => void,
   errorCallback: (err: any) => void
 ) {
   let rqst = new GetPermissionsRqst
@@ -195,7 +197,7 @@ export function getFilePermissions(
  * The permission can be assigned to 
  * a User, a Role or an Application.
  */
-export enum OwnerType{
+export enum OwnerType {
   User = 1,
   Role = 2,
   Application = 3
@@ -228,11 +230,11 @@ export function setFilePermission(
   let permission = new FilePermission
   permission.setPath(path)
   permission.setNumber(number)
-  if(ownerType == OwnerType.User){
+  if (ownerType == OwnerType.User) {
     permission.setUser(owner)
-  }else if(ownerType == OwnerType.Role){
+  } else if (ownerType == OwnerType.Role) {
     permission.setRole(owner)
-  }else if(ownerType == OwnerType.Application){
+  } else if (ownerType == OwnerType.Application) {
     permission.setApplication(owner)
   }
 
@@ -781,6 +783,66 @@ export function AppendRoleToAccount(
       errorCallback(err);
     });
 
+}
+
+/**
+ * Update the account email
+ * @param accountId The account id
+ * @param old_email the old email
+ * @param new_email the new email
+ * @param callback  the callback when success
+ * @param errorCallback the error callback in case of error
+ */
+export function updateAccountEmail(accountId: string, old_email: string, new_email: string, callback: () => void, errorCallback: (err: any) => void) {
+  let rqst = new SetEmailRequest
+  rqst.setAccountid(accountId)
+  rqst.setOldemail(old_email)
+  rqst.setNewemail(new_email)
+
+  globular.adminService.setEmail(rqst,
+    {
+      token: localStorage.getItem("user_token"),
+      application: application
+    }).then(rsp => {
+      callback()
+    })
+    .catch(err => {
+      console.log("fail to save config ", err);
+    });
+}
+
+/**
+ * The update account password
+ * @param accountId The account id
+ * @param old_password The old password
+ * @param new_password The new password
+ * @param confirm_password The new password confirmation
+ * @param callback The success callback
+ * @param errorCallback The error callback.
+ */
+export function updateAccountPassword(accountId: string, old_password: string, new_password: string, confirm_password: string, callback: () => void, errorCallback: (err: any) => void) {
+  let rqst = new SetPasswordRequest
+  rqst.setAccountid(accountId)
+  rqst.setOldpassword(old_password)
+  rqst.setNewpassword(new_password)
+
+  if (confirm_password != new_password) {
+    errorCallback("password not match!")
+    return
+  }
+
+  globular.adminService.setPassword(rqst,
+    {
+      token: localStorage.getItem("user_token"),
+      application: application
+    }).then(rsp => {
+      callback()
+    })
+    .catch(error => {
+      if (errorCallback != undefined) {
+        errorCallback(error);
+      }
+    });
 }
 
 /**
@@ -1337,6 +1399,85 @@ export function readUserData(query: string, callback: (results: any) => void) {
   rqst.setCollection(collection);
   rqst.setQuery(query);
   rqst.setOptions("");
+
+  // call persist data
+  let stream = globular.persistenceService.find(rqst, {
+    token: localStorage.getItem("user_token"),
+    application: application
+  });
+  let results = new Array();
+
+  // Get the stream and set event on it...
+  stream.on("data", rsp => {
+    results = results.concat(JSON.parse(rsp.getJsonstr()));
+  });
+
+  stream.on("status", status => {
+    if (status.code == 0) {
+      callback(results);
+    }
+  });
+
+  stream.on("end", () => {
+    // stream end signal
+  });
+}
+
+
+/**
+ * Read all errors data.
+ * @param callback 
+ */
+export function readErrors(callback: (results: any) => void) {
+  let database =  "local_ressource";
+  let collection = "Errors";
+
+  let rqst = new FindOneRqst();
+  rqst.setId(database);
+  rqst.setDatabase(database);
+  rqst.setCollection(collection);
+  rqst.setOptions("");
+  rqst.setQuery("{}");
+
+  // call persist data
+  let stream = globular.persistenceService.find(rqst, {
+    token: localStorage.getItem("user_token"),
+    application: application
+  });
+  let results = new Array();
+
+  // Get the stream and set event on it...
+  stream.on("data", rsp => {
+    results = results.concat(JSON.parse(rsp.getJsonstr()));
+  });
+
+  stream.on("status", status => {
+    if (status.code == 0) {
+      callback(results);
+    }
+  });
+
+  stream.on("end", () => {
+    // stream end signal
+  });
+}
+
+
+
+/**
+ * Read all logs
+ * @param callback The success callback.
+ */
+export function readLogs(callback: (results: any) => void) {
+  let database =  "local_ressource";
+  let collection = "Logs";
+
+  let rqst = new FindOneRqst();
+  rqst.setId(database);
+  rqst.setDatabase(database);
+  rqst.setCollection(collection);
+  rqst.setOptions("");
+  rqst.setQuery("{}");
 
   // call persist data
   let stream = globular.persistenceService.find(rqst, {
