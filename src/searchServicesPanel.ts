@@ -37,7 +37,6 @@ export class SearchServicesPanel extends Panel {
   }
 
   onlogin(data: any) {
-    console.log("SearchServicesPanel --> onlogin: ", this.id);
     this.isAdmin = true;
     // Test if the service is already intall on the server.
     readFullConfig((config: IConfig) => {

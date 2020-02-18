@@ -32,7 +32,7 @@ class ConfigurationLine {
 
         // Now I will create the part label of the interface.
         this.content = content.appendElement({ "tag": "div", "class": "row" }).down()
-        this.content.appendElement({ "tag": "div", "class": "col s12 m6", "style": "height: 100%", "innerHtml": label })
+        this.content.appendElement({ "tag": "div", "class": "col s12 m6", "style": "height: 100%", "innerHtml": label }).down()
     }
 
     // Return the configuration values.
@@ -75,6 +75,51 @@ class ConfigurationLine {
     unlock() {
         this.valueEditor.element.style.display = ""
         this.valueDiv.element.style.display = "none"
+    }
+}
+
+class ConfigurationEnum extends ConfigurationLine {
+
+    constructor(panel: ConfigurationPanel, name: string, options: Array<string>, label: string, content: any) {
+        super(panel, name, label, content);
+        let value = this.getValue()
+
+        // Set the value div.
+        this.valueDiv = this.content.appendElement({ "tag": "div", "id": name + "_div", class: "col s12 m6", "innerHtml": value.toString() }).down()
+
+        // Set the value editor.
+        this.valueEditor = this.content.appendElement({ "tag": "select", "id": name + "_select", "style": "display: none;", class: "browser-default col s12 m6" }).down()
+        let selectedIndex = 0;
+        for (var i = 0; i < options.length; i++) {
+            if (options[i] == value) {
+                selectedIndex = i;
+            }
+            this.valueEditor.appendElement({ tag: "option", value: options[i], innerHtml: options[i] }).down()
+        }
+
+        M.FormSelect.init(this.valueEditor.element)
+        this.valueEditor.element.selectedIndex = selectedIndex
+
+        this.valueEditor.element.onchange = () => {
+            // set the value in the interface.
+            this.valueDiv.setValue(this.valueEditor.getValue())
+            this.panel.hasChange()
+        }
+
+        // Return the value of the input.
+        this.valueEditor.getValue = function () {
+            return this.element.value
+        }
+
+        // Return the value of the input.
+        this.valueEditor.setValue = function (v: any) {
+            this.element.value = v
+        }
+
+        // Return the value of the input.
+        this.valueDiv.setValue = function (v: any) {
+            this.element.innerHTML = v
+        }
     }
 }
 
@@ -345,7 +390,7 @@ export class ConfigurationPanel extends Panel {
             .appendElement({ "tag": "div", "class": "card-content" }).down()
             .appendElement({ "tag": "span", "class": "card-title", "style": "font-size: 1.5em;", "innerHtml": title })
             .appendElement({ "tag": "div", "id": "content" })
-            
+
             // The action buttons.
             .appendElement({ "tag": "div", "class": "card-action", "id": "btn_group", "style": "text-align: right; display: none;" }).down()
             .appendElement({ "tag": "a", "id": "save_btn", "href": "javascript:void(0)", "class": "waves-effect waves-light btn disabled", "innerHtml": "Save" })
@@ -368,6 +413,16 @@ export class ConfigurationPanel extends Panel {
 
         // get the content.
         this.content = this.div.getChildById("content")
+    }
+
+    /**
+     * 
+     * @param name 
+     * @param label 
+     */
+    appendEmptyConfig(name: string, label?: string): any {
+        let configLine = new ConfigurationLine(this, name, label, this.content)
+        return configLine;
     }
 
     /**
@@ -416,13 +471,27 @@ export class ConfigurationPanel extends Panel {
         return configLine
     }
 
+    appendEnumConfig(name: string, options: Array<string>, label?: string) {
+        let configLine = new ConfigurationEnum(this, name, options, label, this.content)
+        this.configurationLines.push(configLine)
+        return configLine
+    }
+
     // create control...
     onlogin(data: any) {
-        super.onlogin(data)
+        //super.onlogin(data)
+        // set the config with the full values.
+        if (data.Services != undefined) {
+            this.config = data.Services[this.config.Id]
+        } else {
+            this.config = data
+        }
+
         // Display textual input
         for (var i = 0; i < this.configurationLines.length; i++) {
             this.configurationLines[i].unlock()
         }
+
         this.btnGroup.element.style.display = ""
     }
 

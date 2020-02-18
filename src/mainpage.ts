@@ -1,6 +1,5 @@
 import * as M from "materialize-css";
 import "materialize-css/sass/materialize.scss";
-import { createElement } from "./element";
 import { globular, authenticate } from "./backend";
 import { GeneralInfoPanel } from "./generalInfoPanel";
 import { SearchServicesPanel } from "./searchServicesPanel";
@@ -11,6 +10,8 @@ import { AccountManager } from "./accountPanel";
 import { FileManager } from "./filePanel";
 import { ApplicationManager } from "./applicationPanel";
 import { LogManager } from "./logPanel";
+import { createElement } from './element.js'
+import { SqlServicePanel } from "./services/sqlServicePanel";
 
 export class MainPage {
   // The outer most div.
@@ -25,7 +26,6 @@ export class MainPage {
   private sideLogoutLnk: any;
   private sideSearchLnk: any;
   private sideHomeLnk: any;
-
   private searchInput: any;
 
   // The general information panel.
@@ -576,11 +576,24 @@ export class MainPage {
     for (var key in globular.config.Services) {
       if (globular.config.Services[key].PublisherId != null) {
         let title = key.replace("_", " ");
-        let servicePanel = new ServicePanel(
-          globular.config.Services[key],
-          title,
-          key
-        );
+        let servicePanel: ServicePanel;
+
+        // Here I will instantiate the correct service configuration interface.
+        if (globular.config.Services[key].Name == "sql_server") {
+          servicePanel = new SqlServicePanel(
+            globular.config.Services[key],
+            title,
+            key
+          );
+        } else {
+          servicePanel = new ServicePanel(
+            globular.config.Services[key],
+            title,
+            key
+          );
+        }
+
+
         // Here I will create the tab...
         let panel = div
           .appendElement({ tag: "li" })

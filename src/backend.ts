@@ -874,9 +874,12 @@ export function authenticate(
       localStorage.setItem("user_token", token);
       localStorage.setItem("user_name", (<any>decoded).username);
 
-      // Publish local login event.
-      eventHub.publish("onlogin", decoded, true);
-      callback(decoded);
+      readFullConfig((config: any) => {
+        // Publish local login event.
+        eventHub.publish("onlogin", config, true); // return the full config...
+        callback(decoded);
+      })
+
 
       // Refresh the token at session timeout
       setTimeout(() => {
@@ -1429,7 +1432,7 @@ export function readUserData(query: string, callback: (results: any) => void) {
  * @param callback 
  */
 export function readErrors(callback: (results: any) => void) {
-  let database =  "local_ressource";
+  let database = "local_ressource";
   let collection = "Errors";
 
   let rqst = new FindOneRqst();
@@ -1469,7 +1472,7 @@ export function readErrors(callback: (results: any) => void) {
  * @param callback The success callback.
  */
 export function readLogs(callback: (results: any) => void) {
-  let database =  "local_ressource";
+  let database = "local_ressource";
   let collection = "Logs";
 
   let rqst = new FindOneRqst();
