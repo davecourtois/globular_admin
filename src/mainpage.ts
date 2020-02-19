@@ -12,6 +12,9 @@ import { ApplicationManager } from "./applicationPanel";
 import { LogManager } from "./logPanel";
 import { createElement } from './element.js'
 import { SqlServicePanel } from "./services/sqlServicePanel";
+import { SmtpServicePanel } from "./services/smtpServicePanel";
+import { LdapServicePanel } from "./services/ldapServicePanel";
+import { PersistenceServicePanel } from "./services/persistenceServicePanel";
 
 export class MainPage {
   // The outer most div.
@@ -40,7 +43,7 @@ export class MainPage {
   constructor() {
     // Here I will create the main container.
     let div = createElement(null, { tag: "div" });
-    document.body.append(div.element);
+    document.body.appendChild(div.element);
 
     ////////////////////////////// Navigation //////////////////////////////
     // Now Will create the navbar.
@@ -325,7 +328,7 @@ export class MainPage {
             </div>
           </form>`;
 
-    document.body.append(loginDialog.element);
+    document.body.appendChild(loginDialog.element);
     document.getElementById("email").focus();
 
     // TODO implement the login event here.
@@ -585,7 +588,25 @@ export class MainPage {
             title,
             key
           );
-        } else {
+        } else if (globular.config.Services[key].Name == "smtp_server") {
+          servicePanel = new SmtpServicePanel(
+            globular.config.Services[key],
+            title,
+            key
+          );
+        } else if (globular.config.Services[key].Name == "ldap_server") {
+          servicePanel = new LdapServicePanel(
+            globular.config.Services[key],
+            title,
+            key
+          );
+        }else if (globular.config.Services[key].Name == "persistence_server") {
+          servicePanel = new PersistenceServicePanel(
+            globular.config.Services[key],
+            title,
+            key
+          );
+        }else {
           servicePanel = new ServicePanel(
             globular.config.Services[key],
             title,

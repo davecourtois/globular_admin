@@ -32,7 +32,7 @@ class ConfigurationLine {
 
         // Now I will create the part label of the interface.
         this.content = content.appendElement({ "tag": "div", "class": "row" }).down()
-        this.content.appendElement({ "tag": "div", "class": "col s12 m6", "style": "height: 100%", "innerHtml": label }).down()
+        this.content.appendElement({ "tag": "div", "class": "col s12 m4", "style": "height: 100%", "innerHtml": label }).down()
     }
 
     // Return the configuration values.
@@ -80,21 +80,25 @@ class ConfigurationLine {
 
 class ConfigurationEnum extends ConfigurationLine {
 
-    constructor(panel: ConfigurationPanel, name: string, options: Array<string>, label: string, content: any) {
+    constructor(panel: ConfigurationPanel, name: string, options: Array<string>, label: string, content: any, numericIndex: boolean) {
         super(panel, name, label, content);
         let value = this.getValue()
 
         // Set the value div.
-        this.valueDiv = this.content.appendElement({ "tag": "div", "id": name + "_div", class: "col s12 m6", "innerHtml": value.toString() }).down()
+        this.valueDiv = this.content.appendElement({ "tag": "div", "id": name + "_div", class: "col s12 m8", "innerHtml": value.toString() }).down()
 
         // Set the value editor.
-        this.valueEditor = this.content.appendElement({ "tag": "select", "id": name + "_select", "style": "display: none;", class: "browser-default col s12 m6" }).down()
+        this.valueEditor = this.content.appendElement({ "tag": "select", "id": name + "_select", "style": "display: none;", class: "browser-default col s12 m8" }).down()
         let selectedIndex = 0;
         for (var i = 0; i < options.length; i++) {
             if (options[i] == value) {
                 selectedIndex = i;
             }
-            this.valueEditor.appendElement({ tag: "option", value: options[i], innerHtml: options[i] }).down()
+            if(numericIndex){
+                this.valueEditor.appendElement({ tag: "option", value: options[i], innerHtml: options[i] }).down()
+            }else{
+                this.valueEditor.appendElement({ tag: "option", value: i, innerHtml: options[i] }).down()
+            }
         }
 
         M.FormSelect.init(this.valueEditor.element)
@@ -135,10 +139,10 @@ class ConfigurationTextLine extends ConfigurationLine {
         }
 
         // Set the value div.
-        this.valueDiv = this.content.appendElement({ "tag": "div", "id": name + "_div", "class": "col s12 m6", "innerHtml": value.toString() }).down()
+        this.valueDiv = this.content.appendElement({ "tag": "div", "id": name + "_div", "class": "col s12 m8", "innerHtml": value.toString() }).down()
 
         // Set the value editor.
-        this.valueEditor = this.content.appendElement({ "tag": "input", "id": name + "_input", "style": "display: none;", "class": "col s12 m6", "type": type, "value": value }).down()
+        this.valueEditor = this.content.appendElement({ "tag": "input", "id": name + "_input", "style": "display: none;", "class": "col s12 m8", "type": type, "value": value }).down()
 
         this.valueEditor.element.onchange = () => {
             // set the value in the interface.
@@ -173,11 +177,11 @@ class ConfigurationToggleLine extends ConfigurationLine {
         super(panel, name, label, content);
         let value = this.getValue()
         // Set the value div.
-        this.valueDiv = this.content.appendElement({ "tag": "div", "id": name + "_div", "class": "col s12 m6", "innerHtml": value.toString() }).down()
+        this.valueDiv = this.content.appendElement({ "tag": "div", "id": name + "_div", "class": "col s12 m8", "innerHtml": value.toString() }).down()
 
         // Set the value editor.
         this.valueEditor = this.content
-            .appendElement({ "tag": "div", "class": "switch col s12 m6", "style": "display: none;" }).down()
+            .appendElement({ "tag": "div", "class": "switch col s12 m8", "style": "display: none;" }).down()
 
         this.valueEditor.appendElement({ "tag": "label" }).down()
             .appendElement({ "tag": "span", "innerHtml": labels[1] })
@@ -219,8 +223,8 @@ class ConfigurationMultipleOptionsSingleChoiceLine extends ConfigurationLine {
 
     constructor(panel: ConfigurationPanel, name: string, options: Array<string>, label: string, content: any) {
         super(panel, name, label, content);
-        this.valueDiv = this.content.appendElement({ "tag": "div", "id": name + "_div", "class": "col s12 m6", "innerHtml": this.getValue() }).down()
-        this.valueEditor = this.content.appendElement({ "tag": "div", "class": "col s12 m6", "style": "display: none; justify-content: flex-start;" }).down()
+        this.valueDiv = this.content.appendElement({ "tag": "div", "id": name + "_div", "class": "col s12 m8", "innerHtml": this.getValue() }).down()
+        this.valueEditor = this.content.appendElement({ "tag": "div", "class": "col s12 m8", "style": "display: none; justify-content: flex-start;" }).down()
 
         // Set the choice from options...
         for (var i = 0; i < options.length; i++) {
@@ -276,10 +280,10 @@ class ConfigurationStringListLine extends ConfigurationLine {
         super(panel, name, label, content);
 
         // The value div.
-        this.valueDiv = this.content.appendElement({ "tag": "ul", "id": name + "_div", "class": "collection col s12 m6" }).down()
+        this.valueDiv = this.content.appendElement({ "tag": "ul", "id": name + "_div", "class": "collection col s12 m8" }).down()
 
         // The editor div.
-        this.valueEditor = this.content.appendElement({ "tag": "div", "id": name + "_editor", "class": "col s12 m6", "style": "display: none; padding: 0px; margin: 0px; position: relative;" }).down()
+        this.valueEditor = this.content.appendElement({ "tag": "div", "id": name + "_editor", "class": "col s12 m8", "style": "display: none; padding: 0px; margin: 0px; position: relative;" }).down()
 
         // Return the value of the input.
         this.valueEditor.getValue = () => {
@@ -471,8 +475,8 @@ export class ConfigurationPanel extends Panel {
         return configLine
     }
 
-    appendEnumConfig(name: string, options: Array<string>, label?: string) {
-        let configLine = new ConfigurationEnum(this, name, options, label, this.content)
+    appendEnumConfig(name: string, options: Array<string>, numericalIndex:boolean, label?: string) {
+        let configLine = new ConfigurationEnum(this, name, options, label, this.content, numericalIndex)
         this.configurationLines.push(configLine)
         return configLine
     }
