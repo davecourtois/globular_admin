@@ -15,6 +15,7 @@ import { SqlServicePanel } from "./services/sqlServicePanel";
 import { SmtpServicePanel } from "./services/smtpServicePanel";
 import { LdapServicePanel } from "./services/ldapServicePanel";
 import { PersistenceServicePanel } from "./services/persistenceServicePanel";
+import { FileServicePanel } from './services/fileServicePanel';
 
 export class MainPage {
   // The outer most div.
@@ -602,6 +603,12 @@ export class MainPage {
           );
         }else if (globular.config.Services[key].Name == "persistence_server") {
           servicePanel = new PersistenceServicePanel(
+            globular.config.Services[key],
+            title,
+            key
+          );
+        }else if (globular.config.Services[key].Name == "file_server") {
+          servicePanel = new FileServicePanel(
             globular.config.Services[key],
             title,
             key

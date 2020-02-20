@@ -12,7 +12,15 @@ class ConfigurationLine {
     private name: string;
 
     // The div that contain the line.
-    protected content: any;
+    private _content: any;
+
+    protected get content(): any {
+        return this._content;
+    }
+
+    protected set content(value: any) {
+        this._content = value;
+    }
 
     // The div that display non-editable values.
     protected valueDiv: any;
