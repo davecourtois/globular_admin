@@ -14,11 +14,11 @@ class ConfigurationLine {
     // The div that contain the line.
     private _content: any;
 
-    protected get content(): any {
+    public get content(): any {
         return this._content;
     }
 
-    protected set content(value: any) {
+    public set content(value: any) {
         this._content = value;
     }
 
@@ -27,6 +27,18 @@ class ConfigurationLine {
 
     // The div that play editable values.
     protected valueEditor: any;
+
+    private _label: any;
+    public get label(): any {
+        return this._label;
+    }
+    public set label(value: any) {
+        this._label = value;
+    }
+
+    getValueEditor(): any{
+        return this.valueEditor;
+    }
 
     constructor(panel: ConfigurationPanel, name: string, label: string, content: any) {
         this.name = name;
@@ -40,7 +52,7 @@ class ConfigurationLine {
 
         // Now I will create the part label of the interface.
         this.content = content.appendElement({ "tag": "div", "class": "row" }).down()
-        this.content.appendElement({ "tag": "div", "class": "col s12 m4", "style": "height: 100%", "innerHtml": label }).down()
+        this.label = this.content.appendElement({ "tag": "div", "class": "col s12 m4", "style": "height: 100%", "innerHtml": label }).down()
     }
 
     // Return the configuration values.

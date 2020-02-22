@@ -48,7 +48,13 @@ import {
   DeletePermissionsRsp,
   SetPermissionRqst,
   FilePermission,
-  SetPermissionRsp
+  SetPermissionRsp,
+  SynchronizeLdapRqst,
+  LdapSyncInfos,
+  SynchronizeLdapRsp,
+  UserSyncInfos,
+  GroupSyncInfos
+
 } from "globular-web-client/lib/ressource/ressource_pb";
 import * as jwt from "jwt-decode";
 import {
@@ -71,7 +77,6 @@ import {
   CreateArchiveResponse,
   CreateDirRequest,
   ReadDirRequest,
-
 } from "globular-web-client/lib/file/filepb/file_pb";
 
 // Create a new connection with the backend.
@@ -157,6 +162,42 @@ export function saveConfig(
   }
 }
 
+/**
+ * Synchronize LDAP and Globular/MongoDB user and roles.
+ * @param info The synchronisations informations.
+ * @param callback success callback.
+ */
+export function syncLdapInfos(info: any, timeout: number, callback: () => void) {
+  let rqst = new SynchronizeLdapRqst
+  let syncInfos = new LdapSyncInfos
+  syncInfos.setConnectionid(info.ConnectionId)
+  syncInfos.setLdapseriveid(info.LdapSeriveId)
+
+  let userSyncInfos = new UserSyncInfos
+  userSyncInfos.setBase(info.UserSyncInfos.Base)
+  userSyncInfos.setQuery(info.UserSyncInfos.Query)
+  userSyncInfos.setId(info.UserSyncInfos.Id)
+  userSyncInfos.setEmail(info.UserSyncInfos.Email)
+  syncInfos.setUsersyncinfos(userSyncInfos)
+
+  let groupSyncInfos = new GroupSyncInfos
+  groupSyncInfos.setBase(info.GroupSyncInfos.Base)
+  groupSyncInfos.setQuery(info.GroupSyncInfos.Query)
+  groupSyncInfos.setId(info.GroupSyncInfos.Id)
+  syncInfos.setGroupsyncinfos(groupSyncInfos)
+
+  rqst.setSyncinfo(syncInfos)
+
+  // Try to synchronyze the ldap service.
+  globular.ressourceService.synchronizeLdap(rqst, {
+    token: localStorage.getItem("user_token"),
+    application: application
+  }).then((rsp:SynchronizeLdapRsp)=>{
+
+  }).catch((err:any)=>{
+    console.log(err)
+  })
+}
 ///////////////////////////////////// Permissions /////////////////////////////////////
 
 /**
