@@ -1186,6 +1186,7 @@ export function CreateRole(
 ) {
   let rqst = new CreateRoleRqst();
   let role = new Role();
+  role.setId(id);
   role.setName(id);
   rqst.setRole(role);
 

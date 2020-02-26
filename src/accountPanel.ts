@@ -43,7 +43,14 @@ export class AccountManager extends Panel {
       (evt: any) => {
         // Set the dir to display.
         // Here I must retreive the directory from the given path.
-        this.displayAccounts();
+        getAllRoles((roles: any)=>{
+          for(var i=0; i < roles.length; i++){
+            this.roles[roles[i]._id] = roles[i]
+          }
+          this.displayAccounts();
+        }, (err:any)=>{
+          console.log(err)
+        })
       },
       true
     );

@@ -8,11 +8,17 @@ import { FilePermission } from "globular-web-client/lib/ressource/ressource_pb";
  */
 export class PermissionExplorer extends Panel {
   // The file information.
-  fileInfo: any;
-  editable: boolean;
-  content: any;
-  permissions: any; // contain the list of permission.
-  path: string;
+  private fileInfo: any;
+  private editable: boolean;
+  private content: any;
+  private permissions: any; // contain the list of permission.
+  private applications: any; // Contain the list of application
+  private path: string;
+
+  // Keep account and roles localy...
+  private accounts: any;
+  private roles: any;
+
 
   constructor(parent: any) {
     super(randomUUID());
@@ -21,6 +27,32 @@ export class PermissionExplorer extends Panel {
     this.div.element.className = "card col s12 m10 offset-m1";
     this.div.element.style.display = "none"
     parent.appendElement(this.div);
+    this.accounts = {}
+    this.roles = {}
+    this.applications = {}
+
+    // Initilalyse roles
+    getAllRoles((roles:any)=>{
+      for(var i=0; i < roles.length; i++){
+        this.roles[roles[i]._id] = roles[i]
+      }
+    }, ()=>{
+
+    })
+
+    GetAllApplicationsInfo((applications:any)=>{
+      for(var i=0; i < applications.length; i++){
+        this.applications[applications[i]._id] = applications[i]
+      }
+    }, ()=>{})
+
+    // Initilalyse accounts
+    GetAllAccountsInfo((accounts:any)=>{
+      for(var i=0; i < accounts.length; i++){
+        this.accounts[accounts[i]._id] = accounts[i]
+      }
+    }
+    , ()=>{})
 
     eventHub.subscribe(
       "set_file_event",
@@ -83,13 +115,19 @@ export class PermissionExplorer extends Panel {
   }
 
   // Display file permission
-  displayPermission(content: any, permission: any, owner: string, ownerType: OwnerType) {
+  displayPermission(content: any, permission: any, owner: any, ownerType: OwnerType) {
 
     let div = content.appendElement({ tag: "div" }).down()
+    let ownerName = ""
+    if(ownerType == OwnerType.Application){
+      ownerName = owner._id
+    }else{
+      ownerName = owner.name
+    }
 
     let permissionDiv = div
       .appendElement({ tag: "div", id: "permission_div_0", class: "col s12 m6", style: "display: flex; margin-bottom: 5px;" }).down()
-      .appendElement({ tag: "span", innerHtml: owner })
+      .appendElement({ tag: "span", innerHtml: ownerName })
       .appendElement({ tag: "span", innerHtml: permission.path, style: "flex-grow: 1; margin-left: 15px;" }).up()
       .appendElement({ tag: "div", id: "permission_div_1", class: "col s12 m6", style: "display: flex; margin-bottom: 5px;" }).down() // Now the permission itself.
 
@@ -285,7 +323,7 @@ export class PermissionExplorer extends Panel {
         }
 
         // Here I will set the permission.
-        setFilePermission(permission.path, owner, ownerType, permission_number,
+        setFilePermission(permission.path, owner._id, ownerType, permission_number,
           () => {
             getFilePermissions(this.fileInfo.path,
               (permissions: Array<FilePermission>) => {
@@ -318,7 +356,7 @@ export class PermissionExplorer extends Panel {
 
       // remove the file permission.
       removePermissionBtn.element.onclick = () => {
-        deleteFilePermissions(permission.path, owner, 
+        deleteFilePermissions(permission.path, owner._id, 
           ()=>{
             getFilePermissions(this.fileInfo.path,
               (permissions: Array<FilePermission>) => {
@@ -386,14 +424,16 @@ export class PermissionExplorer extends Panel {
             }
             // append the account if it not already exist.
             if (!exist) {
-              data[accounts[i]._id] = null;
+              data[accounts[i].name] = null;
+              this.accounts[accounts[i].name] = accounts[i]
             }
           }
 
         } else {
           // Append all the account in that case.
           for (var i = 0; i < accounts.length; i++) {
-            data[accounts[i]._id] = null;
+            data[accounts[i].name] = null;
+            this.accounts[accounts[i].name] = accounts[i]
           }
         }
 
@@ -401,7 +441,7 @@ export class PermissionExplorer extends Panel {
         let onAutocomplete = () => {
           // create new permission for user
           let username = user_input.element.value;
-          setFilePermission(this.fileInfo.path, username, OwnerType.User, 0,
+          setFilePermission(this.fileInfo.path, this.accounts[username]._id, OwnerType.User, 0,
             () => {
               // New permission was created...
               getFilePermissions(this.fileInfo.path,
@@ -475,14 +515,16 @@ export class PermissionExplorer extends Panel {
             }
             // append the account if it not already exist.
             if (!exist) {
-              data[roles[i]._id] = null;
+              data[roles[i].name] = null;
+              this.roles[roles[i].name] = roles[i]
             }
           }
 
         } else {
           // Append all the account in that case.
           for (var i = 0; i < roles.length; i++) {
-            data[roles[i]._id] = null;
+            data[roles[i].name] = null;
+            this.roles[roles[i].name] = roles[i]
           }
         }
 
@@ -490,7 +532,7 @@ export class PermissionExplorer extends Panel {
         let onAutocomplete = () => {
           // create new permission for user
           let rolename = role_input.element.value;
-          setFilePermission(this.fileInfo.path, rolename, OwnerType.Role, 0,
+          setFilePermission(this.fileInfo.path, this.roles[rolename]._id, OwnerType.Role, 0,
             () => {
               // New permission was created...
               getFilePermissions(this.fileInfo.path,
@@ -562,14 +604,14 @@ export class PermissionExplorer extends Panel {
                 }
               }
             }
-            // append the account if it not already exist.
+            // append the application if it not already exist.
             if (!exist) {
               data[applications[i]._id] = null;
             }
           }
 
         } else {
-          // Append all the account in that case.
+          // Append all the application in that case.
           for (var i = 0; i < applications.length; i++) {
             data[applications[i]._id] = null;
           }
@@ -632,17 +674,17 @@ export class PermissionExplorer extends Panel {
 
     userPermission.sort((a: any, b: any) => (a.user > b.user) ? 1 : ((b.user > a.user) ? -1 : 0));
     for(var i=0; i < userPermission.length; i++){
-      this.displayPermission(usersPermissionSection, userPermission[i], userPermission[i].user, OwnerType.User)
+      this.displayPermission(usersPermissionSection, userPermission[i], this.accounts[userPermission[i].user], OwnerType.User)
     }
 
     rolePermission.sort((a: any, b: any) => (a.role > b.role) ? 1 : ((b.role > a.role) ? -1 : 0));
     for(var i=0; i < rolePermission.length; i++){
-      this.displayPermission(rolesPermissionSection, rolePermission[i], rolePermission[i].role, OwnerType.Role)
+      this.displayPermission(rolesPermissionSection, rolePermission[i], this.roles[rolePermission[i].role], OwnerType.Role)
     }
 
     applicationPermission.sort((a: any, b: any) => (a.application > b.application) ? 1 : ((b.application > a.application) ? -1 : 0));
     for(var i=0; i < applicationPermission.length; i++){
-      this.displayPermission(applciationsPermissionSection, applicationPermission[i], applicationPermission[i].application, OwnerType.Application)
+      this.displayPermission(applciationsPermissionSection, applicationPermission[i], this.applications[applicationPermission[i].application], OwnerType.Application)
     }
 
   }
