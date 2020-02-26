@@ -302,7 +302,7 @@ export class RolePanel extends Panel {
             header.appendElement({
               tag: "span",
               class: "col s11",
-              innerHtml: role._id
+              innerHtml: role.name
             });
             let deleteBtn = header
               .appendElement({
@@ -338,7 +338,7 @@ export class RolePanel extends Panel {
             header.appendElement({
               tag: "span",
               class: "col s12",
-              innerHtml: roles[i]._id
+              innerHtml: roles[i].name
             });
           }
           // Display the application.

@@ -61,7 +61,8 @@ import {
   InsertOneRqst,
   FindOneRqst,
   FindRqst,
-  FindResp
+  FindResp,
+  FindOneResp
 } from "globular-web-client/lib/persistence/persistencepb/persistence_pb";
 import {
   FindServicesDescriptorRequest,
@@ -78,6 +79,7 @@ import {
   CreateDirRequest,
   ReadDirRequest,
 } from "globular-web-client/lib/file/filepb/file_pb";
+import { TagType, ReadTagRqst } from "globular-web-client/lib/plc/plcpb/plc_pb";
 
 // Create a new connection with the backend.
 export let globular: GlobularWebClient.Globular;
@@ -170,20 +172,21 @@ export function saveConfig(
 export function syncLdapInfos(info: any, timeout: number, callback: () => void) {
   let rqst = new SynchronizeLdapRqst
   let syncInfos = new LdapSyncInfos
-  syncInfos.setConnectionid(info.ConnectionId)
-  syncInfos.setLdapseriveid(info.LdapSeriveId)
+  syncInfos.setConnectionid(info.connectionId)
+  syncInfos.setLdapseriveid(info.ldapSeriveId)
+  syncInfos.setRefresh(info.refresh)
 
   let userSyncInfos = new UserSyncInfos
-  userSyncInfos.setBase(info.UserSyncInfos.Base)
-  userSyncInfos.setQuery(info.UserSyncInfos.Query)
-  userSyncInfos.setId(info.UserSyncInfos.Id)
-  userSyncInfos.setEmail(info.UserSyncInfos.Email)
+  userSyncInfos.setBase(info.userSyncInfos.base)
+  userSyncInfos.setQuery(info.userSyncInfos.query)
+  userSyncInfos.setId(info.userSyncInfos.id)
+  userSyncInfos.setEmail(info.userSyncInfos.email)
   syncInfos.setUsersyncinfos(userSyncInfos)
 
   let groupSyncInfos = new GroupSyncInfos
-  groupSyncInfos.setBase(info.GroupSyncInfos.Base)
-  groupSyncInfos.setQuery(info.GroupSyncInfos.Query)
-  groupSyncInfos.setId(info.GroupSyncInfos.Id)
+  groupSyncInfos.setBase(info.groupSyncInfos.base)
+  groupSyncInfos.setQuery(info.groupSyncInfos.query)
+  groupSyncInfos.setId(info.groupSyncInfos.id)
   syncInfos.setGroupsyncinfos(groupSyncInfos)
 
   rqst.setSyncinfo(syncInfos)
@@ -751,11 +754,11 @@ export function registerAccount(
  * @param errorCallback The error callback.
  */
 export function DeleteAccount(
-  name: string,
+  id: string,
   callback: (value: any) => void,
   errorCallback: (err: any) => void) {
   let rqst = new DeleteAccountRqst
-  rqst.setName(name)
+  rqst.setId(id)
 
   // Remove the account from the database.
   globular.ressourceService
@@ -1046,15 +1049,16 @@ export function GetAllAccountsInfo(callback: (
   var stream = globular.persistenceService.find(rqst, {
     application: application
   });
-  var jsonStr = "";
+ 
+  let accounts = new Array<any>()
 
   stream.on("data", (rsp: FindResp) => {
-    jsonStr += rsp.getJsonstr();
+      accounts = accounts.concat(JSON.parse(rsp.getJsonstr()))
   });
 
   stream.on("status", function (status) {
     if (status.code == 0) {
-      callback(JSON.parse(jsonStr));
+      callback(accounts);
     } else {
       errorCallback({});
     }
@@ -1099,15 +1103,16 @@ export function getAllRoles(
   var stream = globular.persistenceService.find(rqst, {
     application: application
   });
-  var jsonStr = "";
+
+  var roles = new Array<any>();
 
   stream.on("data", (rsp: FindResp) => {
-    jsonStr += rsp.getJsonstr();
+    roles = roles.concat(JSON.parse(rsp.getJsonstr()));
   });
 
   stream.on("status", function (status) {
     if (status.code == 0) {
-      callback(JSON.parse(jsonStr));
+      callback(roles);
     } else {
       errorCallback({});
     }
@@ -1429,6 +1434,29 @@ export function saveService(
     });
 }
 
+// Get the object pointed by a reference.
+export function getReferencedValue(ref: any, callback: (results: any) => void, errorCallback: (err:any)=>void) {
+
+  let database = ref.$db;
+  let collection = ref.$ref;
+
+  let rqst = new FindOneRqst();
+  rqst.setId(database);
+  rqst.setDatabase(database);
+  rqst.setCollection(collection);
+  rqst.setQuery(`{"_id":"${ref.$id}"}`);
+  rqst.setOptions("");
+
+  globular.persistenceService.findOne(rqst, {
+    token: localStorage.getItem("user_token"),
+    application: application
+  }).then((rsp:FindOneResp)=>{
+    callback(JSON.parse(rsp.getJsonstr()))
+  }).catch((err:any)=>{
+    errorCallback(err)
+  });
+}
+
 /**
  * Read all user data.
  */
@@ -1545,3 +1573,63 @@ export function readLogs(callback: (results: any) => void) {
     // stream end signal
   });
 }
+
+
+//////////////////////////// PLC functions ///////////////////////////////////
+export enum PLC_TYPE {
+  ALEN_BRADLEY = 1,
+  SIEMENS = 2,
+  MODBUS = 3
+}
+
+/**
+* Read a plc tag from the defined backend.
+* @param plcType  The plc type can be Alen Bradley or Simens, modbus is on the planned.
+* @param connectionId  The connection id defined for that plc.
+* @param name The name of the tag to read.
+* @param type The type name of the plc.
+* @param offset The offset in the memory.
+*/
+export async function readPlcTag(plcType: PLC_TYPE, connectionId: string, name: string, type: TagType, offset: number) {
+  let rqst = new ReadTagRqst();
+  rqst.setName(name)
+  rqst.setType(type)
+  rqst.setOffset(offset)
+  rqst.setConnectionId(connectionId)
+
+  let value: any
+  let result: string
+
+  // Try to get the value from the server.
+  try {
+      if (plcType == PLC_TYPE.ALEN_BRADLEY) {
+          if (globular.plcService_ab != undefined) {
+              let rsp = await globular.plcService_ab.readTag(rqst);
+              result = rsp.getResult()
+          } else {
+              return "No Alen Bradlay PLC server configured!"
+          }
+      } else if (plcType == PLC_TYPE.SIEMENS) {
+          if (globular.plcService_siemens != undefined) {
+              let rsp = await globular.plcService_siemens.readTag(rqst);
+              result = rsp.getResult()
+          } else {
+              return "No Siemens PLC server configured!"
+          }
+      } else {
+          return "No PLC server configured!"
+      }
+  } catch (err) {
+      return err
+  }
+
+  // Here I got the value in a string I will convert it into it type.
+  if (type == TagType.BOOL) {
+      return result == "true" ? true : false
+  } else if (type == TagType.REAL) {
+      return parseFloat(result)
+  } else { // Must be cinsidere a integer.
+      return parseInt(result)
+  }
+}
+

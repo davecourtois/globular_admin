@@ -20,11 +20,21 @@ import { SetEmailRequest } from "globular-web-client/lib/admin/admin_pb";
  */
 export class AccountManager extends Panel {
   private editable: boolean;
+  private roles: any; // contain the list of roles.
 
   // File panel constructor.
   constructor(id: string) {
     super(id);
-    this.displayAccounts();
+    this.roles = {}
+    getAllRoles((roles: any)=>{
+      for(var i=0; i < roles.length; i++){
+        this.roles[roles[i]._id] = roles[i]
+      }
+      this.displayAccounts();
+    }, (err:any)=>{
+      console.log(err)
+    })
+    
 
     // Emit when user click on the path
     eventHub.subscribe(
@@ -169,11 +179,13 @@ export class AccountManager extends Panel {
       // Now the roles...
       if (account.roles != undefined) {
         for (var j = 0; j < account.roles.length; j++) {
-          roles_ul.appendElement({
-            tag: "li",
-            class: "collection-item",
-            innerHtml: account.roles[j].$id
-          });
+          if(this.roles[account.roles[j].$id]!=undefined){
+            roles_ul.appendElement({
+              tag: "li",
+              class: "collection-item",
+              innerHtml: this.roles[account.roles[j].$id].name
+            });
+          }
         }
       }
     } else {
@@ -261,66 +273,68 @@ export class AccountManager extends Panel {
       if (account.roles != undefined) {
         for (var j = 0; j < account.roles.length; j++) {
           let role = account.roles[j];
-          let deleteBtn = roles_ul
-            .appendElement({ tag: "li", class: "collection-item" })
-            .down()
-            .appendElement({
-              tag: "div",
-              class: "row",
-              style: "margin-bottom: 0px;"
-            })
-            .down()
-            .appendElement({
-              tag: "div",
-              class: "col s11",
-              innerHtml: role.$id
-            })
-            .appendElement({
-              tag: "i",
-              class: "tiny material-icons col s1",
-              innerHtml: "remove"
-            })
-            .down();
+          if(this.roles[ role.$id] != undefined){
+            let deleteBtn = roles_ul
+              .appendElement({ tag: "li", class: "collection-item" })
+              .down()
+              .appendElement({
+                tag: "div",
+                class: "row",
+                style: "margin-bottom: 0px;"
+              })
+              .down()
+              .appendElement({
+                tag: "div",
+                class: "col s11",
+                innerHtml: this.roles[ role.$id].name
+              })
+              .appendElement({
+                tag: "i",
+                class: "tiny material-icons col s1",
+                innerHtml: "remove"
+              })
+              .down();
 
-          deleteBtn.element.onmouseenter = function () {
-            this.style.cursor = "pointer";
-          };
+            deleteBtn.element.onmouseenter = function () {
+              this.style.cursor = "pointer";
+            };
 
-          deleteBtn.element.onmouseleave = function () {
-            this.style.cursor = "default";
-          };
+            deleteBtn.element.onmouseleave = function () {
+              this.style.cursor = "default";
+            };
 
-          // Here I will remove the role from the account.
-          deleteBtn.element.onclick = () => {
-            RemoveRoleFromAccount(
-              account._id,
-              role.$id,
-              () => {
-                M.toast({
-                  html: "Role " + role.$id + " has been remove!",
-                  displayLength: 2000
-                });
+            // Here I will remove the role from the account.
+            deleteBtn.element.onclick = () => {
+              RemoveRoleFromAccount(
+                account._id,
+                role.$id,
+                () => {
+                  M.toast({
+                    html: "Role " + this.roles[role.$id].name + " has been remove!",
+                    displayLength: 2000
+                  });
 
-                // remove the role from the roles list
-                let roles = new Array<any>();
-                for (var i = 0; i < account.roles.length; i++) {
-                  if (account.roles[i].$id != role.$id) {
-                    roles.push(account.roles[i]);
+                  // remove the role from the roles list
+                  let roles = new Array<any>();
+                  for (var i = 0; i < account.roles.length; i++) {
+                    if (account.roles[i].$id != role.$id) {
+                      roles.push(account.roles[i]);
+                    }
                   }
+
+                  // set back the roles.
+                  account.roles = roles;
+
+                  // refresh the panel.
+                  this.displayAccount(content, account);
+                },
+                (err: any) => {
+                  let msg = JSON.parse(err.message);
+                  M.toast({ html: msg.ErrorMsg, displayLength: 2000 });
                 }
-
-                // set back the roles.
-                account.roles = roles;
-
-                // refresh the panel.
-                this.displayAccount(content, account);
-              },
-              (err: any) => {
-                let msg = JSON.parse(err.message);
-                M.toast({ html: msg.ErrorMsg, displayLength: 2000 });
-              }
-            );
-          };
+              );
+            };
+          }
         }
       }
     }
@@ -494,7 +508,7 @@ export class AccountManager extends Panel {
             header.appendElement({
               tag: "span",
               class: "col s11",
-              innerHtml: account._id
+              innerHtml: account.name
             });
             let deleteBtn = header
               .appendElement({
@@ -526,7 +540,7 @@ export class AccountManager extends Panel {
             header.appendElement({
               tag: "span",
               class: "col s12",
-              innerHtml: account._id
+              innerHtml: account.name
             });
           }
           // Display the account.

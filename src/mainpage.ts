@@ -16,6 +16,8 @@ import { SmtpServicePanel } from "./services/smtpServicePanel";
 import { LdapServicePanel } from "./services/ldapServicePanel";
 import { PersistenceServicePanel } from "./services/persistenceServicePanel";
 import { FileServicePanel } from './services/fileServicePanel';
+import { PlcServerConfigPanel } from './services/plcServerConfigPanel';
+import { PlcExporterConfigPanel } from "./services/plcExporterConfigPanel";
 
 export class MainPage {
   // The outer most div.
@@ -613,6 +615,18 @@ export class MainPage {
             title,
             key
           );
+        }else if (globular.config.Services[key].Name.startsWith("plc_server_")) {
+          servicePanel = new PlcServerConfigPanel(
+            globular.config.Services[key],
+            title,
+            key
+          );
+        }else if (globular.config.Services[key].Name.startsWith("plc_exporter")) {
+          servicePanel = new PlcExporterConfigPanel(
+            globular.config.Services[key],
+            title,
+            key
+          );
         }else {
           servicePanel = new ServicePanel(
             globular.config.Services[key],
@@ -621,7 +635,7 @@ export class MainPage {
           );
         }
 
-
+        
         // Here I will create the tab...
         let panel = div
           .appendElement({ tag: "li" })

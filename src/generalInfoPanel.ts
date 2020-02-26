@@ -48,12 +48,12 @@ export class GeneralInfoPanel extends ConfigurationPanel {
     let li = ul.prependElement({ tag: "li" }).down()
 
     // The ldap service object.
-    let ldap = this.ldapServices[info.LdapSeriveId]
+    let ldap = this.ldapServices[info.ldapSeriveId]
 
     if (ldap == undefined) {
       // Set to the first element.
       ldap = this.ldapServices[Object.keys(this.ldapServices)[0]]
-      info.LdapSeriveId = ldap.Id
+      info.ldapSeriveId = ldap.Id
     }
 
     let deleteBtn = li.appendElement({ tag: "div", class: "collapsible-header", style: "display: flex; align-items: center;" }).down()
@@ -71,7 +71,7 @@ export class GeneralInfoPanel extends ConfigurationPanel {
     }
 
     // display the span or the select box...
-    if (this.ldapServices[info.LdapSeriveId] == undefined) {
+    if (this.ldapServices[info.ldapSeriveId] == undefined) {
       idSelect.element.style.display = ""
       idSpan.element.style.display = "none"
     }
@@ -111,8 +111,8 @@ export class GeneralInfoPanel extends ConfigurationPanel {
     idSelect.element.onchange = () => {
       // Set the value...
       idSpan.element.innerHTML = idSelect.element.value;
-      info.LdapSeriveId = idSelect.element.value;
-      synInfoPanel.setLdap(this.ldapServices[info.LdapSeriveId])
+      info.ldapSeriveId = idSelect.element.value;
+      synInfoPanel.setLdap(this.ldapServices[info.ldapSeriveId])
     }
 
     syncInfoDiv.appendElement(synInfoPanel.content);
@@ -174,8 +174,11 @@ export class GeneralInfoPanel extends ConfigurationPanel {
           .appendElement({ tag: "ul", class: "collapsible", style: "box-shadow: none;" }).down()
 
         // Now in each ul I will append the synchronization panel.
-        for (var id in this.config.Connections) {
-          this.createLdapSynInfoPanel(ul, this.config.Connections[id])
+        for (var id in this.config.LdapSyncInfos) {
+          let syncInfos = this.config.LdapSyncInfos[id]
+          for(var i=0; i < syncInfos.length; i++){
+            this.createLdapSynInfoPanel(ul, syncInfos[i])
+          }
         }
 
         M.Collapsible.init(ul.element)
@@ -191,7 +194,7 @@ export class GeneralInfoPanel extends ConfigurationPanel {
         }
 
         newSyncInfoBtn.element.onclick = () => {
-          let connection = { LdapSeriveId: "", ConnectionId: "", Refresh:1, UserSyncInfos:{ Base:"", Query:"", Id:"", Email:"" },  GroupSyncInfos:{ Base:"", Query:"", Id:"" }}
+          let connection = { ldapSeriveId: "", connectionId: "", refresh:1, userSyncInfos:{ base:"",  query:"", id:"", email:"" },  groupSyncInfos:{ base:"", query:"", id:"" }}
           let li = this.createLdapSynInfoPanel(ul, connection)
         }
       }

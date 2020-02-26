@@ -13,16 +13,16 @@ class LdapUsersSyncServicePanel extends ConfigurationPanel {
         super(userInfos, name, id)
 
         // The LDAP base.
-        this.baseTextLine = this.appendTextualConfig("Base");
+        this.baseTextLine = this.appendTextualConfig("base", "Base DN");
 
         // The Query text
-        this.queryTextLine = this.appendTextualConfig("Query", "Query");
+        this.queryTextLine = this.appendTextualConfig("query", "Filter");
 
         // The LDAP user id field
-        this.idTextLine = this.appendTextualConfig("Id", "Id Field");
+        this.idTextLine = this.appendTextualConfig("id", "Id Field");
 
         // The LDAP user email field
-        this.emailTextLine = this.appendTextualConfig("Email", "Email Field");
+        this.emailTextLine = this.appendTextualConfig("email", "Email Field");
     }
 
     onlogin(data: any) {
@@ -55,13 +55,13 @@ class LdapGroupsSyncServicePanel extends ConfigurationPanel {
         super(groupInfos, name, id)
 
         // The LDAP base.
-        this.baseTextLine = this.appendTextualConfig("Base");
+        this.baseTextLine = this.appendTextualConfig("base", "Base DN");
 
         // The Query text
-        this.queryTextLine = this.appendTextualConfig("Query",);
+        this.queryTextLine = this.appendTextualConfig("query", "Filter");
 
         // The LDAP group id field
-        this.idTextLine = this.appendTextualConfig("Id", "Id Field");
+        this.idTextLine = this.appendTextualConfig("id", "Id Field");
     }
 
     onlogin(data: any) {
@@ -98,22 +98,22 @@ export class LdapSyncServicePanel extends ConfigurationPanel {
     constructor(syncInfos: any, id: string, name: string) {
         // The config must be LDAP sync info.
         super(syncInfos, name, id)
-        this.connectionIdEnumLine = this.appendEnumConfig("ConnectionId", [], false, "Connection");
+        this.connectionIdEnumLine = this.appendEnumConfig("connectionId", [], false, "Connection");
         
         //Display the number of ldap refresh rate per day's
-        this.ldapRefreshRateLine = this.appendTextualConfig("Refresh", "Refresh rates", "number", 1, 0, 65535);
+        this.ldapRefreshRateLine = this.appendTextualConfig("refresh", "Refresh rates", "number", 1, 0, 65535);
               
 
         // The ldap user sync infos.
-        this.ldapUsersSyncServicePanel = new LdapUsersSyncServicePanel(syncInfos.UserSyncInfos, "", "");
-        let userSyncInfos =  this.appendEmptyConfig("UserSyncInfos", "Users")
+        this.ldapUsersSyncServicePanel = new LdapUsersSyncServicePanel(syncInfos.userSyncInfos, "", "");
+        let userSyncInfos =  this.appendEmptyConfig("userSyncInfos", "Users")
         userSyncInfos.label.element.className = "s12"
         userSyncInfos.content.appendElement(this.ldapUsersSyncServicePanel.content)
         userSyncInfos.content.getChildById("content").element.style.padding = "12px";
 
         // The ldap group sync infos.
-        this.ldapGroupsSyncServicePanel = new LdapGroupsSyncServicePanel(syncInfos.GroupSyncInfos, "", "")
-        let groupSyncInfos =  this.appendEmptyConfig("GroupSyncInfos", "Groups")
+        this.ldapGroupsSyncServicePanel = new LdapGroupsSyncServicePanel(syncInfos.groupSyncInfos, "", "")
+        let groupSyncInfos =  this.appendEmptyConfig("groupSyncInfos", "Groups")
         groupSyncInfos.label.element.className = "s12"
         groupSyncInfos.content.appendElement(this.ldapGroupsSyncServicePanel.content)
         groupSyncInfos.content.getChildById("content").element.style.padding = "12px";
@@ -148,8 +148,8 @@ export class LdapSyncServicePanel extends ConfigurationPanel {
         this.connectionIdEnumLine.unlock();
 
         // Set the data configuration from the data object.
-        this.ldapUsersSyncServicePanel.onlogin(data.UserSyncInfos)
-        this.ldapGroupsSyncServicePanel.onlogin(data.GroupSyncInfos)
+        this.ldapUsersSyncServicePanel.onlogin(data.userSyncInfos)
+        this.ldapGroupsSyncServicePanel.onlogin(data.groupSyncInfos)
 
     }
 
@@ -165,6 +165,10 @@ export class LdapSyncServicePanel extends ConfigurationPanel {
         // set the ldap fiedl into the 
         this.ldapGroupsSyncServicePanel.save()
         this.ldapUsersSyncServicePanel.save()
+
+        // Set the values back
+        this.config["userSyncInfos"] = this.ldapUsersSyncServicePanel.config
+        this.config["groupSyncInfos"] = this.ldapGroupsSyncServicePanel.config
 
         // Call the default function.
         super.save()

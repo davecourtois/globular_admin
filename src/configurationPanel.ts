@@ -109,12 +109,11 @@ class ConfigurationEnum extends ConfigurationLine {
 
         // Set the value editor.
         this.valueEditor = this.content.appendElement({ "tag": "select", "id": name + "_select", "style": "display: none;", class: "browser-default col s12 m8" }).down()
-        let selectedIndex = 0;
-        for (var i = 0; i < options.length; i++) {
-            if (options[i] == value) {
-                selectedIndex = i;
-            }
-            if(numericIndex){
+
+        this.valueEditor.isNumeric = numericIndex;
+        let i:number;
+        for (i = 0; i < options.length; i++) {
+            if(!numericIndex){
                 this.valueEditor.appendElement({ tag: "option", value: options[i], innerHtml: options[i] }).down()
             }else{
                 this.valueEditor.appendElement({ tag: "option", value: i, innerHtml: options[i] }).down()
@@ -122,17 +121,26 @@ class ConfigurationEnum extends ConfigurationLine {
         }
 
         M.FormSelect.init(this.valueEditor.element)
-        this.valueEditor.element.selectedIndex = selectedIndex
+        if(numericIndex == true){
+            this.valueEditor.element.selectedIndex = value
+        }else{
+            this.valueEditor.element.selectedIndex = options.indexOf(value)
+        }
 
         this.valueEditor.element.onchange = () => {
             // set the value in the interface.
-            this.valueDiv.setValue(this.valueEditor.getValue())
+            let value = this.valueEditor.getValue()
+            this.valueDiv.setValue(value)
             this.panel.hasChange()
         }
 
         // Return the value of the input.
-        this.valueEditor.getValue = function () {
-            return this.element.value
+        this.valueEditor.getValue =  ()=> {
+            let value = this.valueEditor.element.value
+            if(this.valueEditor.isNumeric == true){
+                value = parseInt(value)
+            }
+            return value
         }
 
         // Return the value of the input.
@@ -156,6 +164,11 @@ class ConfigurationTextLine extends ConfigurationLine {
         // Type can be any type that input box can support.
         if (type == undefined) {
             type = "text"
+        }
+
+        if(value == undefined){
+            console.log("no value found for attribute ", name)
+            return
         }
 
         // Set the value div.
