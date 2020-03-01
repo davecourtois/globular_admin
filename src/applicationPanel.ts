@@ -118,8 +118,8 @@ export class ApplicationManager extends Panel {
                 this.displayApplication(content, application)
               },
               (err: any) => {
-                let msg = JSON.parse(err.message);
-                M.toast({ html: msg.ErrorMsg, displayLength: 2000 });
+                
+                M.toast({ html: err.message, displayLength: 2000 });
               }
             );
 
@@ -128,8 +128,8 @@ export class ApplicationManager extends Panel {
 
         },
         (err: any) => {
-          let msg = JSON.parse(err.message);
-          M.toast({ html: msg.ErrorMsg, displayLength: 2000 });
+          
+          M.toast({ html: err.message, displayLength: 2000 });
         })
 
       // Now the actions...
@@ -165,8 +165,8 @@ export class ApplicationManager extends Panel {
                 this.displayApplication(content, application)
               },
               (err: any) => {
-                let msg = JSON.parse(err.message);
-                M.toast({ html: msg.ErrorMsg, displayLength: 2000 });
+                
+                M.toast({ html: err.message, displayLength: 2000 });
               })
           }
         }
@@ -205,8 +205,8 @@ export class ApplicationManager extends Panel {
                 this.displayApplications()
               },
               (err: any) => {
-                let msg = JSON.parse(err.message);
-                M.toast({ html: msg.ErrorMsg, displayLength: 2000 });
+                
+                M.toast({ html: err.message, displayLength: 2000 });
               })
           }
 
@@ -221,8 +221,8 @@ export class ApplicationManager extends Panel {
       M.Collapsible.init(ul.element)
     },
       (err: any) => {
-        let msg = JSON.parse(err.message);
-        M.toast({ html: msg.ErrorMsg, displayLength: 2000 });
+        
+        M.toast({ html: err.message, displayLength: 2000 });
       });
   }
 

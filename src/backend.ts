@@ -479,6 +479,11 @@ export function createArchive(path: string, name: string, callback: (path: strin
 export function downloadFileHttp(urlToSend: string, fileName: string, callback: () => void) {
   var req = new XMLHttpRequest();
   req.open("GET", urlToSend, true);
+
+  // Set the token to manage downlaod access.
+  req.setRequestHeader("token", localStorage.getItem("user_token"))
+  req.setRequestHeader("application", "admin")
+
   req.responseType = "blob";
   req.onload = function (event) {
     var blob = req.response;

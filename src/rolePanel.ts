@@ -122,8 +122,8 @@ export class RolePanel extends Panel {
                 this.displayRole(content, role);
               },
               (err: any) => {
-                let msg = JSON.parse(err.message);
-                M.toast({ html: msg.ErrorMsg, displayLength: 2000 });
+                
+                M.toast({ html: err.message, displayLength: 2000 });
               }
             );
           };
@@ -133,8 +133,8 @@ export class RolePanel extends Panel {
           });
         },
         (err: any) => {
-          let msg = JSON.parse(err.message);
-          M.toast({ html: msg.ErrorMsg, displayLength: 2000 });
+          
+          M.toast({ html: err.message, displayLength: 2000 });
         }
       );
 
@@ -185,8 +185,8 @@ export class RolePanel extends Panel {
                 this.displayRole(content, role);
               },
               (err: any) => {
-                let msg = JSON.parse(err.message);
-                M.toast({ html: msg.ErrorMsg, displayLength: 2000 });
+                
+                M.toast({ html: err.message, displayLength: 2000 });
               }
             );
           };
@@ -272,8 +272,8 @@ export class RolePanel extends Panel {
                     eventHub.publish("update_role_event", { name: roleId }, true);
                   },
                   (err: any) => {
-                    let msg = JSON.parse(err.message);
-                    M.toast({ html: msg.ErrorMsg, displayLength: 3500 });
+                    
+                    M.toast({ html: err.message, displayLength: 3500 });
                     this.displayRoles();
                   }
                 );
@@ -329,8 +329,8 @@ export class RolePanel extends Panel {
                   eventHub.publish("update_role_event", { name:  role._id }, true);
                 },
                 (err: any) => {
-                  let msg = JSON.parse(err.message);
-                  M.toast({ html: msg.ErrorMsg, displayLength: 2000 });
+                  
+                  M.toast({ html: err.message, displayLength: 2000 });
                 }
               );
             };
@@ -349,8 +349,8 @@ export class RolePanel extends Panel {
         M.Collapsible.init(ul.element);
       },
       (err: any) => {
-        let msg = JSON.parse(err.message);
-        M.toast({ html: msg.ErrorMsg, displayLength: 2000 });
+        
+        M.toast({ html: err.message, displayLength: 2000 });
       }
     );
   }

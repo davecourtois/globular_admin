@@ -68,8 +68,8 @@ export class PermissionExplorer extends Panel {
           },
           (err: any) => {
             console.log(err)
-            let msg = JSON.parse(err.message);
-            M.toast({ html: msg.ErrorMsg, displayLength: 2000 });
+            
+            M.toast({ html: err.message, displayLength: 2000 });
           })
       },
       true
@@ -109,8 +109,8 @@ export class PermissionExplorer extends Panel {
       },
       (err: any) => {
         console.log(err)
-        let msg = JSON.parse(err.message);
-        M.toast({ html: msg.ErrorMsg, displayLength: 2000 });
+        
+        M.toast({ html: err.message, displayLength: 2000 });
       })
   }
 
@@ -332,15 +332,15 @@ export class PermissionExplorer extends Panel {
                 this.displayPermissions()
               },
               (err: any) => {
-                let msg = JSON.parse(err.message);
-                M.toast({ html: msg.ErrorMsg, displayLength: 2000 });
+                
+                M.toast({ html: err.message, displayLength: 2000 });
               })
             M.toast({ html: "File permission was saved!", displayLength: 2000 });
           },
           (err: any) => {
             console.log(err)
-            let msg = JSON.parse(err.message);
-            M.toast({ html: msg.ErrorMsg, displayLength: 2000 });
+            
+            M.toast({ html: err.message, displayLength: 2000 });
           })
       }
 
@@ -365,15 +365,15 @@ export class PermissionExplorer extends Panel {
                 this.displayPermissions()
               },
               (err: any) => {
-                let msg = JSON.parse(err.message);
-                M.toast({ html: msg.ErrorMsg, displayLength: 2000 });
+                
+                M.toast({ html: err.message, displayLength: 2000 });
               })
             M.toast({ html: "File permission was deleted!", displayLength: 2000 });
           },
         (err: any) => {
           console.log(err)
-          let msg = JSON.parse(err.message);
-          M.toast({ html: msg.ErrorMsg, displayLength: 2000 });
+          
+          M.toast({ html: err.message, displayLength: 2000 });
         })
       }
     }
@@ -452,16 +452,16 @@ export class PermissionExplorer extends Panel {
                 },
                 (err: any) => {
                   console.log(err)
-                  let msg = JSON.parse(err.message);
-                  M.toast({ html: msg.ErrorMsg, displayLength: 2000 });
+                  
+                  M.toast({ html: err.message, displayLength: 2000 });
                 })
 
               M.toast({ html: "New permission was created!", displayLength: 2000 });
             },
             (err: any) => {
               console.log(err)
-              let msg = JSON.parse(err.message);
-              M.toast({ html: msg.ErrorMsg, displayLength: 2000 });
+              
+              M.toast({ html: err.message, displayLength: 2000 });
             })
         }
 
@@ -472,8 +472,8 @@ export class PermissionExplorer extends Panel {
       },
         (err: any) => {
           console.log(err)
-          let msg = JSON.parse(err.message);
-          M.toast({ html: msg.ErrorMsg, displayLength: 2000 });
+          
+          M.toast({ html: err.message, displayLength: 2000 });
         })
     }
 
@@ -543,16 +543,16 @@ export class PermissionExplorer extends Panel {
                 },
                 (err: any) => {
                   console.log(err)
-                  let msg = JSON.parse(err.message);
-                  M.toast({ html: msg.ErrorMsg, displayLength: 2000 });
+                  
+                  M.toast({ html: err.message, displayLength: 2000 });
                 })
 
               M.toast({ html: "New permission was created!", displayLength: 2000 });
             },
             (err: any) => {
               console.log(err)
-              let msg = JSON.parse(err.message);
-              M.toast({ html: msg.ErrorMsg, displayLength: 2000 });
+              
+              M.toast({ html: err.message, displayLength: 2000 });
             })
         }
 
@@ -563,8 +563,8 @@ export class PermissionExplorer extends Panel {
       },
         (err: any) => {
           console.log(err)
-          let msg = JSON.parse(err.message);
-          M.toast({ html: msg.ErrorMsg, displayLength: 2000 });
+          
+          M.toast({ html: err.message, displayLength: 2000 });
         })
     }
 
@@ -632,16 +632,16 @@ export class PermissionExplorer extends Panel {
                 },
                 (err: any) => {
                   console.log(err)
-                  let msg = JSON.parse(err.message);
-                  M.toast({ html: msg.ErrorMsg, displayLength: 2000 });
+                  
+                  M.toast({ html: err.message, displayLength: 2000 });
                 })
 
               M.toast({ html: "New permission was created!", displayLength: 2000 });
             },
             (err: any) => {
               console.log(err)
-              let msg = JSON.parse(err.message);
-              M.toast({ html: msg.ErrorMsg, displayLength: 2000 });
+              
+              M.toast({ html: err.message, displayLength: 2000 });
             })
         }
 
@@ -652,8 +652,8 @@ export class PermissionExplorer extends Panel {
       },
         (err: any) => {
           console.log(err)
-          let msg = JSON.parse(err.message);
-          M.toast({ html: msg.ErrorMsg, displayLength: 2000 });
+          
+          M.toast({ html: err.message, displayLength: 2000 });
         })
     }
 

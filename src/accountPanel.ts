@@ -150,8 +150,8 @@ export class AccountManager extends Panel {
               M.toast({ html: "your email was updated!", displayLength: 2000 });
             },
             (err: any) => {
-              let msg = JSON.parse(err.message);
-              M.toast({ html: msg.ErrorMsg, displayLength: 2000 });
+              
+              M.toast({ html: err.message, displayLength: 2000 });
             }
           );
         }
@@ -172,8 +172,8 @@ export class AccountManager extends Panel {
               M.toast({ html: "your password was updated!", displayLength: 2000 });
             },
             (err: any) => {
-              let msg = JSON.parse(err.message);
-              M.toast({ html: msg.ErrorMsg, displayLength: 2000 });
+              
+              M.toast({ html: err.message, displayLength: 2000 });
             }
           );
         }
@@ -260,8 +260,8 @@ export class AccountManager extends Panel {
                 this.displayAccount(content, account);
               },
               (err: any) => {
-                let msg = JSON.parse(err.message);
-                M.toast({ html: msg.ErrorMsg, displayLength: 2000 });
+                
+                M.toast({ html: err.message, displayLength: 2000 });
               }
             );
           };
@@ -271,8 +271,8 @@ export class AccountManager extends Panel {
           });
         },
         (err: any) => {
-          let msg = JSON.parse(err.message);
-          M.toast({ html: msg.ErrorMsg, displayLength: 2000 });
+          
+          M.toast({ html: err.message, displayLength: 2000 });
         }
       );
 
@@ -336,8 +336,8 @@ export class AccountManager extends Panel {
                   this.displayAccount(content, account);
                 },
                 (err: any) => {
-                  let msg = JSON.parse(err.message);
-                  M.toast({ html: msg.ErrorMsg, displayLength: 2000 });
+                  
+                  M.toast({ html: err.message, displayLength: 2000 });
                 }
               );
             };
@@ -480,8 +480,8 @@ export class AccountManager extends Panel {
             this.displayAccounts();
           },
           (err: any) => {
-            let msg = JSON.parse(err.message);
-            M.toast({ html: msg.ErrorMsg, displayLength: 2000 });
+            
+            M.toast({ html: err.message, displayLength: 2000 });
           }
         );
       };
@@ -538,8 +538,8 @@ export class AccountManager extends Panel {
                   this.displayAccounts();
                 },
                 (err: any) => {
-                  let msg = JSON.parse(err.message);
-                  M.toast({ html: msg.ErrorMsg, displayLength: 2000 });
+                  
+                  M.toast({ html: err.message, displayLength: 2000 });
                 }
               );
             };
@@ -558,8 +558,8 @@ export class AccountManager extends Panel {
         M.Collapsible.init(ul.element);
       },
       (err: any) => {
-        let msg = JSON.parse(err.message);
-        M.toast({ html: msg.ErrorMsg, displayLength: 2000 });
+        
+        M.toast({ html: err.message, displayLength: 2000 });
       }
     );
   }

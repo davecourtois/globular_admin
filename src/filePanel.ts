@@ -89,8 +89,7 @@ export class FileManager extends Panel {
 
               },
               (err: any) => {
-                let msg = JSON.parse(err.message);
-                M.toast({ html: msg.ErrorMsg, displayLength: 2000 });
+                M.toast({ html: err.message, displayLength: 2000 });
               }
             );
           },
@@ -113,8 +112,7 @@ export class FileManager extends Panel {
                 this.setDirectory(this.directories.get(evt.path));
               },
               (err: any) => {
-                let msg = JSON.parse(err.message);
-                M.toast({ html: msg.ErrorMsg, displayLength: 2000 });
+                M.toast({ html: err.message, displayLength: 2000 });
               }
             );
           },
@@ -136,8 +134,7 @@ export class FileManager extends Panel {
                 this.setDirectory(this.directories.get(evt.path));
               },
               (err: any) => {
-                let msg = JSON.parse(err.message);
-                M.toast({ html: msg.ErrorMsg, displayLength: 2000 });
+                M.toast({ html: err.message, displayLength: 2000 });
               }
             );
           },
@@ -145,8 +142,7 @@ export class FileManager extends Panel {
         );
       },
       (err: any) => {
-        let msg = JSON.parse(err.message);
-        M.toast({ html: msg.ErrorMsg, displayLength: 2000 });
+        M.toast({ html: err.message, displayLength: 2000 });
       }
     );
   }
@@ -286,8 +282,7 @@ class PathNavigator extends Panel {
             console.log("file was download successfully!")
           },
           (err: any) => {
-            let msg = JSON.parse(err.message);
-            M.toast({ html: msg.ErrorMsg, displayLength: 2000 });
+            M.toast({ html: err.message, displayLength: 2000 });
           })
       }
 
@@ -302,8 +297,7 @@ class PathNavigator extends Panel {
           );
         },
           (err: any) => {
-            let msg = JSON.parse(err.message);
-            M.toast({ html: msg.ErrorMsg, displayLength: 2000 });
+            M.toast({ html: err.message, displayLength: 2000 });
           })
       }
 
@@ -338,6 +332,7 @@ class PathNavigator extends Panel {
         // path to server would be where you'd normally post the form to
         xhr.open('POST', "/uploads", true);
         xhr.setRequestHeader("token", localStorage.getItem("user_token"))
+        xhr.setRequestHeader("application", "admin")
         xhr.send(fd);
       }
 
@@ -492,8 +487,7 @@ class FilePanel {
             );
           },
           (err: any) => {
-            let msg = JSON.parse(err.message);
-            M.toast({ html: msg.ErrorMsg, displayLength: 2000 });
+            M.toast({ html: err.message, displayLength: 2000 });
           }
         );
       };
@@ -579,8 +573,7 @@ class FilePanel {
               );
             },
             (err: any) => {
-              let msg = JSON.parse(err.message);
-              M.toast({ html: msg.ErrorMsg, displayLength: 2000 });
+              M.toast({ html: err.message, displayLength: 2000 });
             }
           );
         } else {
@@ -601,8 +594,7 @@ class FilePanel {
               );
             },
             (err: any) => {
-              let msg = JSON.parse(err.message);
-              M.toast({ html: msg.ErrorMsg, displayLength: 2000 });
+              M.toast({ html: err.message, displayLength: 2000 });
             }
           );
         }
