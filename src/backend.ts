@@ -47,13 +47,17 @@ import {
   DeletePermissionsRqst,
   DeletePermissionsRsp,
   SetPermissionRqst,
-  FilePermission,
+  RessourcePermission,
   SetPermissionRsp,
   SynchronizeLdapRqst,
   LdapSyncInfos,
   SynchronizeLdapRsp,
   UserSyncInfos,
-  GroupSyncInfos
+  GroupSyncInfos,
+  GetRessourceOwnersRqst,
+  GetRessourceOwnersRsp,
+  SetRessourceOwnerRqst,
+  DeleteRessourceOwnerRqst
 
 } from "globular-web-client/lib/ressource/ressource_pb";
 import * as jwt from "jwt-decode";
@@ -204,12 +208,98 @@ export function syncLdapInfos(info: any, timeout: number, callback: () => void) 
 ///////////////////////////////////// Permissions /////////////////////////////////////
 
 /**
+ * Retreive the list of ressource owner.
+ * @param path 
+ * @param callback 
+ * @param errorCallback 
+ */
+export function getRessourceOwners(
+  path: string,
+  callback: (infos: Array<any>) => void,
+  errorCallback: (err: any) => void
+){
+  let rqst = new GetRessourceOwnersRqst
+  path = path.replace("/webroot", ""); 
+  rqst.setPath(path);
+
+  globular.ressourceService.getRessourceOwners(rqst, {
+    token: localStorage.getItem("user_token"),
+    application: application
+  }).then((rsp:GetRessourceOwnersRsp)=>{
+    callback(rsp.getOwnersList())
+  }).catch((err:any)=>{
+    errorCallback(err);
+  });
+
+}
+
+/**
+ * The ressource owner to be set.
+ * @param path The path of the ressource
+ * @param owner The owner of the ressource
+ * @param callback The success callback
+ * @param errorCallback The error callback
+ */
+export function setRessourceOwners(
+  path: string,
+  owner:string,
+  callback: () => void,
+  errorCallback: (err: any) => void
+){
+
+  let rqst = new SetRessourceOwnerRqst
+  path = path.replace("/webroot", ""); // remove the /webroot part.
+  rqst.setPath(path);
+  rqst.setOwner(owner);
+
+  globular.ressourceService.setRessourceOwner(rqst, {
+    token: localStorage.getItem("user_token"),
+    application: application
+  }).then(()=>{
+    callback()
+  }).catch((err:any)=>{
+    errorCallback(err);
+  });
+  
+}
+
+/**
+ * Delete a given ressource owner
+ * @param path The path of the ressource.
+ * @param owner The owner to be remove
+ * @param callback The sucess callback
+ * @param errorCallback The error callback
+ */
+export function deleteRessourceOwners(
+  path: string,
+  owner:string,
+  callback: () => void,
+  errorCallback: (err: any) => void
+){
+  
+  let rqst = new DeleteRessourceOwnerRqst
+  path = path.replace("/webroot", ""); // remove the /webroot part.
+  rqst.setPath(path);
+  rqst.setOwner(owner);
+
+  globular.ressourceService.deleteRessourceOwner(rqst, {
+    token: localStorage.getItem("user_token"),
+    application: application
+  }).then(()=>{
+    callback()
+  }).catch((err:any)=>{
+    errorCallback(err);
+  });
+  
+}
+
+/**
  * Retreive the permission for a given file.
  * @param path 
  * @param callback 
  * @param errorCallback 
  */
-export function getFilePermissions(
+export function getRessourcePermissions(
   path: string,
   callback: (infos: Array<any>) => void,
   errorCallback: (err: any) => void
@@ -256,7 +346,7 @@ export enum OwnerType {
  * @param callback The success callback
  * @param errorCallback The error callback
  */
-export function setFilePermission(
+export function setRessourcePermission(
   path: string,
   owner: string,
   ownerType: OwnerType,
@@ -271,7 +361,7 @@ export function setFilePermission(
     path = "/";
   }
 
-  let permission = new FilePermission
+  let permission = new RessourcePermission
   permission.setPath(path)
   permission.setNumber(number)
   if (ownerType == OwnerType.User) {
@@ -306,7 +396,7 @@ export function setFilePermission(
  * @param callback The success callback.
  * @param errorCallback The error callback.
  */
-export function deleteFilePermissions(
+export function deleteRessourcePermissions(
   path: string,
   owner: string,
   callback: () => void,

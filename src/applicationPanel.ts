@@ -40,7 +40,7 @@ export class ApplicationManager extends Panel {
     // The start and end time.
     let startTime = new Date(application.creation_date * 1000)
     let releasedTime = new Date(application.last_deployed * 1000)
-    let path: string = application.path.split("webroot")[1].replace("\\", "/")
+    let path: string = application.path
     let url: string = window.location.protocol + "//" + window.location.hostname + ":" + window.location.port + path
     content.appendElement({ tag: "div", class: "row" }).down()
       .appendElement({ tag: "div", class: "col s2", innerHtml: "path" })
@@ -59,6 +59,7 @@ export class ApplicationManager extends Panel {
       .appendElement({ tag: "div", id: "actions_div", class: "col s10" }).down()
       .appendElement({ tag: "div", class: "row" }).down()
       .appendElement({ tag: "div", id: "actions_ul", class: "collection col s12" })
+
 
     let actions_div = content.getChildById("actions_div")
     let actions_ul = content.getChildById("actions_ul")
@@ -190,6 +191,7 @@ export class ApplicationManager extends Panel {
         let content = li.appendElement({ tag: "div", class: "collapsible-body" }).down()
         let application =  applications[i]
         if (this.editable) {
+          
           // Here I will display button to edit applications...
           // The delete icon.
           // the application header.

@@ -150,7 +150,7 @@ export class FileManager extends Panel {
   setDirectory(dir: any) {
     this.pathNavigator.setPath(dir.path);
     this.fileNavigator.setDir(dir);
-    this.permissionExplorer.setFile(dir)
+    this.permissionExplorer.setRessource(dir)
   }
 
   // Here I will react to login information...
