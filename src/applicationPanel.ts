@@ -1,5 +1,5 @@
 import { Panel } from "./panel";
-import { GetAllApplicationsInfo, getAllActions, AppendActionToApplication, RemoveActionFromApplication, DeleteApplication } from "./backend";
+import { GetAllApplicationsInfo, getAllActions, getErrorMessage, AppendActionToApplication, RemoveActionFromApplication, DeleteApplication } from "./backend";
 import * as M from "materialize-css";
 import "materialize-css/sass/materialize.scss";
 
@@ -120,7 +120,7 @@ export class ApplicationManager extends Panel {
               },
               (err: any) => {
                 
-                M.toast({ html: err.message, displayLength: 2000 });
+                M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
               }
             );
 
@@ -130,7 +130,7 @@ export class ApplicationManager extends Panel {
         },
         (err: any) => {
           
-          M.toast({ html: err.message, displayLength: 2000 });
+          M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
         })
 
       // Now the actions...
@@ -167,7 +167,7 @@ export class ApplicationManager extends Panel {
               },
               (err: any) => {
                 
-                M.toast({ html: err.message, displayLength: 2000 });
+                M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
               })
           }
         }
@@ -208,7 +208,7 @@ export class ApplicationManager extends Panel {
               },
               (err: any) => {
                 
-                M.toast({ html: err.message, displayLength: 2000 });
+                M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
               })
           }
 
@@ -224,7 +224,7 @@ export class ApplicationManager extends Panel {
     },
       (err: any) => {
         
-        M.toast({ html: err.message, displayLength: 2000 });
+        M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
       });
   }
 

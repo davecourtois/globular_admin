@@ -6,7 +6,8 @@ import {
   RemoveActionFromRole,
   AppendActionToRole,
   CreateRole,
-  DeleteRole
+  DeleteRole,
+  getErrorMessage
 } from "./backend";
 
 export class RolePanel extends Panel {
@@ -123,7 +124,7 @@ export class RolePanel extends Panel {
               },
               (err: any) => {
                 
-                M.toast({ html: err.message, displayLength: 2000 });
+                M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
               }
             );
           };
@@ -134,7 +135,7 @@ export class RolePanel extends Panel {
         },
         (err: any) => {
           
-          M.toast({ html: err.message, displayLength: 2000 });
+          M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
         }
       );
 
@@ -186,7 +187,7 @@ export class RolePanel extends Panel {
               },
               (err: any) => {
                 
-                M.toast({ html: err.message, displayLength: 2000 });
+                M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
               }
             );
           };
@@ -273,7 +274,7 @@ export class RolePanel extends Panel {
                   },
                   (err: any) => {
                     
-                    M.toast({ html: err.message, displayLength: 3500 });
+                    M.toast({ html: getErrorMessage(err.message), displayLength: 3500 });
                     this.displayRoles();
                   }
                 );
@@ -330,7 +331,7 @@ export class RolePanel extends Panel {
                 },
                 (err: any) => {
                   
-                  M.toast({ html: err.message, displayLength: 2000 });
+                  M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
                 }
               );
             };
@@ -350,7 +351,7 @@ export class RolePanel extends Panel {
       },
       (err: any) => {
         
-        M.toast({ html: err.message, displayLength: 2000 });
+        M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
       }
     );
   }

@@ -7,7 +7,8 @@ import {
   eventHub,
   startService,
   saveService,
-  readFullConfig
+  readFullConfig,
+  getErrorMessage
 } from "./backend";
 
 /**
@@ -139,6 +140,9 @@ export class ServicePanel extends ConfigurationPanel {
         // Here I will set the start button...
         console.log("stop_service_event_" + id);
         eventHub.publish("stop_service_event_" + id, id, false);
+      },
+      (err: any) => {
+        M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
       });
     };
 
@@ -165,6 +169,10 @@ export class ServicePanel extends ConfigurationPanel {
       startService(id, () => {
         // Here I will set the start button...
         eventHub.publish("start_service_event_" + id, id, false);
+      },
+      (err: any) => {
+              
+        M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
       });
     };
 
@@ -233,6 +241,9 @@ export class ServicePanel extends ConfigurationPanel {
         JSON.stringify(service),
         false
       );
+    },(err: any) => {
+              
+      M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
     });
   }
 }

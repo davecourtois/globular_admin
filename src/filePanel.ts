@@ -1,5 +1,5 @@
 import { Panel } from "./panel";
-import { GetAllFilesInfo, eventHub, renameFile, deleteDir, deleteFile, downloadDir, createDir, downloadFileHttp } from "./backend";
+import { GetAllFilesInfo, eventHub,  getErrorMessage, renameFile, deleteDir, deleteFile, downloadDir, createDir, downloadFileHttp } from "./backend";
 import { randomUUID } from "./utility";
 import { PermissionExplorer } from "./permissionPanel";
 
@@ -89,7 +89,7 @@ export class FileManager extends Panel {
 
               },
               (err: any) => {
-                M.toast({ html: err.message, displayLength: 2000 });
+                M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
               }
             );
           },
@@ -112,7 +112,7 @@ export class FileManager extends Panel {
                 this.setDirectory(this.directories.get(evt.path));
               },
               (err: any) => {
-                M.toast({ html: err.message, displayLength: 2000 });
+                M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
               }
             );
           },
@@ -134,7 +134,7 @@ export class FileManager extends Panel {
                 this.setDirectory(this.directories.get(evt.path));
               },
               (err: any) => {
-                M.toast({ html: err.message, displayLength: 2000 });
+                M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
               }
             );
           },
@@ -142,7 +142,7 @@ export class FileManager extends Panel {
         );
       },
       (err: any) => {
-        M.toast({ html: err.message, displayLength: 2000 });
+        M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
       }
     );
   }
@@ -282,7 +282,7 @@ class PathNavigator extends Panel {
             console.log("file was download successfully!")
           },
           (err: any) => {
-            M.toast({ html: err.message, displayLength: 2000 });
+            M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
           })
       }
 
@@ -297,7 +297,7 @@ class PathNavigator extends Panel {
           );
         },
           (err: any) => {
-            M.toast({ html: err.message, displayLength: 2000 });
+            M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
           })
       }
 
@@ -487,7 +487,7 @@ class FilePanel {
             );
           },
           (err: any) => {
-            M.toast({ html: err.message, displayLength: 2000 });
+            M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
           }
         );
       };
@@ -573,7 +573,7 @@ class FilePanel {
               );
             },
             (err: any) => {
-              M.toast({ html: err.message, displayLength: 2000 });
+              M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
             }
           );
         } else {
@@ -594,7 +594,7 @@ class FilePanel {
               );
             },
             (err: any) => {
-              M.toast({ html: err.message, displayLength: 2000 });
+              M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
             }
           );
         }

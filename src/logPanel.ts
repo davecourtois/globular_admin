@@ -2,7 +2,7 @@ import { Panel } from "./panel";
 
 import * as M from "materialize-css";
 import "materialize-css/sass/materialize.scss";
-import { readLogs, readErrors } from "./backend";
+import { readLogs, readErrors, getErrorMessage } from "./backend";
 
 /**
  * This class is use to manage file on the server.
@@ -79,6 +79,9 @@ export class LogManager extends Panel {
       for (var i = 0; i < logs.length; i++) {
         this.setLog(logs[i])
       }
+    }, 
+    (err:any)=>{
+      M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
     })
   }
 
@@ -112,6 +115,9 @@ export class LogManager extends Panel {
       for (var i = 0; i < errors.length; i++) {
         this.setError(errors[i])
       }
+    }, 
+    (err:any)=>{
+      M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
     })
   }
 

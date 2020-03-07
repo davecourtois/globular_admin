@@ -93,6 +93,24 @@ export let eventHub: GlobularWebClient.EventHub;
 let application = "admin";
 
 let config: any;
+
+/**
+ * Display the error message to the end user.
+ * @param err The error message can be a simple string or a json stringnify object
+ */
+export function getErrorMessage(err: any): string {
+  try {
+    let errObj = JSON.parse(err);
+    if (errObj.ErrorMsg != undefined) {
+      console.log(errObj)
+      return errObj.ErrorMsg
+    }
+  } catch{
+    console.log(err)
+    return err;
+  }
+}
+
 export async function initServices(callback: () => void) {
   config = {
     Protocol: window.location.protocol.replace(":", ""),
@@ -199,9 +217,9 @@ export function syncLdapInfos(info: any, timeout: number, callback: () => void) 
   globular.ressourceService.synchronizeLdap(rqst, {
     token: localStorage.getItem("user_token"),
     application: application
-  }).then((rsp:SynchronizeLdapRsp)=>{
+  }).then((rsp: SynchronizeLdapRsp) => {
 
-  }).catch((err:any)=>{
+  }).catch((err: any) => {
     console.log(err)
   })
 }
@@ -217,17 +235,17 @@ export function getRessourceOwners(
   path: string,
   callback: (infos: Array<any>) => void,
   errorCallback: (err: any) => void
-){
+) {
   let rqst = new GetRessourceOwnersRqst
-  path = path.replace("/webroot", ""); 
+  path = path.replace("/webroot", "");
   rqst.setPath(path);
 
   globular.ressourceService.getRessourceOwners(rqst, {
     token: localStorage.getItem("user_token"),
     application: application
-  }).then((rsp:GetRessourceOwnersRsp)=>{
+  }).then((rsp: GetRessourceOwnersRsp) => {
     callback(rsp.getOwnersList())
-  }).catch((err:any)=>{
+  }).catch((err: any) => {
     errorCallback(err);
   });
 
@@ -242,10 +260,10 @@ export function getRessourceOwners(
  */
 export function setRessourceOwners(
   path: string,
-  owner:string,
+  owner: string,
   callback: () => void,
   errorCallback: (err: any) => void
-){
+) {
 
   let rqst = new SetRessourceOwnerRqst
   path = path.replace("/webroot", ""); // remove the /webroot part.
@@ -255,12 +273,12 @@ export function setRessourceOwners(
   globular.ressourceService.setRessourceOwner(rqst, {
     token: localStorage.getItem("user_token"),
     application: application
-  }).then(()=>{
+  }).then(() => {
     callback()
-  }).catch((err:any)=>{
+  }).catch((err: any) => {
     errorCallback(err);
   });
-  
+
 }
 
 /**
@@ -272,11 +290,11 @@ export function setRessourceOwners(
  */
 export function deleteRessourceOwners(
   path: string,
-  owner:string,
+  owner: string,
   callback: () => void,
   errorCallback: (err: any) => void
-){
-  
+) {
+
   let rqst = new DeleteRessourceOwnerRqst
   path = path.replace("/webroot", ""); // remove the /webroot part.
   rqst.setPath(path);
@@ -285,12 +303,12 @@ export function deleteRessourceOwners(
   globular.ressourceService.deleteRessourceOwner(rqst, {
     token: localStorage.getItem("user_token"),
     application: application
-  }).then(()=>{
+  }).then(() => {
     callback()
-  }).catch((err:any)=>{
+  }).catch((err: any) => {
     errorCallback(err);
   });
-  
+
 }
 
 /**
@@ -665,6 +683,7 @@ export function readDir(path: string, callback: (dir: any) => void, errorCallbac
       callback(content)
     } else {
       // error here...
+      errorCallback({"message":status.details})
     }
   });
 
@@ -772,7 +791,7 @@ export function queryRange(
   endTime: number,
   step: number,
   callback: (values: any) => void,
-  errorCallback: (err: string) => void
+  errorCallback: (err: any) => void
 ) {
   // Create a new request.
   var request = new QueryRangeRequest();
@@ -796,6 +815,8 @@ export function queryRange(
   stream.on("status", function (status) {
     if (status.code == 0) {
       callback(JSON.parse(buffer.value));
+    }else{
+      errorCallback({"message":status.details})
     }
   });
 
@@ -1144,18 +1165,18 @@ export function GetAllAccountsInfo(callback: (
   var stream = globular.persistenceService.find(rqst, {
     application: application
   });
- 
+
   let accounts = new Array<any>()
 
   stream.on("data", (rsp: FindResp) => {
-      accounts = accounts.concat(JSON.parse(rsp.getJsonstr()))
+    accounts = accounts.concat(JSON.parse(rsp.getJsonstr()))
   });
 
   stream.on("status", function (status) {
     if (status.code == 0) {
       callback(accounts);
     } else {
-      errorCallback({});
+      errorCallback({"message":status.details})
     }
   });
 }
@@ -1209,7 +1230,7 @@ export function getAllRoles(
     if (status.code == 0) {
       callback(roles);
     } else {
-      errorCallback({});
+      errorCallback({"message":status.details})
     }
   });
 }
@@ -1468,7 +1489,7 @@ export function installService(
 /**
  * Stop a service.
  */
-export function stopService(serviceId: string, callback: () => void) {
+export function stopService(serviceId: string, callback: () => void, errorCallback:(err:any)=>void) {
   let rqst = new StopServiceRequest();
   rqst.setServiceId(serviceId);
   globular.adminService
@@ -1480,8 +1501,7 @@ export function stopService(serviceId: string, callback: () => void) {
       callback();
     })
     .catch((err: any) => {
-      console.log("fail to stop service ", serviceId);
-      console.log(err);
+      errorCallback(err);
     });
 }
 
@@ -1490,7 +1510,7 @@ export function stopService(serviceId: string, callback: () => void) {
  * @param serviceId The id of the service to start.
  * @param callback  The callback on success.
  */
-export function startService(serviceId: string, callback: () => void) {
+export function startService(serviceId: string, callback: () => void, errorCallback:(err:any)=>void) {
   let rqst = new StartServiceRequest();
   rqst.setServiceId(serviceId);
   globular.adminService
@@ -1502,8 +1522,7 @@ export function startService(serviceId: string, callback: () => void) {
       callback();
     })
     .catch((err: any) => {
-      console.log("fail to start service ", serviceId);
-      console.log(err);
+      errorCallback(err)
     });
 }
 
@@ -1513,7 +1532,8 @@ export function startService(serviceId: string, callback: () => void) {
  */
 export function saveService(
   service: GlobularWebClient.IServiceConfig,
-  callback: (config: any) => void
+  callback: (config: any) => void,
+  errorCallback:(err:any)=>void
 ) {
   let rqst = new SaveConfigRequest();
 
@@ -1527,11 +1547,14 @@ export function saveService(
       // The service with updated values...
       let service = JSON.parse(rsp.getResult());
       callback(service);
+    })
+    .catch((err: any) => {
+      errorCallback(err)
     });
 }
 
 // Get the object pointed by a reference.
-export function getReferencedValue(ref: any, callback: (results: any) => void, errorCallback: (err:any)=>void) {
+export function getReferencedValue(ref: any, callback: (results: any) => void, errorCallback: (err: any) => void) {
 
   let database = ref.$db;
   let collection = ref.$ref;
@@ -1546,9 +1569,9 @@ export function getReferencedValue(ref: any, callback: (results: any) => void, e
   globular.persistenceService.findOne(rqst, {
     token: localStorage.getItem("user_token"),
     application: application
-  }).then((rsp:FindOneResp)=>{
+  }).then((rsp: FindOneResp) => {
     callback(JSON.parse(rsp.getJsonstr()))
-  }).catch((err:any)=>{
+  }).catch((err: any) => {
     errorCallback(err)
   });
 }
@@ -1556,7 +1579,7 @@ export function getReferencedValue(ref: any, callback: (results: any) => void, e
 /**
  * Read all user data.
  */
-export function readUserData(query: string, callback: (results: any) => void) {
+export function readUserData(query: string, callback: (results: any) => void, errorCallback: (err:any)=>void) {
   let userName = localStorage.getItem("user_name");
   let database = userName + "_db";
   let collection = "user_data";
@@ -1583,6 +1606,8 @@ export function readUserData(query: string, callback: (results: any) => void) {
   stream.on("status", status => {
     if (status.code == 0) {
       callback(results);
+    }else{
+      errorCallback({"message":status.details})
     }
   });
 
@@ -1596,7 +1621,7 @@ export function readUserData(query: string, callback: (results: any) => void) {
  * Read all errors data.
  * @param callback 
  */
-export function readErrors(callback: (results: any) => void) {
+export function readErrors(callback: (results: any) => void, errorCallback:(err:any)=>void) {
   let database = "local_ressource";
   let collection = "Errors";
 
@@ -1622,6 +1647,8 @@ export function readErrors(callback: (results: any) => void) {
   stream.on("status", status => {
     if (status.code == 0) {
       callback(results);
+    }else{
+      errorCallback({"message":status.details})
     }
   });
 
@@ -1636,7 +1663,7 @@ export function readErrors(callback: (results: any) => void) {
  * Read all logs
  * @param callback The success callback.
  */
-export function readLogs(callback: (results: any) => void) {
+export function readLogs(callback: (results: any) => void, errorCallback:(err:any)=>void) {
   let database = "local_ressource";
   let collection = "Logs";
 
@@ -1662,6 +1689,8 @@ export function readLogs(callback: (results: any) => void) {
   stream.on("status", status => {
     if (status.code == 0) {
       callback(results);
+    }else{
+      errorCallback({"message":status.details})
     }
   });
 
@@ -1698,34 +1727,34 @@ export async function readPlcTag(plcType: PLC_TYPE, connectionId: string, name: 
 
   // Try to get the value from the server.
   try {
-      if (plcType == PLC_TYPE.ALEN_BRADLEY) {
-          if (globular.plcService_ab != undefined) {
-              let rsp = await globular.plcService_ab.readTag(rqst);
-              result = rsp.getResult()
-          } else {
-              return "No Alen Bradlay PLC server configured!"
-          }
-      } else if (plcType == PLC_TYPE.SIEMENS) {
-          if (globular.plcService_siemens != undefined) {
-              let rsp = await globular.plcService_siemens.readTag(rqst);
-              result = rsp.getResult()
-          } else {
-              return "No Siemens PLC server configured!"
-          }
+    if (plcType == PLC_TYPE.ALEN_BRADLEY) {
+      if (globular.plcService_ab != undefined) {
+        let rsp = await globular.plcService_ab.readTag(rqst);
+        result = rsp.getResult()
       } else {
-          return "No PLC server configured!"
+        return "No Alen Bradlay PLC server configured!"
       }
+    } else if (plcType == PLC_TYPE.SIEMENS) {
+      if (globular.plcService_siemens != undefined) {
+        let rsp = await globular.plcService_siemens.readTag(rqst);
+        result = rsp.getResult()
+      } else {
+        return "No Siemens PLC server configured!"
+      }
+    } else {
+      return "No PLC server configured!"
+    }
   } catch (err) {
-      return err
+    return err
   }
 
   // Here I got the value in a string I will convert it into it type.
   if (type == TagType.BOOL) {
-      return result == "true" ? true : false
+    return result == "true" ? true : false
   } else if (type == TagType.REAL) {
-      return parseFloat(result)
+    return parseFloat(result)
   } else { // Must be cinsidere a integer.
-      return parseInt(result)
+    return parseInt(result)
   }
 }
 

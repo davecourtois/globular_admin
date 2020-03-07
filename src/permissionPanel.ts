@@ -1,5 +1,5 @@
 import { Panel } from "./panel";
-import { eventHub, getRessourcePermissions, GetAllAccountsInfo, setRessourcePermission, OwnerType, getAllRoles, GetAllApplicationsInfo, deleteRessourcePermissions, getRessourceOwners, setRessourceOwners, deleteRessourceOwners } from "./backend";
+import { eventHub, getErrorMessage, getRessourcePermissions, GetAllAccountsInfo, setRessourcePermission, OwnerType, getAllRoles, GetAllApplicationsInfo, deleteRessourcePermissions, getRessourceOwners, setRessourceOwners, deleteRessourceOwners } from "./backend";
 import { randomUUID } from "./utility";
 import { RessourcePermission } from "globular-web-client/lib/ressource/ressource_pb";
 
@@ -105,7 +105,7 @@ export class PermissionExplorer extends Panel {
           },
           (err: any) => {
             console.log(err)
-            M.toast({ html: err.message, displayLength: 2000 });
+            M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
           })
       },
       true
@@ -158,7 +158,7 @@ export class PermissionExplorer extends Panel {
       },
       (err: any) => {
         console.log(err)
-        M.toast({ html: err.message, displayLength: 2000 });
+        M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
       })
   }
 
@@ -208,7 +208,7 @@ export class PermissionExplorer extends Panel {
             this.displayPermissions()
           }, 
         (err: any)=>{
-          M.toast({ html: err.message, displayLength: 2000 });
+          M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
         })
       }
     }
@@ -395,14 +395,14 @@ export class PermissionExplorer extends Panel {
               },
               (err: any) => {
 
-                M.toast({ html: err.message, displayLength: 2000 });
+                M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
               })
             M.toast({ html: "File permission was saved!", displayLength: 2000 });
           },
           (err: any) => {
             console.log(err)
 
-            M.toast({ html: err.message, displayLength: 2000 });
+            M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
           })
       }
 
@@ -428,14 +428,14 @@ export class PermissionExplorer extends Panel {
               },
               (err: any) => {
 
-                M.toast({ html: err.message, displayLength: 2000 });
+                M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
               })
             M.toast({ html: "File permission was deleted!", displayLength: 2000 });
           },
           (err: any) => {
             console.log(err)
 
-            M.toast({ html: err.message, displayLength: 2000 });
+            M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
           })
       }
     }
@@ -518,14 +518,14 @@ export class PermissionExplorer extends Panel {
                 (err: any) => {
                   console.log(err)
 
-                  M.toast({ html: err.message, displayLength: 2000 });
+                  M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
                 })
 
               M.toast({ html: "New permission was created!", displayLength: 2000 });
             },
             (err: any) => {
               console.log(err)
-              M.toast({ html: err.message, displayLength: 2000 });
+              M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
             })
         }
 
@@ -577,7 +577,7 @@ export class PermissionExplorer extends Panel {
             },
             (err: any)=>{
               console.log(err)
-              M.toast({ html: err.message, displayLength: 2000 });
+              M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
             })
         }
 
@@ -590,7 +590,7 @@ export class PermissionExplorer extends Panel {
         (err: any) => {
           console.log(err)
 
-          M.toast({ html: err.message, displayLength: 2000 });
+          M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
         })
     }
 
@@ -661,7 +661,7 @@ export class PermissionExplorer extends Panel {
                 (err: any) => {
                   console.log(err)
 
-                  M.toast({ html: err.message, displayLength: 2000 });
+                  M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
                 })
 
               M.toast({ html: "New permission was created!", displayLength: 2000 });
@@ -669,7 +669,7 @@ export class PermissionExplorer extends Panel {
             (err: any) => {
               console.log(err)
 
-              M.toast({ html: err.message, displayLength: 2000 });
+              M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
             })
         }
 
@@ -681,7 +681,7 @@ export class PermissionExplorer extends Panel {
         (err: any) => {
           console.log(err)
 
-          M.toast({ html: err.message, displayLength: 2000 });
+          M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
         })
     }
 
@@ -750,7 +750,7 @@ export class PermissionExplorer extends Panel {
                 (err: any) => {
                   console.log(err)
 
-                  M.toast({ html: err.message, displayLength: 2000 });
+                  M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
                 })
 
               M.toast({ html: "New permission was created!", displayLength: 2000 });
@@ -758,7 +758,7 @@ export class PermissionExplorer extends Panel {
             (err: any) => {
               console.log(err)
 
-              M.toast({ html: err.message, displayLength: 2000 });
+              M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
             })
         }
 
@@ -770,7 +770,7 @@ export class PermissionExplorer extends Panel {
         (err: any) => {
           console.log(err)
 
-          M.toast({ html: err.message, displayLength: 2000 });
+          M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
         })
     }
 

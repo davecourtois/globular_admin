@@ -4,7 +4,7 @@
 import { Panel } from "./panel";
 import * as M from "materialize-css";
 import "materialize-css/sass/materialize.scss";
-import { eventHub, updateAccountEmail, updateAccountPassword } from './backend';
+import { eventHub, updateAccountEmail, updateAccountPassword,  getErrorMessage} from './backend';
 import {
   getAllRoles,
   GetAllAccountsInfo,
@@ -151,7 +151,7 @@ export class AccountManager extends Panel {
             },
             (err: any) => {
               
-              M.toast({ html: err.message, displayLength: 2000 });
+              M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
             }
           );
         }
@@ -173,7 +173,7 @@ export class AccountManager extends Panel {
             },
             (err: any) => {
               
-              M.toast({ html: err.message, displayLength: 2000 });
+              M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
             }
           );
         }
@@ -261,7 +261,7 @@ export class AccountManager extends Panel {
               },
               (err: any) => {
                 
-                M.toast({ html: err.message, displayLength: 2000 });
+                M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
               }
             );
           };
@@ -272,7 +272,7 @@ export class AccountManager extends Panel {
         },
         (err: any) => {
           
-          M.toast({ html: err.message, displayLength: 2000 });
+          M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
         }
       );
 
@@ -337,7 +337,7 @@ export class AccountManager extends Panel {
                 },
                 (err: any) => {
                   
-                  M.toast({ html: err.message, displayLength: 2000 });
+                  M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
                 }
               );
             };
@@ -481,7 +481,7 @@ export class AccountManager extends Panel {
           },
           (err: any) => {
             
-            M.toast({ html: err.message, displayLength: 2000 });
+            M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
           }
         );
       };
@@ -539,7 +539,7 @@ export class AccountManager extends Panel {
                 },
                 (err: any) => {
                   
-                  M.toast({ html: err.message, displayLength: 2000 });
+                  M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
                 }
               );
             };
@@ -559,7 +559,7 @@ export class AccountManager extends Panel {
       },
       (err: any) => {
         
-        M.toast({ html: err.message, displayLength: 2000 });
+        M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
       }
     );
   }
