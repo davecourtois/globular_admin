@@ -38,7 +38,7 @@ import {
   AddApplicationActionRsp,
   RemoveApplicationActionRqst,
   RemoveApplicationActionRsp,
-  RemoveApplicationRqst,
+  DeleteApplicationRqst,
   DeleteAccountRqst,
   AddAccountRoleRqst,
   RemoveAccountRoleRqst,
@@ -1420,9 +1420,9 @@ export function DeleteApplication(
   callback: () => void,
   errorCallback: (err: any) => void
 ) {
-  let rqst = new RemoveApplicationRqst;
+  let rqst = new DeleteApplicationRqst;
   rqst.setApplicationid(applicationId)
-  globular.ressourceService.removeApplication(rqst, { token: localStorage.getItem("user_token"), application: application })
+  globular.ressourceService.deleteApplication(rqst, { token: localStorage.getItem("user_token"), application: application })
     .then((rsp: AddApplicationActionRsp) => {
       callback()
     })
