@@ -2,19 +2,82 @@ import { Panel } from "./panel";
 
 import * as M from "materialize-css";
 import "materialize-css/sass/materialize.scss";
-import { readLogs, readErrors, getErrorMessage, getAllActions, getLogMethods, resetLogMethod, setLogMethod } from "./backend";
+import { readLogs, readErrors, getErrorMessage, getAllActions, getLogMethods, resetLogMethod, setLogMethod, eventHub } from "./backend";
 
 
 export class LogsPanel extends Panel {
   private actions: Array<string>;
   private editable: boolean;
+  private listeners: Map<string, string>;
 
   constructor(parent: any, actions: Array<string>) {
     super("logs_panel")
     this.actions = actions;
+    this.listeners = new Map<string, any>();
     this.setParent(parent);
     this.displayLogs();
 
+  }
+
+  appendAction(action:string, actions_ul: any){
+    actions_ul.appendElement({
+      tag: "li",
+      class: "collection-item",
+      innerHtml: action
+    });
+  }
+
+  appendEditableAction(action:string, actions_ul: any){
+    let deleteBtn = actions_ul
+      .appendElement({ tag: "li", class: "collection-item" })
+      .down()
+      .appendElement({
+        tag: "div",
+        class: "row",
+        style: "margin-bottom: 0px;"
+      })
+      .down()
+      .appendElement({ tag: "div", class: "col s11", innerHtml: action })
+      .appendElement({
+        tag: "i",
+        class: "tiny material-icons col s1",
+        innerHtml: "remove"
+      })
+      .down();
+
+    deleteBtn.element.onmouseenter = function () {
+      this.style.cursor = "pointer";
+    };
+
+    deleteBtn.element.onmouseleave = function () {
+      this.style.cursor = "default";
+    };
+
+    // Here I will remove the action from the application.
+    deleteBtn.element.onclick = () => {
+      resetLogMethod(
+        action,
+        () => {
+          M.toast({
+            html: "Action " + action + "has been remove!",
+            displayLength: 2000
+          });
+
+          // unsubscribe from the event.
+          let uuid = this.listeners.get(action)
+          if(uuid != undefined){
+            eventHub.unSubscribe(action,uuid);
+          }
+
+          // refresh the panel.
+          this.displayLogs();
+        },
+        (err: any) => {
+
+          M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
+        }
+      );
+    };
   }
 
   displayLogs() {
@@ -42,11 +105,7 @@ export class LogsPanel extends Panel {
         // Now the actions...
         if (methods != undefined) {
           for (var j = 0; j < methods.length; j++) {
-            actions_ul.appendElement({
-              tag: "li",
-              class: "collection-item",
-              innerHtml: methods[j]
-            });
+            this.appendEditableAction(methods[j], actions_ul)
           }
         }
       } else {
@@ -79,7 +138,7 @@ export class LogsPanel extends Panel {
         // The action call on auto complete...
         let onAutocomplete = () => {
           let action = action_input.element.value;
-          setLogMethod(action, () => { 
+          setLogMethod(action, () => {
             M.toast({
               html: "Action " + action + "has been added!",
               displayLength: 2000
@@ -100,52 +159,26 @@ export class LogsPanel extends Panel {
 
         // Now the actions...
         if (methods != undefined) {
-          for (var j = 0; j < methods.length; j++) {
-            let action = methods[j];
-            let deleteBtn = actions_ul
-              .appendElement({ tag: "li", class: "collection-item" })
-              .down()
-              .appendElement({
-                tag: "div",
-                class: "row",
-                style: "margin-bottom: 0px;"
-              })
-              .down()
-              .appendElement({ tag: "div", class: "col s11", innerHtml: action })
-              .appendElement({
-                tag: "i",
-                class: "tiny material-icons col s1",
-                innerHtml: "remove"
-              })
-              .down();
+          for (var i = 0; i < methods.length; i++) {
+            let action = methods[i];
+            this.appendEditableAction(action, actions_ul)
+          }
+        }
 
-            deleteBtn.element.onmouseenter = function () {
-              this.style.cursor = "pointer";
-            };
+        // Now the listeners
+        if (methods != undefined) {
+          for (var i = 0; i < methods.length; i++) {
+            let action = methods[i];
 
-            deleteBtn.element.onmouseleave = function () {
-              this.style.cursor = "default";
-            };
-
-            // Here I will remove the action from the application.
-            deleteBtn.element.onclick = () => {
-              resetLogMethod(
-                action,
-                () => {
-                  M.toast({
-                    html: "Action " + action + "has been remove!",
-                    displayLength: 2000
-                  });
-
-                  // refresh the panel.
-                  this.displayLogs();
-                },
-                (err: any) => {
-
-                  M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
-                }
-              );
-            };
+            // Here I will connect the event listener if not already exist...
+            if (this.listeners.get(action) == undefined) {
+              eventHub.subscribe(action,
+                (uuid) => {
+                  this.listeners.set(action, uuid)
+                }, (data) => {
+                  console.log("------->", data)
+                }, false)
+            }
           }
         }
 
