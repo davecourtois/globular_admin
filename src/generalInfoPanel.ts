@@ -1,6 +1,6 @@
 import { IConfig } from "globular-web-client";
 import { ConfigurationPanel } from "./configurationPanel";
-import { saveConfig, readFullConfig } from "./backend";
+import { saveConfig, readFullConfig, getErrorMessage } from "./backend";
 import { LdapSyncServicePanel } from "./services/ldapSyncServicePanel";
 
 /**
@@ -199,6 +199,9 @@ export class GeneralInfoPanel extends ConfigurationPanel {
         }
       }
 
+    },
+    (err: any) => {
+      M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
     });
   }
 
@@ -216,6 +219,9 @@ export class GeneralInfoPanel extends ConfigurationPanel {
         this.ldapSyncPanels[i].save()
       }
 
+    },
+    (err: any) => {
+      M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
     });
   }
 }

@@ -1,5 +1,5 @@
 import { Panel } from "./panel";
-import { findServices, readFullConfig, installService } from "./backend";
+import { findServices, readFullConfig, installService, getErrorMessage } from "./backend";
 import { ServiceDescriptor } from "globular-web-client/lib/services/services_pb";
 import { IConfig } from "globular-web-client";
 
@@ -41,6 +41,9 @@ export class SearchServicesPanel extends Panel {
     // Test if the service is already intall on the server.
     readFullConfig((config: IConfig) => {
       console.log(config);
+    },
+    (err: any) => {
+      M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
     });
   }
 

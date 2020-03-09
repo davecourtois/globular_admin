@@ -57,7 +57,12 @@ import {
   GetRessourceOwnersRqst,
   GetRessourceOwnersRsp,
   SetRessourceOwnerRqst,
-  DeleteRessourceOwnerRqst
+  DeleteRessourceOwnerRqst,
+  GetLogRqst,
+  GetLogMethodsRqst,
+  GetLogMethodsRsp,
+  SetLogMethodRqst,
+  ResetLogMethodRqst
 
 } from "globular-web-client/lib/ressource/ressource_pb";
 import * as jwt from "jwt-decode";
@@ -111,7 +116,7 @@ export function getErrorMessage(err: any): string {
   }
 }
 
-export async function initServices(callback: () => void) {
+export async function initServices(callback: () => void, errorCallback:(err:any)=>void) {
   config = {
     Protocol: window.location.protocol.replace(":", ""),
     Domain: window.location.hostname,
@@ -137,14 +142,15 @@ export async function initServices(callback: () => void) {
         callback();
       })
       .catch(err => {
-        console.log("fail to get config ", err);
+        errorCallback(err);
       });
   }
 }
 
 // let config = globular.adminService.GetConfig()
 export function readFullConfig(
-  callback: (config: GlobularWebClient.IConfig) => void
+  callback: (config: GlobularWebClient.IConfig) => void,
+  errorCallback:(err:any)=>void
 ) {
   let rqst = new GetConfigRequest();
   if (globular.adminService !== undefined) {
@@ -158,7 +164,7 @@ export function readFullConfig(
         callback(config);
       })
       .catch(err => {
-        console.log("fail to get config ", err);
+        errorCallback(err);
       });
   }
 }
@@ -167,6 +173,7 @@ export function readFullConfig(
 export function saveConfig(
   config: GlobularWebClient.IConfig,
   callback: (config: GlobularWebClient.IConfig) => void
+  , errorCallback:(err:any)=>void
 ) {
   let rqst = new SaveConfigRequest();
   rqst.setConfig(JSON.stringify(config));
@@ -181,7 +188,7 @@ export function saveConfig(
         callback(config);
       })
       .catch(err => {
-        console.log("fail to save config ", err);
+        errorCallback(err);
       });
   }
 }
@@ -191,7 +198,7 @@ export function saveConfig(
  * @param info The synchronisations informations.
  * @param callback success callback.
  */
-export function syncLdapInfos(info: any, timeout: number, callback: () => void) {
+export function syncLdapInfos(info: any, timeout: number, callback: () => void, errorCallback:(err:any)=>void) {
   let rqst = new SynchronizeLdapRqst
   let syncInfos = new LdapSyncInfos
   syncInfos.setConnectionid(info.connectionId)
@@ -220,7 +227,7 @@ export function syncLdapInfos(info: any, timeout: number, callback: () => void) 
   }).then((rsp: SynchronizeLdapRsp) => {
 
   }).catch((err: any) => {
-    console.log(err)
+    errorCallback(err);
   })
 }
 ///////////////////////////////////// Permissions /////////////////////////////////////
@@ -1038,6 +1045,8 @@ export function authenticate(
         // Publish local login event.
         eventHub.publish("onlogin", config, true); // return the full config...
         callback(decoded);
+      },(err:any)=>{
+        errorCallback(err)
       })
 
 
@@ -1699,6 +1708,46 @@ export function readLogs(callback: (results: any) => void, errorCallback:(err:an
   });
 }
 
+///////////////////////////// Logging ////////////////////////////////////////
+export function getLogMethods(callback: (results: Array<string>) => void, errorCallback: (err: any) => void) {
+  let rqst = new GetLogMethodsRqst
+  globular.ressourceService.getLogMethods(rqst, {
+    token: localStorage.getItem("user_token"),
+    application: application
+  }).then((rsp: GetLogMethodsRsp) => {
+    callback(rsp.getMethodsList())
+  }).catch((err: any) => {
+    errorCallback(err)
+  });
+}
+
+export function setLogMethod(method: string, callback: () => void, errorCallback: (err: any) => void) {
+
+  let rqst = new SetLogMethodRqst();
+  rqst.setMethod(method)
+  globular.ressourceService.setLogMethod(rqst, {
+    token: localStorage.getItem("user_token"),
+    application: application
+  }).then(() => {
+    callback();
+  }).catch((err: any) => {
+    errorCallback(err)
+  });
+}
+
+export function resetLogMethod(method: string, callback: () => void, errorCallback: (err: any) => void) {
+
+  let rqst = new ResetLogMethodRqst();
+  rqst.setMethod(method)
+  globular.ressourceService.resetLogMethod(rqst, {
+    token: localStorage.getItem("user_token"),
+    application: application
+  }).then(() => {
+    callback();
+  }).catch((err: any) => {
+    errorCallback(err)
+  });
+}
 
 //////////////////////////// PLC functions ///////////////////////////////////
 export enum PLC_TYPE {

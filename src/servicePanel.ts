@@ -220,6 +220,9 @@ export class ServicePanel extends ConfigurationPanel {
     readFullConfig((config: IConfig) => {
       // Set the service configuration.
       this.config = config.Services[this.config.Id];
+    },
+    (err: any) => {
+      M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
     });
   }
 

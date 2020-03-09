@@ -12,11 +12,22 @@ import {
 
 export class RolePanel extends Panel {
   private editable: boolean;
+  private actions: Array<string>;
 
   /** The constructor. */
   constructor(id: string) {
     super(id);
-    this.displayRoles();
+
+    getAllActions(
+      (actions: any) => {
+        this.actions = actions;
+        this.displayRoles();
+      },
+      (err: any) => {
+
+        M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
+      }
+    );
   }
 
   // Here I will react to login information...
@@ -82,62 +93,55 @@ export class RolePanel extends Panel {
         })
         .down();
 
-      getAllActions(
-        (actions: any) => {
-          // console.log(actions)
-          let data: any;
-          data = {};
-          if (role.actions != undefined) {
-            for (var i = 0; i < actions.length; i++) {
-              if (role.actions.indexOf(actions[i]) == -1) {
-                data[actions[i]] = null;
-              }
-            }
-          } else {
-            for (var i = 0; i < actions.length; i++) {
-              data[actions[i]] = null;
-            }
+
+      // console.log(actions)
+      let data: any;
+      data = {};
+      if (role.actions != undefined) {
+        for (var i = 0; i < this.actions.length; i++) {
+          if (role.actions.indexOf(this.actions[i]) == -1) {
+            data[this.actions[i]] = null;
           }
-          // The action call on auto complete...
-          let onAutocomplete = () => {
-            let action = action_input.element.value;
-            let roleId = role._id;
-
-            // save the action in the role.
-            AppendActionToRole(
-              roleId,
-              action,
-              () => {
-                M.toast({
-                  html: "Action " + action + "has been added!",
-                  displayLength: 2000
-                });
-
-                // re-init the display.
-                content.removeAllChilds();
-                if (role.actions == null) {
-                  role.actions = [];
-                }
-
-                role.actions.push(action);
-                this.displayRole(content, role);
-              },
-              (err: any) => {
-                
-                M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
-              }
-            );
-          };
-          M.Autocomplete.init(action_input.element, {
-            data: data,
-            onAutocomplete: onAutocomplete
-          });
-        },
-        (err: any) => {
-          
-          M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
         }
-      );
+      } else {
+        for (var i = 0; i < this.actions.length; i++) {
+          data[this.actions[i]] = null;
+        }
+      }
+      // The action call on auto complete...
+      let onAutocomplete = () => {
+        let action = action_input.element.value;
+        let roleId = role._id;
+
+        // save the action in the role.
+        AppendActionToRole(
+          roleId,
+          action,
+          () => {
+            M.toast({
+              html: "Action " + action + "has been added!",
+              displayLength: 2000
+            });
+
+            // re-init the display.
+            content.removeAllChilds();
+            if (role.actions == null) {
+              role.actions = [];
+            }
+
+            role.actions.push(action);
+            this.displayRole(content, role);
+          },
+          (err: any) => {
+
+            M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
+          }
+        );
+      };
+      M.Autocomplete.init(action_input.element, {
+        data: data,
+        onAutocomplete: onAutocomplete
+      });
 
       // Now the actions...
       if (role.actions != undefined) {
@@ -160,11 +164,11 @@ export class RolePanel extends Panel {
             })
             .down();
 
-          deleteBtn.element.onmouseenter = function() {
+          deleteBtn.element.onmouseenter = function () {
             this.style.cursor = "pointer";
           };
 
-          deleteBtn.element.onmouseleave = function() {
+          deleteBtn.element.onmouseleave = function () {
             this.style.cursor = "default";
           };
 
@@ -186,7 +190,7 @@ export class RolePanel extends Panel {
                 this.displayRole(content, role);
               },
               (err: any) => {
-                
+
                 M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
               }
             );
@@ -222,11 +226,11 @@ export class RolePanel extends Panel {
             })
             .down();
 
-          newRoleBtn.element.onmouseenter = function() {
+          newRoleBtn.element.onmouseenter = function () {
             this.style.cursor = "pointer";
           };
 
-          newRoleBtn.element.onmouseout = function() {
+          newRoleBtn.element.onmouseout = function () {
             this.style.cursor = "default";
           };
 
@@ -273,7 +277,7 @@ export class RolePanel extends Panel {
                     eventHub.publish("update_role_event", { name: roleId }, true);
                   },
                   (err: any) => {
-                    
+
                     M.toast({ html: getErrorMessage(err.message), displayLength: 3500 });
                     this.displayRoles();
                   }
@@ -327,10 +331,10 @@ export class RolePanel extends Panel {
                     displayLength: 2000
                   });
 
-                  eventHub.publish("update_role_event", { name:  role._id }, true);
+                  eventHub.publish("update_role_event", { name: role._id }, true);
                 },
                 (err: any) => {
-                  
+
                   M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
                 }
               );
@@ -350,7 +354,7 @@ export class RolePanel extends Panel {
         M.Collapsible.init(ul.element);
       },
       (err: any) => {
-        
+
         M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
       }
     );

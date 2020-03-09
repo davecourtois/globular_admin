@@ -1,5 +1,5 @@
 import { ConfigurationPanel } from "../configurationPanel"
-import { syncLdapInfos } from "../backend";
+import { syncLdapInfos, getErrorMessage } from "../backend";
 
 class LdapUsersSyncServicePanel extends ConfigurationPanel {
     private baseTextLine: any;
@@ -176,6 +176,9 @@ export class LdapSyncServicePanel extends ConfigurationPanel {
         // Here I will set ldap infon
         syncLdapInfos(this.config, 1, () => {
             console.log("info was ", this.config.id, " was synchronize!")
+        },
+        (err: any) => {
+          M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
         })
     }
 }
