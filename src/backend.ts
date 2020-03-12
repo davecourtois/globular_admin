@@ -71,7 +71,8 @@ import {
   FindOneRqst,
   FindRqst,
   FindResp,
-  FindOneResp
+  FindOneResp,
+  AggregateRqst
 } from "globular-web-client/lib/persistence/persistencepb/persistence_pb";
 import {
   FindServicesDescriptorRequest,
@@ -116,7 +117,7 @@ export function getErrorMessage(err: any): string {
   }
 }
 
-export async function initServices(callback: () => void, errorCallback:(err:any)=>void) {
+export async function initServices(callback: () => void, errorCallback: (err: any) => void) {
   config = {
     Protocol: window.location.protocol.replace(":", ""),
     Domain: window.location.hostname,
@@ -150,7 +151,7 @@ export async function initServices(callback: () => void, errorCallback:(err:any)
 // let config = globular.adminService.GetConfig()
 export function readFullConfig(
   callback: (config: GlobularWebClient.IConfig) => void,
-  errorCallback:(err:any)=>void
+  errorCallback: (err: any) => void
 ) {
   let rqst = new GetConfigRequest();
   if (globular.adminService !== undefined) {
@@ -173,7 +174,7 @@ export function readFullConfig(
 export function saveConfig(
   config: GlobularWebClient.IConfig,
   callback: (config: GlobularWebClient.IConfig) => void
-  , errorCallback:(err:any)=>void
+  , errorCallback: (err: any) => void
 ) {
   let rqst = new SaveConfigRequest();
   rqst.setConfig(JSON.stringify(config));
@@ -198,7 +199,7 @@ export function saveConfig(
  * @param info The synchronisations informations.
  * @param callback success callback.
  */
-export function syncLdapInfos(info: any, timeout: number, callback: () => void, errorCallback:(err:any)=>void) {
+export function syncLdapInfos(info: any, timeout: number, callback: () => void, errorCallback: (err: any) => void) {
   let rqst = new SynchronizeLdapRqst
   let syncInfos = new LdapSyncInfos
   syncInfos.setConnectionid(info.connectionId)
@@ -690,7 +691,7 @@ export function readDir(path: string, callback: (dir: any) => void, errorCallbac
       callback(content)
     } else {
       // error here...
-      errorCallback({"message":status.details})
+      errorCallback({ "message": status.details })
     }
   });
 
@@ -822,8 +823,8 @@ export function queryRange(
   stream.on("status", function (status) {
     if (status.code == 0) {
       callback(JSON.parse(buffer.value));
-    }else{
-      errorCallback({"message":status.details})
+    } else {
+      errorCallback({ "message": status.details })
     }
   });
 
@@ -1045,7 +1046,7 @@ export function authenticate(
         // Publish local login event.
         eventHub.publish("onlogin", config, true); // return the full config...
         callback(decoded);
-      },(err:any)=>{
+      }, (err: any) => {
         errorCallback(err)
       })
 
@@ -1185,7 +1186,7 @@ export function GetAllAccountsInfo(callback: (
     if (status.code == 0) {
       callback(accounts);
     } else {
-      errorCallback({"message":status.details})
+      errorCallback({ "message": status.details })
     }
   });
 }
@@ -1239,7 +1240,7 @@ export function getAllRoles(
     if (status.code == 0) {
       callback(roles);
     } else {
-      errorCallback({"message":status.details})
+      errorCallback({ "message": status.details })
     }
   });
 }
@@ -1498,7 +1499,7 @@ export function installService(
 /**
  * Stop a service.
  */
-export function stopService(serviceId: string, callback: () => void, errorCallback:(err:any)=>void) {
+export function stopService(serviceId: string, callback: () => void, errorCallback: (err: any) => void) {
   let rqst = new StopServiceRequest();
   rqst.setServiceId(serviceId);
   globular.adminService
@@ -1519,7 +1520,7 @@ export function stopService(serviceId: string, callback: () => void, errorCallba
  * @param serviceId The id of the service to start.
  * @param callback  The callback on success.
  */
-export function startService(serviceId: string, callback: () => void, errorCallback:(err:any)=>void) {
+export function startService(serviceId: string, callback: () => void, errorCallback: (err: any) => void) {
   let rqst = new StartServiceRequest();
   rqst.setServiceId(serviceId);
   globular.adminService
@@ -1542,7 +1543,7 @@ export function startService(serviceId: string, callback: () => void, errorCallb
 export function saveService(
   service: GlobularWebClient.IServiceConfig,
   callback: (config: any) => void,
-  errorCallback:(err:any)=>void
+  errorCallback: (err: any) => void
 ) {
   let rqst = new SaveConfigRequest();
 
@@ -1588,7 +1589,7 @@ export function getReferencedValue(ref: any, callback: (results: any) => void, e
 /**
  * Read all user data.
  */
-export function readUserData(query: string, callback: (results: any) => void, errorCallback: (err:any)=>void) {
+export function readUserData(query: string, callback: (results: any) => void, errorCallback: (err: any) => void) {
   let userName = localStorage.getItem("user_name");
   let database = userName + "_db";
   let collection = "user_data";
@@ -1615,8 +1616,8 @@ export function readUserData(query: string, callback: (results: any) => void, er
   stream.on("status", status => {
     if (status.code == 0) {
       callback(results);
-    }else{
-      errorCallback({"message":status.details})
+    } else {
+      errorCallback({ "message": status.details })
     }
   });
 
@@ -1630,7 +1631,7 @@ export function readUserData(query: string, callback: (results: any) => void, er
  * Read all errors data.
  * @param callback 
  */
-export function readErrors(callback: (results: any) => void, errorCallback:(err:any)=>void) {
+export function readErrors(callback: (results: any) => void, errorCallback: (err: any) => void) {
   let database = "local_ressource";
   let collection = "Errors";
 
@@ -1656,8 +1657,8 @@ export function readErrors(callback: (results: any) => void, errorCallback:(err:
   stream.on("status", status => {
     if (status.code == 0) {
       callback(results);
-    }else{
-      errorCallback({"message":status.details})
+    } else {
+      errorCallback({ "message": status.details })
     }
   });
 
@@ -1667,12 +1668,13 @@ export function readErrors(callback: (results: any) => void, errorCallback:(err:
 }
 
 
+///////////////////////////// Logging ////////////////////////////////////////
 
 /**
  * Read all logs
  * @param callback The success callback.
  */
-export function readLogs(callback: (results: any) => void, errorCallback:(err:any)=>void) {
+export function readLogs(callback: (results: any) => void, errorCallback: (err: any) => void) {
   let database = "local_ressource";
   let collection = "Logs";
 
@@ -1698,8 +1700,8 @@ export function readLogs(callback: (results: any) => void, errorCallback:(err:an
   stream.on("status", status => {
     if (status.code == 0) {
       callback(results);
-    }else{
-      errorCallback({"message":status.details})
+    } else {
+      errorCallback({ "message": status.details })
     }
   });
 
@@ -1708,44 +1710,48 @@ export function readLogs(callback: (results: any) => void, errorCallback:(err:an
   });
 }
 
-///////////////////////////// Logging ////////////////////////////////////////
-export function getLogMethods(callback: (results: Array<string>) => void, errorCallback: (err: any) => void) {
-  let rqst = new GetLogMethodsRqst
-  globular.ressourceService.getLogMethods(rqst, {
+/**
+ * Return the logged method and their count.
+ * @param pipeline
+ * @param callback 
+ * @param errorCallback 
+ */
+export function getNumbeOfLogsByMethod(callback: (resuts: Array<any>) => void, errorCallback: (err: any) => void) {
+  
+  let database = "local_ressource";
+  let collection = "Logs";
+  let rqst = new AggregateRqst
+  rqst.setId(database);
+  rqst.setDatabase(database);
+  rqst.setCollection(collection);
+  rqst.setOptions("");
+
+  let pipeline = `[{"$group":{"_id":{"method":"$method"}, "count":{"$sum":1}}}]`;
+
+  rqst.setPipeline(pipeline);
+
+  // call persist data
+  let stream = globular.persistenceService.aggregate(rqst, {
     token: localStorage.getItem("user_token"),
     application: application
-  }).then((rsp: GetLogMethodsRsp) => {
-    callback(rsp.getMethodsList())
-  }).catch((err: any) => {
-    errorCallback(err)
   });
-}
+  let results = new Array();
 
-export function setLogMethod(method: string, callback: () => void, errorCallback: (err: any) => void) {
-
-  let rqst = new SetLogMethodRqst();
-  rqst.setMethod(method)
-  globular.ressourceService.setLogMethod(rqst, {
-    token: localStorage.getItem("user_token"),
-    application: application
-  }).then(() => {
-    callback();
-  }).catch((err: any) => {
-    errorCallback(err)
+  // Get the stream and set event on it...
+  stream.on("data", rsp => {
+    results = results.concat(JSON.parse(rsp.getJsonstr()));
   });
-}
 
-export function resetLogMethod(method: string, callback: () => void, errorCallback: (err: any) => void) {
+  stream.on("status", status => {
+    if (status.code == 0) {
+      callback(results);
+    } else {
+      errorCallback({ "message": status.details })
+    }
+  });
 
-  let rqst = new ResetLogMethodRqst();
-  rqst.setMethod(method)
-  globular.ressourceService.resetLogMethod(rqst, {
-    token: localStorage.getItem("user_token"),
-    application: application
-  }).then(() => {
-    callback();
-  }).catch((err: any) => {
-    errorCallback(err)
+  stream.on("end", () => {
+    // stream end signal
   });
 }
 
