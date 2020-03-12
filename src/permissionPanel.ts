@@ -215,7 +215,7 @@ export class PermissionExplorer extends Panel {
 
   }
 
-  // Display file permission
+  // Display ressource permission
   displayPermission(content: any, permission: any, owner: any, ownerType: OwnerType) {
 
     let div = content.appendElement({ tag: "div" }).down()
@@ -260,6 +260,22 @@ export class PermissionExplorer extends Panel {
         .appendElement({ tag: "span" })
     }
 
+    
+    let permissionDeleteDiv = permissionDiv.appendElement({ tag: "div", style: "flex-grow: 1; display: flex; align-items: center" }).down()
+    permissionDeleteDiv.appendElement({ tag: "span", innerHtml: "delete", style: "margin-right: 15px; margin-left: 5px;" })
+
+    if (!this.editable) {
+      // Here I will set icons...
+      permissionDeleteDiv.appendElement({ tag: "i", id: "delete_deny_ico", class: "tiny material-icons", innerHtml: "clear" })
+        .appendElement({ tag: "i", id: "delete_allow_ico", class: "tiny material-icons", innerHtml: "check" })
+    } else {
+      // Here I will set checkbox.
+      permissionDeleteDiv.appendElement({ tag: "label" }).down()
+        .appendElement({ tag: "input", id: "delete_checkbox", class: "filled-in", type: "checkbox" })
+        .appendElement({ tag: "span" })
+    }
+
+
     // Mouse over to make reading little easier.
     div.getChildById("permission_div_0").element.onmouseenter = div.getChildById("permission_div_1").element.onmouseenter = () => {
       div.getChildById("permission_div_0").element.style.backgroundColor = "#fafafa"
@@ -277,110 +293,136 @@ export class PermissionExplorer extends Panel {
       if (!this.editable) {
         div.getChildById("read_allow_ico").element.style.display = "none"
         div.getChildById("write_allow_ico").element.style.display = "none"
+        div.getChildById("delete_allow_ico").element.style.display = "none"
         div.getChildById("read_deny_ico").element.style.display = ""
         div.getChildById("write_deny_ico").element.style.display = ""
+        div.getChildById("delete_deny_ico").element.style.display = ""
       } else {
         div.getChildById("read_checkbox").element.checked = false
         div.getChildById("write_checkbox").element.checked = false
+        div.getChildById("delete_checkbox").element.checked = false
       }
     } else if (permission.number == 1) {
+      // delete
       if (!this.editable) {
         div.getChildById("read_allow_ico").element.style.display = "none"
         div.getChildById("write_allow_ico").element.style.display = "none"
+        div.getChildById("delete_allow_ico").element.style.display = ""
         div.getChildById("read_deny_ico").element.style.display = ""
         div.getChildById("write_deny_ico").element.style.display = ""
+        div.getChildById("delete_deny_ico").element.style.display = "none"
       } else {
         div.getChildById("read_checkbox").element.checked = false
         div.getChildById("write_checkbox").element.checked = false
+        div.getChildById("delete_checkbox").element.checked = true
       }
     } else if (permission.number == 2) {
       // write
       if (!this.editable) {
         div.getChildById("read_allow_ico").element.style.display = "none"
         div.getChildById("write_allow_ico").element.style.display = ""
+        div.getChildById("delete_allow_ico").element.style.display = "none"
         div.getChildById("read_deny_ico").element.style.display = ""
         div.getChildById("write_deny_ico").element.style.display = "none"
+        div.getChildById("delete_deny_ico").element.style.display = "none"
       } else {
         div.getChildById("read_checkbox").element.checked = false
         div.getChildById("write_checkbox").element.checked = true
+        div.getChildById("delete_checkbox").element.checked = false
       }
     } else if (permission.number == 3) {
-      // Execute + Write.
+      // delete + Write.
       if (!this.editable) {
         div.getChildById("read_allow_ico").element.style.display = "none"
         div.getChildById("write_allow_ico").element.style.display = ""
+        div.getChildById("delete_allow_ico").element.style.display = ""
         div.getChildById("read_deny_ico").element.style.display = ""
         div.getChildById("write_deny_ico").element.style.display = "none"
+        div.getChildById("delete_deny_ico").element.style.display = "none"
       } else {
         div.getChildById("read_checkbox").element.checked = false
         div.getChildById("write_checkbox").element.checked = true
+        div.getChildById("delete_checkbox").element.checked = true
       }
     } else if (permission.number == 4) {
       // Read
       if (!this.editable) {
         div.getChildById("read_allow_ico").element.style.display = ""
         div.getChildById("write_allow_ico").element.style.display = "none"
+        div.getChildById("delete_allow_ico").element.style.display = "none"
         div.getChildById("read_deny_ico").element.style.display = "none"
         div.getChildById("write_deny_ico").element.style.display = ""
+        div.getChildById("delete_deny_ico").element.style.display = "none"
       } else {
         div.getChildById("read_checkbox").element.checked = true
         div.getChildById("write_checkbox").element.checked = false
+        div.getChildById("delete_checkbox").element.checked = false
       }
     } else if (permission.number == 5) {
-      // Read + Execute
+      // Read + delete
       if (!this.editable) {
         div.getChildById("read_allow_ico").element.style.display = ""
         div.getChildById("write_allow_ico").element.style.display = "none"
+        div.getChildById("delete_allow_ico").element.style.display = ""
         div.getChildById("read_deny_ico").element.style.display = "none"
         div.getChildById("write_deny_ico").element.style.display = ""
+        div.getChildById("delete_deny_ico").element.style.display = "none"
       } else {
         div.getChildById("read_checkbox").element.checked = true
         div.getChildById("write_checkbox").element.checked = false
+        div.getChildById("delete_checkbox").element.checked = true
       }
     } else if (permission.number == 6) {
       // Read + Write
       if (!this.editable) {
         div.getChildById("read_allow_ico").element.style.display = ""
         div.getChildById("write_allow_ico").element.style.display = ""
+        div.getChildById("delete_allow_ico").element.style.display = "none"
         div.getChildById("read_deny_ico").element.style.display = "none"
         div.getChildById("write_deny_ico").element.style.display = "none"
+        div.getChildById("delete_deny_ico").element.style.display = ""
       } else {
         div.getChildById("read_checkbox").element.checked = true
         div.getChildById("write_checkbox").element.checked = true
+        div.getChildById("delete_checkbox").element.checked = false
       }
     } else if (permission.number == 7) {
-      // Read + Write + Execute
+      // Read + Write + delete
       if (!this.editable) {
         div.getChildById("read_allow_ico").element.style.display = ""
         div.getChildById("write_allow_ico").element.style.display = ""
+        div.getChildById("delete_allow_ico").element.style.display = ""
         div.getChildById("read_deny_ico").element.style.display = "none"
         div.getChildById("write_deny_ico").element.style.display = "none"
+        div.getChildById("delete_deny_ico").element.style.display = "none"
       } else {
         div.getChildById("read_checkbox").element.checked = true
         div.getChildById("write_checkbox").element.checked = true
+        div.getChildById("delete_checkbox").element.checked = true
       }
     }
 
     if (this.editable) {
-      div.getChildById("read_checkbox").element.onchange = div.getChildById("write_checkbox").element.onchange = () => {
+      div.getChildById("read_checkbox").element.onchange = div.getChildById("delete_checkbox").element.onchange = div.getChildById("write_checkbox").element.onchange = () => {
         let isRead = div.getChildById("read_checkbox").element.checked
         let isWrite = div.getChildById("write_checkbox").element.checked
+        let isDelete = div.getChildById("delete_checkbox").element.checked
         let permission_number: number
-        if (!isRead && !isWrite) {
+        if (!isRead && !isWrite && !isDelete) {
           permission_number = 0
-        } else if (!isRead && !isWrite) {
+        } else if (!isRead && !isWrite && isDelete) {
           permission_number = 1
-        } else if (!isRead && isWrite) {
+        } else if (!isRead && isWrite && !isDelete) {
           permission_number = 2
-        } else if (!isRead && isWrite) {
+        } else if (!isRead && isWrite && isDelete) {
           permission_number = 3
-        } else if (isRead && !isWrite) {
+        } else if (isRead && !isWrite && !isDelete) {
           permission_number = 4
-        } else if (isRead && !isWrite) {
+        } else if (isRead && !isWrite && isDelete) {
           permission_number = 5
-        } else if (isRead && isWrite) {
+        } else if (isRead && isWrite && !isDelete) {
           permission_number = 6
-        } else if (isRead && isWrite) {
+        } else if (isRead && isWrite && isDelete) {
           permission_number = 7
         }
 

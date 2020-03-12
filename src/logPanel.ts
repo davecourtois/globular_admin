@@ -2,7 +2,8 @@ import { Panel } from "./panel";
 
 import * as M from "materialize-css";
 import "materialize-css/sass/materialize.scss";
-import { getErrorMessage, getAllActions, eventHub, getNumbeOfLogsByMethod } from "./backend";
+import { getErrorMessage, getAllActions, eventHub, getNumbeOfLogsByMethod, readLogs } from "./backend";
+import { LogInfo } from "globular-web-client/lib/ressource/ressource_pb";
 
 export class LogsPanel extends Panel {
   private editable: boolean;
@@ -14,18 +15,19 @@ export class LogsPanel extends Panel {
 
   }
 
-  displayLogs(){
+  displayLogs() {
     /*getNumbeOfLogsByMethod((results:Array<any>)=>{
       console.log("---> ", results)
     }, (err:any)=>{
       console.log("---> ", err)
     })*/
   }
-  
+
   onlogin(data: any) {
     // overide...
     this.editable = true;
     this.displayLogs()
+
   }
 
   onlogout() {
@@ -44,10 +46,10 @@ export class ErrorsPanel extends Panel {
 
   }
 
-  displayErrors(){
+  displayErrors() {
 
   }
-  
+
   onlogin(data: any) {
     // overide...
     this.editable = true;
@@ -103,12 +105,13 @@ export class LogManager extends Panel {
     getAllActions((actions) => {
       this.logsPanel = new LogsPanel(logsPanel);
       this.errorsPanel = new ErrorsPanel(errorsPanel);
-      for(var i=0; i < actions.length; i++){
+
+      for (var i = 0; i < actions.length; i++) {
         let action = actions[i];
-        eventHub.subscribe(action, (uuid)=>{
+        eventHub.subscribe(action, (uuid) => {
           this.listeners.set(action, uuid);
-        }, (evt:any)=>{
-          console.log("---------> event receive! ", evt )
+        }, (evt: any) => {
+          console.log("---------> event receive! ", evt)
           // Here I will refresh logs...
         }, false)
       }
@@ -131,15 +134,25 @@ export class LogManager extends Panel {
       this.errorsDiv.element.style.display = "none"
     }
 
+    // overide...
+    readLogs((logs: Array<LogInfo>) => {
+      console.log(logs)
+    },
+      (err: any) => {
+
+        M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
+      }
+    );
 
   }
 
   onlogin(data: any) {
-    // overide...
+    this.editable = true;
 
   }
 
   onlogout() {
+    this.editable = false;
     // overide...
 
   }

@@ -1,4 +1,5 @@
 import * as GlobularWebClient from "globular-web-client";
+
 import {
   GetConfigRequest,
   SaveConfigRequest,
@@ -62,7 +63,8 @@ import {
   GetLogMethodsRqst,
   GetLogMethodsRsp,
   SetLogMethodRqst,
-  ResetLogMethodRqst
+  ResetLogMethodRqst,
+  LogInfo
 
 } from "globular-web-client/lib/ressource/ressource_pb";
 import * as jwt from "jwt-decode";
@@ -1678,29 +1680,27 @@ export function readLogs(callback: (results: any) => void, errorCallback: (err: 
   let database = "local_ressource";
   let collection = "Logs";
 
-  let rqst = new FindOneRqst();
-  rqst.setId(database);
-  rqst.setDatabase(database);
-  rqst.setCollection(collection);
-  rqst.setOptions("");
+  let rqst = new GetLogRqst();
   rqst.setQuery("{}");
 
   // call persist data
-  let stream = globular.persistenceService.find(rqst, {
+  let stream = globular.ressourceService.getLog(rqst, {
     token: localStorage.getItem("user_token"),
     application: application
   });
-  let results = new Array();
+
+  let results = new Array<LogInfo>();
 
   // Get the stream and set event on it...
   stream.on("data", rsp => {
-    results = results.concat(JSON.parse(rsp.getJsonstr()));
+    results = results.concat(rsp.getInfoList());
   });
 
   stream.on("status", status => {
     if (status.code == 0) {
       callback(results);
     } else {
+      console.log(status.details)
       errorCallback({ "message": status.details })
     }
   });

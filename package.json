@@ -37,7 +37,7 @@
   "dependencies": {
     "@davecourtois/elementui": "^1.0.18",
     "@types/materialize-css": "^1.0.6",
-    "globular-web-client": "^1.1.6",
+    "globular-web-client": "^1.1.11",
     "materialize-css": "^1.0.0",
     "@types/jwt-decode": "^2.2.1",
     "jwt-decode": "^2.2.0"
