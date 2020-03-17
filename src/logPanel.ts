@@ -1,68 +1,68 @@
 import { Panel } from "./panel";
+// User interface section.
 
 import * as M from "materialize-css";
 import "materialize-css/sass/materialize.scss";
-import { getErrorMessage, getAllActions, eventHub, getNumbeOfLogsByMethod, readLogs } from "./backend";
-import { LogInfo } from "globular-web-client/lib/ressource/ressource_pb";
+import { getErrorMessage, getAllActions, eventHub, readLogs, clearAllLog } from "./backend";
+import { LogInfo, LogType } from "globular-web-client/lib/ressource/ressource_pb";
+import { fireResize } from "./utility.js";
+import "@davecourtois/elementui/components/table/table.js";
 
-export class LogsPanel extends Panel {
+export class ErrosPanel extends Panel {
   private editable: boolean;
+  private ul: any;
+  private logs: Map<string, Array<LogInfo>>;
 
   constructor(parent: any) {
     super("logs_panel")
     this.setParent(parent);
-    this.displayLogs();
-
   }
 
-  displayLogs() {
-    /*getNumbeOfLogsByMethod((results:Array<any>)=>{
-      console.log("---> ", results)
-    }, (err:any)=>{
-      console.log("---> ", err)
-    })*/
+  displayErrors(logs: Array<LogInfo>) {
+    this.div.removeAllChilds();
+    this.ul = this.div.appendElement({ tag: "ul", class: "collapsible" }).down()
+    this.logs = new Map<string, Array<LogInfo>>();
+    for (var i = 0; i < logs.length; i++) {
+      if (!this.logs.has(logs[i].getMethod())) {
+        this.logs.set(logs[i].getMethod(), new Array<LogInfo>())
+        this.ul.appendElement({ tag: "li" }).down()
+          .appendElement({ tag: "div", class: "collapsible-header", id: logs[i].getMethod() + "_header" }).down()
+          .appendElement({ tag: "span", innerHtml: logs[i].getMethod() }).up()
+          .appendElement({ tag: "div", class: "collapsible-body" }).down()
+          .appendElement({ tag: "div", class: "row" }).down()
+          .appendElement({ tag: "ul", class: "collection col s12", id: logs[i].getMethod() + "_body" })
+      }
+      this.logs.get(logs[i].getMethod()).push(logs[i])
+      this.displayError(logs[i]);
+    }
+
+    M.Collapsible.init(this.ul.element)
+  }
+
+  displayError(info: LogInfo) {
+
+    let body = this.ul.getChildById(info.getMethod() + "_body")
+    if (body != undefined) {
+      if (this.editable == true) {
+        body.appendElement({ tag: "li", class: "collection-item", innerHtml: new Date(info.getDate() * 1000).toDateString() + " " + new Date(info.getDate() * 1000).toLocaleTimeString() })
+      } else {
+        body.appendElement({ tag: "li", class: "collection-item", innerHtml: new Date(info.getDate() * 1000).toDateString() + " " + new Date(info.getDate() * 1000).toLocaleTimeString() })
+      }
+    }
   }
 
   onlogin(data: any) {
     // overide...
     this.editable = true;
-    this.displayLogs()
 
   }
 
   onlogout() {
     // overide...
     this.editable = false;
-    this.displayLogs()
   }
 }
 
-export class ErrorsPanel extends Panel {
-  private editable: boolean;
-
-  constructor(parent: any) {
-    super("errors_panels")
-    this.setParent(parent);
-
-  }
-
-  displayErrors() {
-
-  }
-
-  onlogin(data: any) {
-    // overide...
-    this.editable = true;
-    this.displayErrors()
-  }
-
-  onlogout() {
-    // overide...
-    this.editable = false;
-    this.displayErrors()
-  }
-
-}
 
 /**
  * This class is use to manage file on the server.
@@ -70,12 +70,12 @@ export class ErrorsPanel extends Panel {
 export class LogManager extends Panel {
 
   // if true it means the log is editable.
-  private editable: boolean;
   private logsDiv: any;
   private errorsDiv: any;
-  private logsPanel: LogsPanel;
-  private errorsPanel: ErrorsPanel;
+  private errorsPanel: ErrosPanel;
   private listeners: Map<string, string>;
+  private logs: Array<LogInfo>;
+  private errors: Array<LogInfo>;
 
   // File panel constructor.
   constructor(id: string) {
@@ -83,6 +83,8 @@ export class LogManager extends Panel {
 
     // Keep track of listeners.
     this.listeners = new Map<string, string>();
+    this.logs = new Array<LogInfo>();
+    this.errors = new Array<LogInfo>();
 
     let ul = this.div.appendElement({ tag: "div", class: "row", style: "margin: 0px" }).down()
       .appendElement({ tag: "div", class: "col s12 m10 offset-m1", style: "padding: 10px;" }).down()
@@ -98,27 +100,49 @@ export class LogManager extends Panel {
     let errorsPanel = this.errorsDiv.appendElement({ tag: "div", class: "col s12 m10 offset-m1" }).down()
 
     this.logsDiv = this.div.appendElement({ tag: "div", class: "row" }).down()
-    let logsPanel = this.logsDiv.appendElement({ tag: "div", class: "col s12 m10 offset-m1" }).down()
-      .appendElement({ tag: "div", class: "card" }).down()
-      .appendElement({ tag: "div", class: "card-content" }).down()
+      .appendElement({ tag: "div", class: "col s12 m10 offset-m1" }).down()
 
     getAllActions((actions) => {
-      this.logsPanel = new LogsPanel(logsPanel);
-      this.errorsPanel = new ErrorsPanel(errorsPanel);
+      this.errorsPanel = new ErrosPanel(errorsPanel);
 
       for (var i = 0; i < actions.length; i++) {
         let action = actions[i];
         eventHub.subscribe(action, (uuid) => {
           this.listeners.set(action, uuid);
         }, (evt: any) => {
-          console.log("---------> event receive! ", evt)
-          // Here I will refresh logs...
+          // When log about user is created.
+          evt = JSON.parse(evt)
+          let info = new LogInfo()
+          info.setApplication(evt.application)
+          info.setDate(parseInt(evt.date))
+          info.setMethod(evt.method)
+          info.setUserid(evt.userId)
+          info.setMessage(evt.message)
+
+          if (evt.message != undefined) {
+            info.setType(LogType.ERROR)
+            this.errors.push(info)
+            this.errorsPanel.displayErrors(this.errors);
+          } else {
+            info.setType(LogType.INFO)
+            this.logs.push(info)
+
+            let row = new Array<any>();
+            row.push(info.getMethod())
+            row.push(info.getApplication())
+            row.push(new Date(info.getDate() * 1000))
+            let table = <any>document.getElementById("log_table");
+            table.data.unshift(row)
+            table.sort();
+            table.refresh();
+            fireResize();
+          }
+
         }, false)
       }
 
     },
       (err: any) => {
-
         M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
       }
     );
@@ -126,17 +150,27 @@ export class LogManager extends Panel {
     // Here I will set the tabs logics.
     error.element.onclick = () => {
       this.logsDiv.element.style.display = "none"
-      this.errorsDiv.element.style.display = ""
+      this.errorsDiv.element.style.display = "block"
     }
 
     log.element.onclick = () => {
-      this.logsDiv.element.style.display = ""
       this.errorsDiv.element.style.display = "none"
+      this.logsDiv.element.style.display = "block"
     }
 
     // overide...
     readLogs((logs: Array<LogInfo>) => {
-      console.log(logs)
+      for (var i = 0; i < logs.length; i++) {
+        let info = logs[i];
+        if (info.getMessage().length > 0) {
+          this.errors.push(info);
+        } else {
+          this.logs.push(info);
+        }
+      }
+      this.errorsPanel.displayErrors(this.errors);
+      this.initLogTable();
+
     },
       (err: any) => {
 
@@ -146,14 +180,89 @@ export class LogManager extends Panel {
 
   }
 
+  //let errorsPanel = this.logsDiv.appendElement({ tag: "div", class: "col s12 m10 offset-m1" }).down()
+  initLogTable() {
+    var table = <any>(document.createElement("table-element"))
+    var header = <any>(document.createElement("table-header-element"))
+    table.id = "log_table";
+    header.fixed = true;
+
+    // Create the dom table element
+    table.appendChild(header)
+    table.rowheight = 35
+    table.style.width = "1005.48px"
+    table.style.maxHeight = "700px";
+    table.data = []
+
+
+    for (var i = 0; i < this.logs.length; i++) {
+      let row = new Array<any>();
+      row.push(this.logs[i].getMethod())
+      row.push(this.logs[i].getApplication())
+      row.push(new Date(this.logs[i].getDate() * 1000))
+      table.data.unshift(row)
+    }
+
+    // Create the column headers.
+    // The method
+    var methodHeaderCell = <any>(document.createElement("table-header-cell-element"))
+    methodHeaderCell.innerHTML = "<table-sorter-element></table-sorter-element><div>Method</div> <table-filter-element></table-filter-element>"
+    methodHeaderCell.style.minWidth = "320px";
+    header.appendChild(methodHeaderCell)
+
+    // The application
+    var applicationHeaderCell = <any>(document.createElement("table-header-cell-element"))
+    applicationHeaderCell.innerHTML = "<table-sorter-element></table-sorter-element><div>Application</div> <table-filter-element></table-filter-element>"
+    header.appendChild(applicationHeaderCell)
+
+    // The creation date
+    var dateHeaderCell = <any>(document.createElement("table-header-cell-element"))
+    dateHeaderCell.innerHTML = "<table-sorter-element></table-sorter-element><div>Date</div> <table-filter-element></table-filter-element>"
+    dateHeaderCell.onrender = function (div: any, value: any) {
+      if (value != undefined) {
+        div.innerHTML = value.toDateString() + " " + value.toLocaleTimeString();
+      }
+    }
+    header.appendChild(dateHeaderCell)
+
+    this.logsDiv.element.appendChild(table)
+
+    table.menu.getChildById("delete-filtere-menu-item").element.action = () => {
+      let values = table.getFilteredData();
+      for(var i=0; i < values.length; i++){
+        console.log(values[i])
+      }
+
+    }
+
+    table.menu.getChildById("delete-all-data-menu-item").element.action = () => {
+      clearAllLog(LogType.INFO, () => {
+        M.toast({ html: "All logs are deleted!", displayLength: 2000 });
+        table.data = new Array<any>();
+        table.refresh();
+        fireResize();
+      },
+      (err: any) => {
+          M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
+        }
+      );
+    }
+  }
+
   onlogin(data: any) {
-    this.editable = true;
+    this.errorsPanel.onlogin(null); // be sure the editable variable is set.
+    this.errorsPanel.displayErrors(this.logs)
+    document.getElementById("delete-filtere-menu-item").style.display = "block"
+    document.getElementById("delete-all-data-menu-item").style.display = "block"
 
   }
 
   onlogout() {
-    this.editable = false;
+    this.errorsPanel.onlogin(null); // be su
     // overide...
+    this.errorsPanel.displayErrors(this.logs)
+    document.getElementById("delete-filtere-menu-item").style.display = "none"
+    document.getElementById("delete-all-data-menu-item").style.display = "none"
 
   }
 

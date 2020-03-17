@@ -14,6 +14,7 @@ export class Panel {
       style: "padding: 10px;"
     });
     this.id = id;
+
     eventHub.subscribe(
       "onlogin",
       (uuid: string) => {
@@ -24,6 +25,7 @@ export class Panel {
       },
       true
     );
+
   }
 
   // Here I will react to login information...

@@ -38,7 +38,6 @@ import {
   AddApplicationActionRqst,
   AddApplicationActionRsp,
   RemoveApplicationActionRqst,
-  RemoveApplicationActionRsp,
   DeleteApplicationRqst,
   DeleteAccountRqst,
   AddAccountRoleRqst,
@@ -60,11 +59,9 @@ import {
   SetRessourceOwnerRqst,
   DeleteRessourceOwnerRqst,
   GetLogRqst,
-  GetLogMethodsRqst,
-  GetLogMethodsRsp,
-  SetLogMethodRqst,
-  ResetLogMethodRqst,
-  LogInfo
+  LogInfo,
+  ClearAllLogRqst,
+  LogType
 
 } from "globular-web-client/lib/ressource/ressource_pb";
 import * as jwt from "jwt-decode";
@@ -74,7 +71,9 @@ import {
   FindRqst,
   FindResp,
   FindOneResp,
-  AggregateRqst
+  AggregateRqst,
+  PingConnectionRqst,
+  PingConnectionRsp
 } from "globular-web-client/lib/persistence/persistencepb/persistence_pb";
 import {
   FindServicesDescriptorRequest,
@@ -170,6 +169,21 @@ export function readFullConfig(
         errorCallback(err);
       });
   }
+}
+
+export function pingSql(connectionId: string, callback: (pong: string)=>{}, errorCallback:(err:any)=>void){
+  let rqst = new PingConnectionRqst
+  rqst.setId(connectionId)
+
+  globular.sqlService.ping(rqst, {
+    token: localStorage.getItem("user_token"),
+    application: application
+  }).then((rsp:PingConnectionRsp)=>{
+    callback(rsp.getResult());
+  })
+  .catch((err:any)=>{
+    errorCallback(err);
+  })
 }
 
 // Save the configuration.
@@ -1046,6 +1060,7 @@ export function authenticate(
 
       readFullConfig((config: any) => {
         // Publish local login event.
+        console.log("-----------> 1048:", config)
         eventHub.publish("onlogin", config, true); // return the full config...
         callback(decoded);
       }, (err: any) => {
@@ -1635,7 +1650,7 @@ export function readUserData(query: string, callback: (results: any) => void, er
  */
 export function readErrors(callback: (results: any) => void, errorCallback: (err: any) => void) {
   let database = "local_ressource";
-  let collection = "Errors";
+  let collection = "Logs";
 
   let rqst = new FindOneRqst();
   rqst.setId(database);
@@ -1677,8 +1692,6 @@ export function readErrors(callback: (results: any) => void, errorCallback: (err
  * @param callback The success callback.
  */
 export function readLogs(callback: (results: any) => void, errorCallback: (err: any) => void) {
-  let database = "local_ressource";
-  let collection = "Logs";
 
   let rqst = new GetLogRqst();
   rqst.setQuery("{}");
@@ -1708,6 +1721,18 @@ export function readLogs(callback: (results: any) => void, errorCallback: (err: 
   stream.on("end", () => {
     // stream end signal
   });
+}
+
+export function clearAllLog(logType: LogType, callback: ()=>void, errorCallback: (err:any)=>void){
+  let rqst = new ClearAllLogRqst
+  rqst.setType(logType)
+  globular.ressourceService.clearAllLog(rqst, {
+    token: localStorage.getItem("user_token"),
+    application: application
+  }).then(callback)
+  .catch((err: any)=>{
+    errorCallback(err)
+  })
 }
 
 /**

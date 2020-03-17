@@ -38,13 +38,6 @@ export class SearchServicesPanel extends Panel {
 
   onlogin(data: any) {
     this.isAdmin = true;
-    // Test if the service is already intall on the server.
-    readFullConfig((config: IConfig) => {
-      console.log(config);
-    },
-    (err: any) => {
-      M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
-    });
   }
 
   onlogout() {

@@ -146,9 +146,12 @@ export class GeneralInfoPanel extends ConfigurationPanel {
   onlogin(data: any) {
     // Display textual input
     super.onlogin(data);
+    
     readFullConfig((config: IConfig) => {
       // read the full configuration...
       this.config = config;
+
+      console.log("-----------> ", this.config)
 
       // Here I will try to get the ldap information to synchronise user/group
       for (var serviceId in this.config.Services) {

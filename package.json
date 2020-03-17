@@ -35,12 +35,17 @@
     "webpack-cli": "^3.3.9"
   },
   "dependencies": {
-    "@davecourtois/elementui": "^1.0.18",
+    "@davecourtois/elementui": "^1.0.19",
+    "@polymer/iron-icon": "^3.0.1",
+    "@polymer/iron-icons": "^3.0.1",
+    "@polymer/paper-button": "^3.0.1",
+    "@polymer/paper-icon-button": "^3.0.2",
+    "@polymer/paper-input": "^3.2.0",
+    "@types/jwt-decode": "^2.2.1",
     "@types/materialize-css": "^1.0.6",
     "globular-web-client": "^1.1.11",
-    "materialize-css": "^1.0.0",
-    "@types/jwt-decode": "^2.2.1",
-    "jwt-decode": "^2.2.0"
+    "jwt-decode": "^2.2.0",
+    "materialize-css": "^1.0.0"
   },
   "homepage": "https://github.com/davecourtois/globular_admin#readme"
 }
