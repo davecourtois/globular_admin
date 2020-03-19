@@ -177,7 +177,7 @@ class PathNavigator extends Panel {
     this.div = parent
       .appendElement({
         tag: "nav",
-        class: "card col s12 m10 offset-m1 indigo darken-4"
+        class: "card col s12 /*m10 offset-m1*/ indigo darken-4"
       })
       .down()
       .appendElement({ tag: "div", class: "nav-wrapper" })
@@ -718,7 +718,7 @@ class FileNavigator extends Panel {
 
   constructor(parent: any) {
     super(randomUUID());
-    this.div.element.className = "card col s12 m10 offset-m1";
+    this.div.element.className = "card col s12 /*m10 offset-m1*/";
     parent.appendElement(this.div);
   }
 

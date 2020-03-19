@@ -182,7 +182,7 @@ export class ApplicationManager extends Panel {
       // Here I will get the list of all applications.
       let ul = this.div
         .appendElement({ tag: "div", class: "row" }).down()
-        .appendElement({ tag: "div", class: "col s12 m10 offset-m1" }).down()
+        .appendElement({ tag: "div", class: "col s12 /*m10 offset-m1*/" }).down()
         .appendElement({ tag: "ul", class: "collapsible" }).down()
 
       for (var i = 0; i < applications.length; i++) {

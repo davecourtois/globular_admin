@@ -87,7 +87,7 @@ export class LogManager extends Panel {
     this.errors = new Array<LogInfo>();
 
     let ul = this.div.appendElement({ tag: "div", class: "row", style: "margin: 0px" }).down()
-      .appendElement({ tag: "div", class: "col s12 m10 offset-m1", style: "padding: 10px;" }).down()
+      .appendElement({ tag: "div", class: "col s12 /*m10 offset-m1*/", style: "padding: 10px;" }).down()
       .appendElement({ tag: "ul", class: "tabs", id: "logs_tabs" }).down()
 
     let log = ul.appendElement({ tag: "li", class: "tab col s6" }).down()
@@ -97,14 +97,14 @@ export class LogManager extends Panel {
       .appendElement({ tag: "a", href: "javascript:void(0)", innerHtml: "Error(s)", class: "grey-text text-darken-3" }).down()
 
     this.errorsDiv = this.div.appendElement({ tag: "div", class: "row", style: "display: none;" }).down()
-    let errorsPanel = this.errorsDiv.appendElement({ tag: "div", class: "col s12 m10 offset-m1" }).down()
+    let errorsPanel = this.errorsDiv.appendElement({ tag: "div", class: "col s12 /*m10 offset-m1*/" }).down()
 
     this.logsDiv = this.div.appendElement({ tag: "div", class: "row" }).down()
-      .appendElement({ tag: "div", class: "col s12 m10 offset-m1" }).down()
+      .appendElement({ tag: "div", class: "col s12 /*m10 offset-m1*/" }).down()
+
+    this.errorsPanel = new ErrosPanel(errorsPanel);
 
     getAllActions((actions) => {
-      this.errorsPanel = new ErrosPanel(errorsPanel);
-
       for (var i = 0; i < actions.length; i++) {
         let action = actions[i];
         eventHub.subscribe(action, (uuid) => {
@@ -130,11 +130,14 @@ export class LogManager extends Panel {
             let row = new Array<any>();
             row.push(info.getMethod())
             row.push(info.getApplication())
+            row.push(info.getUsername())
             row.push(new Date(info.getDate() * 1000))
             let table = <any>document.getElementById("log_table");
-            table.data.unshift(row)
-            table.sort();
-            table.refresh();
+            if (table != undefined) {
+              table.data.unshift(row)
+              table.sort();
+              table.refresh();
+            }
             fireResize();
           }
 
@@ -180,7 +183,7 @@ export class LogManager extends Panel {
 
   }
 
-  //let errorsPanel = this.logsDiv.appendElement({ tag: "div", class: "col s12 m10 offset-m1" }).down()
+  //let errorsPanel = this.logsDiv.appendElement({ tag: "div", class: "col s12 /*m10 offset-m1*/" }).down()
   initLogTable() {
     var table = <any>(document.createElement("table-element"))
     var header = <any>(document.createElement("table-header-element"))
@@ -190,7 +193,7 @@ export class LogManager extends Panel {
     // Create the dom table element
     table.appendChild(header)
     table.rowheight = 35
-    table.style.width = "1005.48px"
+    table.style.width = "1260px"
     table.style.maxHeight = "700px";
     table.data = []
 
@@ -199,6 +202,7 @@ export class LogManager extends Panel {
       let row = new Array<any>();
       row.push(this.logs[i].getMethod())
       row.push(this.logs[i].getApplication())
+      row.push(this.logs[i].getUsername())
       row.push(new Date(this.logs[i].getDate() * 1000))
       table.data.unshift(row)
     }
@@ -215,6 +219,11 @@ export class LogManager extends Panel {
     applicationHeaderCell.innerHTML = "<table-sorter-element></table-sorter-element><div>Application</div> <table-filter-element></table-filter-element>"
     header.appendChild(applicationHeaderCell)
 
+    // The application
+    var userHeaderCell = <any>(document.createElement("table-header-cell-element"))
+    userHeaderCell.innerHTML = "<table-sorter-element></table-sorter-element><div>User</div> <table-filter-element></table-filter-element>"
+    header.appendChild(userHeaderCell)
+
     // The creation date
     var dateHeaderCell = <any>(document.createElement("table-header-cell-element"))
     dateHeaderCell.innerHTML = "<table-sorter-element></table-sorter-element><div>Date</div> <table-filter-element></table-filter-element>"
@@ -229,7 +238,7 @@ export class LogManager extends Panel {
 
     table.menu.getChildById("delete-filtere-menu-item").element.action = () => {
       let values = table.getFilteredData();
-      for(var i=0; i < values.length; i++){
+      for (var i = 0; i < values.length; i++) {
         console.log(values[i])
       }
 
@@ -242,7 +251,7 @@ export class LogManager extends Panel {
         table.refresh();
         fireResize();
       },
-      (err: any) => {
+        (err: any) => {
           M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
         }
       );

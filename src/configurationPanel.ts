@@ -422,7 +422,7 @@ export class ConfigurationPanel extends Panel {
 
         // Display general information.
         this.div.appendElement({ "tag": "div", "class": "row configuration_panel" }).down()
-            .appendElement({ "tag": "div", "class": "col s12 m10 offset-m1" }).down()
+            .appendElement({ "tag": "div", "class": "col s12 /*m10 offset-m1*/" }).down()
             .appendElement({ "tag": "div", "class": "card" }).down()
             .appendElement({ "tag": "div", "class": "card-content" }).down()
             .appendElement({ "tag": "span", "class": "card-title", "style": "font-size: 1.5em;", "innerHtml": title })

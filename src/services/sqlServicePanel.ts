@@ -106,7 +106,8 @@ export class SqlServicePanel extends ServicePanel {
 
         // Now I will create a new coniguration panel.
         let configPanel = new ConfigurationPanel(connection, "", "")
-        configPanel.appendTextualConfig("Name")
+        configPanel.appendTextualConfig("Name", "Database")
+        configPanel.appendTextualConfig("Host")
         configPanel.appendEnumConfig("Driver", ["odbc", "mysql", "postgres"], false)
         configPanel.appendTextualConfig("Charset")
         configPanel.appendTextualConfig("User")

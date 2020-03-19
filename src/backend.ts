@@ -61,7 +61,10 @@ import {
   GetLogRqst,
   LogInfo,
   ClearAllLogRqst,
-  LogType
+  LogType,
+  SetActionPermissionRqst,
+  Ressource,
+  RemoveActionPermissionRqst
 
 } from "globular-web-client/lib/ressource/ressource_pb";
 import * as jwt from "jwt-decode";
@@ -98,7 +101,6 @@ export let eventHub: GlobularWebClient.EventHub;
 
 // The name of the application
 let application = "admin";
-
 let config: any;
 
 /**
@@ -1684,6 +1686,69 @@ export function readErrors(callback: (results: any) => void, errorCallback: (err
   });
 }
 
+export function readAllActionPermission(callback: (results: any) => void, errorCallback: (err: any) => void) {
+  let database = "local_ressource";
+  let collection = "ActionPermission";
+
+  let rqst = new FindRqst();
+  rqst.setId(database);
+  rqst.setDatabase(database);
+  rqst.setCollection(collection);
+  rqst.setOptions("");
+  rqst.setQuery("{}");
+
+  // call persist data
+  let stream = globular.persistenceService.find(rqst, {
+    token: localStorage.getItem("user_token"),
+    application: application
+  });
+  let results = new Array();
+
+  // Get the stream and set event on it...
+  stream.on("data", rsp => {
+    results = results.concat(JSON.parse(rsp.getJsonstr()));
+  });
+
+  stream.on("status", status => {
+    if (status.code == 0) {
+      callback(results);
+    } else {
+      errorCallback({ "message": status.details })
+    }
+  });
+
+  stream.on("end", () => {
+    // stream end signal
+  });
+}
+
+export function setActionPermission(action: string, permission: number, callback: (results: any) => void, errorCallback: (err: any) => void){
+  let rqst = new SetActionPermissionRqst
+  rqst.setAction(action)
+  rqst.setPermission(permission)
+
+  // Call set action permission.
+  globular.ressourceService.setActionPermission(rqst, {
+    token: localStorage.getItem("user_token"),
+    application: application
+  }).then(callback)
+  .catch((err: any)=>{
+    errorCallback(err)
+  })
+}
+
+export function removeActionPermission(action: string, callback: (results: any) => void, errorCallback: (err: any) => void){
+  let rqst = new RemoveActionPermissionRqst
+  rqst.setAction(action)
+  // Call set action permission.
+  globular.ressourceService.removeActionPermission(rqst, {
+    token: localStorage.getItem("user_token"),
+    application: application
+  }).then(callback)
+  .catch((err: any)=>{
+    errorCallback(err)
+  })
+}
 
 ///////////////////////////// Logging ////////////////////////////////////////
 

@@ -54,11 +54,11 @@ export class PermissionExplorer extends Panel {
 
   constructor(parent?: any) {
     super(randomUUID());
-    if(parent != undefined){
+    if (parent != undefined) {
       parent.appendElement(this.div);
     }
 
-    this.div.element.className = "card col s12 m10 offset-m1";
+    this.div.element.className = "card col s12 /*m10 offset-m1*/";
     this.div.element.style.display = "none"
 
     this.accounts = {}
@@ -113,7 +113,7 @@ export class PermissionExplorer extends Panel {
   }
 
   // Set the file or the directory.
-  setRessource(ressourceInfo: any, callback?:()=>void) {
+  setRessource(ressourceInfo: any, callback?: () => void) {
     if (ressourceInfo == undefined) {
       return
     }
@@ -131,7 +131,7 @@ export class PermissionExplorer extends Panel {
     // The name of the file.
     this.content = this.div.appendElement({ tag: "div", class: "row" }).down()
       .appendElement({ tag: "div", class: "card-content" }).down()
-      .appendElement({ tag: "span", id:"card-title", innerHtml: ressourceInfo.name, class: "card-title" })
+      .appendElement({ tag: "span", id: "card-title", innerHtml: ressourceInfo.name, class: "card-title" })
       .appendElement({ tag: "div" }).down()
 
     // Now I will get the permission for the file/folder... and diplay it.
@@ -150,7 +150,7 @@ export class PermissionExplorer extends Panel {
           () => {
             this.owners = new Array<string>()
             this.displayPermissions()
-            if(callback!=undefined){
+            if (callback != undefined) {
               callback(); // the ressource is now set.
             }
           })
@@ -164,52 +164,52 @@ export class PermissionExplorer extends Panel {
 
   // Display the list of owners.
   displayOwner(content: any, owner: any) {
-    let div = content.appendElement({ tag: "div"}).down()
+    let div = content.appendElement({ tag: "div" }).down()
     if (!this.editable) {
       // Here I will set icons...
-      let div_ = div.appendElement({tag:"div", class:"col s12", style:"display: flex; margin-bottom: 5px;", innerHtml:owner.name}).down()
-      div_.element.onmouseenter = function(){
+      let div_ = div.appendElement({ tag: "div", class: "col s12", style: "display: flex; margin-bottom: 5px;", innerHtml: owner.name }).down()
+      div_.element.onmouseenter = function () {
         this.style.backgroundColor = "#fafafa"
       }
-      div_.element.onmouseleave = function(){
+      div_.element.onmouseleave = function () {
         this.style.backgroundColor = ""
       }
 
-    }else{
-      let div_ = div.appendElement({tag:"div", class:"col s11", style:"display: flex; margin-bottom: 5px;", innerHtml:owner.name}).down()
-      let deleteBtn = div.appendElement({tag:"i", class:"tiny material-icons col s1", innerHtml:"remove"}).down()
-      
-      div_.element.onmouseenter = function(){
+    } else {
+      let div_ = div.appendElement({ tag: "div", class: "col s11", style: "display: flex; margin-bottom: 5px;", innerHtml: owner.name }).down()
+      let deleteBtn = div.appendElement({ tag: "i", class: "tiny material-icons col s1", innerHtml: "remove" }).down()
+
+      div_.element.onmouseenter = function () {
         this.style.backgroundColor = "#fafafa"
       }
 
-      div_.element.onmouseleave = function(){
+      div_.element.onmouseleave = function () {
         this.style.backgroundColor = ""
       }
 
-      deleteBtn.element.onmouseenter = ()=>{
+      deleteBtn.element.onmouseenter = () => {
         div_.element.style.backgroundColor = "#fafafa"
         deleteBtn.element.style.backgroundColor = "#fafafa"
         deleteBtn.element.style.cursor = "pointer"
       }
 
-      deleteBtn.element.onmouseleave= ()=>{
+      deleteBtn.element.onmouseleave = () => {
         div_.element.style.backgroundColor = ""
         deleteBtn.element.style.backgroundColor = ""
         deleteBtn.element.style.cursor = "default"
       }
 
-      deleteBtn.element.onclick = ()=>{
+      deleteBtn.element.onclick = () => {
         // Delete the display.
-        deleteRessourceOwners(this.path, owner._id, 
-          ()=>{
+        deleteRessourceOwners(this.path, owner._id,
+          () => {
             this.owners.splice(this.owners.indexOf(owner._id), 1)
             div.delete();
             this.displayPermissions()
-          }, 
-        (err: any)=>{
-          M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
-        })
+          },
+          (err: any) => {
+            M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
+          })
       }
     }
 
@@ -232,50 +232,6 @@ export class PermissionExplorer extends Panel {
       .appendElement({ tag: "span", innerHtml: permission.path, style: "flex-grow: 1; margin-left: 15px;" }).up()
       .appendElement({ tag: "div", id: "permission_div_1", class: "col s12 m4", style: "display: flex; margin-bottom: 5px;" }).down() // Now the permission itself.
 
-    let permissionReadDiv = permissionDiv.appendElement({ tag: "div", style: "flex-grow: 1; display: flex; align-items: center" }).down()
-    permissionReadDiv.appendElement({ tag: "span", innerHtml: "read", style: "margin-right: 15px; margin-left: 5px;" })
-
-    if (!this.editable) {
-      // Here I will set icons...
-      permissionReadDiv.appendElement({ tag: "i", id: "read_deny_ico", class: "tiny material-icons", innerHtml: "clear" })
-        .appendElement({ tag: "i", id: "read_allow_ico", class: "tiny material-icons", innerHtml: "check" })
-    } else {
-      // Here I will set checkbox.
-      permissionReadDiv.appendElement({ tag: "label" }).down()
-        .appendElement({ tag: "input", id: "read_checkbox", class: "filled-in", type: "checkbox" })
-        .appendElement({ tag: "span" })
-    }
-
-    let permissionWriteDiv = permissionDiv.appendElement({ tag: "div", style: "flex-grow: 1; display: flex; align-items: center" }).down()
-    permissionWriteDiv.appendElement({ tag: "span", innerHtml: "write", style: "margin-right: 15px; margin-left: 5px;" })
-
-    if (!this.editable) {
-      // Here I will set icons...
-      permissionWriteDiv.appendElement({ tag: "i", id: "write_deny_ico", class: "tiny material-icons", innerHtml: "clear" })
-        .appendElement({ tag: "i", id: "write_allow_ico", class: "tiny material-icons", innerHtml: "check" })
-    } else {
-      // Here I will set checkbox.
-      permissionWriteDiv.appendElement({ tag: "label" }).down()
-        .appendElement({ tag: "input", id: "write_checkbox", class: "filled-in", type: "checkbox" })
-        .appendElement({ tag: "span" })
-    }
-
-    
-    let permissionDeleteDiv = permissionDiv.appendElement({ tag: "div", style: "flex-grow: 1; display: flex; align-items: center" }).down()
-    permissionDeleteDiv.appendElement({ tag: "span", innerHtml: "delete", style: "margin-right: 15px; margin-left: 5px;" })
-
-    if (!this.editable) {
-      // Here I will set icons...
-      permissionDeleteDiv.appendElement({ tag: "i", id: "delete_deny_ico", class: "tiny material-icons", innerHtml: "clear" })
-        .appendElement({ tag: "i", id: "delete_allow_ico", class: "tiny material-icons", innerHtml: "check" })
-    } else {
-      // Here I will set checkbox.
-      permissionDeleteDiv.appendElement({ tag: "label" }).down()
-        .appendElement({ tag: "input", id: "delete_checkbox", class: "filled-in", type: "checkbox" })
-        .appendElement({ tag: "span" })
-    }
-
-
     // Mouse over to make reading little easier.
     div.getChildById("permission_div_0").element.onmouseenter = div.getChildById("permission_div_1").element.onmouseenter = () => {
       div.getChildById("permission_div_0").element.style.backgroundColor = "#fafafa"
@@ -287,179 +243,29 @@ export class PermissionExplorer extends Panel {
       div.getChildById("permission_div_1").element.style.backgroundColor = ""
     }
 
-    // Now depending of the permission number I will set the permission.
-    if (permission.number == 0) {
-      // No permission.
-      if (!this.editable) {
-        div.getChildById("read_allow_ico").element.style.display = "none"
-        div.getChildById("write_allow_ico").element.style.display = "none"
-        div.getChildById("delete_allow_ico").element.style.display = "none"
-        div.getChildById("read_deny_ico").element.style.display = ""
-        div.getChildById("write_deny_ico").element.style.display = ""
-        div.getChildById("delete_deny_ico").element.style.display = ""
-      } else {
-        div.getChildById("read_checkbox").element.checked = false
-        div.getChildById("write_checkbox").element.checked = false
-        div.getChildById("delete_checkbox").element.checked = false
-      }
-    } else if (permission.number == 1) {
-      // delete
-      if (!this.editable) {
-        div.getChildById("read_allow_ico").element.style.display = "none"
-        div.getChildById("write_allow_ico").element.style.display = "none"
-        div.getChildById("delete_allow_ico").element.style.display = ""
-        div.getChildById("read_deny_ico").element.style.display = ""
-        div.getChildById("write_deny_ico").element.style.display = ""
-        div.getChildById("delete_deny_ico").element.style.display = "none"
-      } else {
-        div.getChildById("read_checkbox").element.checked = false
-        div.getChildById("write_checkbox").element.checked = false
-        div.getChildById("delete_checkbox").element.checked = true
-      }
-    } else if (permission.number == 2) {
-      // write
-      if (!this.editable) {
-        div.getChildById("read_allow_ico").element.style.display = "none"
-        div.getChildById("write_allow_ico").element.style.display = ""
-        div.getChildById("delete_allow_ico").element.style.display = "none"
-        div.getChildById("read_deny_ico").element.style.display = ""
-        div.getChildById("write_deny_ico").element.style.display = "none"
-        div.getChildById("delete_deny_ico").element.style.display = "none"
-      } else {
-        div.getChildById("read_checkbox").element.checked = false
-        div.getChildById("write_checkbox").element.checked = true
-        div.getChildById("delete_checkbox").element.checked = false
-      }
-    } else if (permission.number == 3) {
-      // delete + Write.
-      if (!this.editable) {
-        div.getChildById("read_allow_ico").element.style.display = "none"
-        div.getChildById("write_allow_ico").element.style.display = ""
-        div.getChildById("delete_allow_ico").element.style.display = ""
-        div.getChildById("read_deny_ico").element.style.display = ""
-        div.getChildById("write_deny_ico").element.style.display = "none"
-        div.getChildById("delete_deny_ico").element.style.display = "none"
-      } else {
-        div.getChildById("read_checkbox").element.checked = false
-        div.getChildById("write_checkbox").element.checked = true
-        div.getChildById("delete_checkbox").element.checked = true
-      }
-    } else if (permission.number == 4) {
-      // Read
-      if (!this.editable) {
-        div.getChildById("read_allow_ico").element.style.display = ""
-        div.getChildById("write_allow_ico").element.style.display = "none"
-        div.getChildById("delete_allow_ico").element.style.display = "none"
-        div.getChildById("read_deny_ico").element.style.display = "none"
-        div.getChildById("write_deny_ico").element.style.display = ""
-        div.getChildById("delete_deny_ico").element.style.display = "none"
-      } else {
-        div.getChildById("read_checkbox").element.checked = true
-        div.getChildById("write_checkbox").element.checked = false
-        div.getChildById("delete_checkbox").element.checked = false
-      }
-    } else if (permission.number == 5) {
-      // Read + delete
-      if (!this.editable) {
-        div.getChildById("read_allow_ico").element.style.display = ""
-        div.getChildById("write_allow_ico").element.style.display = "none"
-        div.getChildById("delete_allow_ico").element.style.display = ""
-        div.getChildById("read_deny_ico").element.style.display = "none"
-        div.getChildById("write_deny_ico").element.style.display = ""
-        div.getChildById("delete_deny_ico").element.style.display = "none"
-      } else {
-        div.getChildById("read_checkbox").element.checked = true
-        div.getChildById("write_checkbox").element.checked = false
-        div.getChildById("delete_checkbox").element.checked = true
-      }
-    } else if (permission.number == 6) {
-      // Read + Write
-      if (!this.editable) {
-        div.getChildById("read_allow_ico").element.style.display = ""
-        div.getChildById("write_allow_ico").element.style.display = ""
-        div.getChildById("delete_allow_ico").element.style.display = "none"
-        div.getChildById("read_deny_ico").element.style.display = "none"
-        div.getChildById("write_deny_ico").element.style.display = "none"
-        div.getChildById("delete_deny_ico").element.style.display = ""
-      } else {
-        div.getChildById("read_checkbox").element.checked = true
-        div.getChildById("write_checkbox").element.checked = true
-        div.getChildById("delete_checkbox").element.checked = false
-      }
-    } else if (permission.number == 7) {
-      // Read + Write + delete
-      if (!this.editable) {
-        div.getChildById("read_allow_ico").element.style.display = ""
-        div.getChildById("write_allow_ico").element.style.display = ""
-        div.getChildById("delete_allow_ico").element.style.display = ""
-        div.getChildById("read_deny_ico").element.style.display = "none"
-        div.getChildById("write_deny_ico").element.style.display = "none"
-        div.getChildById("delete_deny_ico").element.style.display = "none"
-      } else {
-        div.getChildById("read_checkbox").element.checked = true
-        div.getChildById("write_checkbox").element.checked = true
-        div.getChildById("delete_checkbox").element.checked = true
-      }
-    }
+    // Create the permission panel.
+    new PermissionPanel(randomUUID(), permissionDiv, permission.number, (permission_number: number) => {
+      setRessourcePermission(permission.path, owner._id, ownerType, permission_number,
+        () => {
+          getRessourcePermissions(this.ressourceInfo.path,
+            (permissions: Array<RessourcePermission>) => {
+              this.path = this.ressourceInfo.path;
+              this.permissions = permissions;
+              this.displayPermissions()
+            },
+            (err: any) => {
 
-    if (this.editable) {
-      div.getChildById("read_checkbox").element.onchange = div.getChildById("delete_checkbox").element.onchange = div.getChildById("write_checkbox").element.onchange = () => {
-        let isRead = div.getChildById("read_checkbox").element.checked
-        let isWrite = div.getChildById("write_checkbox").element.checked
-        let isDelete = div.getChildById("delete_checkbox").element.checked
-        let permission_number: number
-        if (!isRead && !isWrite && !isDelete) {
-          permission_number = 0
-        } else if (!isRead && !isWrite && isDelete) {
-          permission_number = 1
-        } else if (!isRead && isWrite && !isDelete) {
-          permission_number = 2
-        } else if (!isRead && isWrite && isDelete) {
-          permission_number = 3
-        } else if (isRead && !isWrite && !isDelete) {
-          permission_number = 4
-        } else if (isRead && !isWrite && isDelete) {
-          permission_number = 5
-        } else if (isRead && isWrite && !isDelete) {
-          permission_number = 6
-        } else if (isRead && isWrite && isDelete) {
-          permission_number = 7
-        }
+              M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
+            })
+          M.toast({ html: "File permission was saved!", displayLength: 2000 });
+        },
+        (err: any) => {
+          console.log(err)
 
-        // Here I will set the permission.
-        setRessourcePermission(permission.path, owner._id, ownerType, permission_number,
-          () => {
-            getRessourcePermissions(this.ressourceInfo.path,
-              (permissions: Array<RessourcePermission>) => {
-                this.path = this.ressourceInfo.path;
-                this.permissions = permissions;
-                this.displayPermissions()
-              },
-              (err: any) => {
-
-                M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
-              })
-            M.toast({ html: "File permission was saved!", displayLength: 2000 });
-          },
-          (err: any) => {
-            console.log(err)
-
-            M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
-          })
-      }
-
-      // Here I will also append the remove button.
-      let removePermissionBtn = permissionDiv.appendElement({ tag: "i", class: "Small material-icons col s1", innerHtml: "delete" }).down()
-      removePermissionBtn.element.onmouseenter = function () {
-        this.style.cursor = "pointer"
-      }
-
-      removePermissionBtn.element.onmouseleave = function () {
-        this.style.cursor = "default"
-      }
-
-      // remove the file permission.
-      removePermissionBtn.element.onclick = () => {
+          M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
+        })
+    },
+      () => {
         deleteRessourcePermissions(permission.path, owner._id,
           () => {
             getRessourcePermissions(this.ressourceInfo.path,
@@ -479,8 +285,8 @@ export class PermissionExplorer extends Panel {
 
             M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
           })
-      }
-    }
+      }, this.editable)
+
   }
 
   // Display file permissions
@@ -611,13 +417,13 @@ export class PermissionExplorer extends Panel {
         let onAutocomplete_1 = () => {
           // create new permission for user
           let username = owner_input.element.value;
-          setRessourceOwners(this.path, this.accounts[username]._id, 
-            ()=>{
+          setRessourceOwners(this.path, this.accounts[username]._id,
+            () => {
               // simply redraw the whole thing.
               this.owners.push(this.accounts[username]._id)
               this.displayPermissions()
             },
-            (err: any)=>{
+            (err: any) => {
               console.log(err)
               M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
             })
@@ -833,7 +639,7 @@ export class PermissionExplorer extends Panel {
 
     // sort the list of user.
     this.owners.sort((a: any, b: any) => (a > b) ? 1 : ((b > a) ? -1 : 0));
-    for(var i=0; i < this.owners.length; i++){
+    for (var i = 0; i < this.owners.length; i++) {
       this.displayOwner(ownersPermissionSection, this.accounts[this.owners[i]])
     }
 
@@ -867,4 +673,251 @@ export class PermissionExplorer extends Panel {
     this.setRessource(this.ressourceInfo)
   }
 
+}
+
+/**
+ * Display one permission.
+ */
+export class PermissionPanel extends Panel {
+  private editable: boolean;
+
+  constructor(id: string, public permissionDiv: any, public permission: number, public onSetPermission: (permission: number) => void, public onDeletePermission: () => void, editable:boolean) {
+  
+    super(id);
+
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    this.editable = editable;
+
+    this.setPermission()
+  }
+
+    // Here I will react to login information...
+    onlogin(data: any) {
+      // overide...
+      this.editable = true;
+      this.setPermission()
+    }
+  
+    onlogout() {
+      // overide...
+      this.editable = false;
+      this.setPermission()
+    }
+
+  setPermission() {
+
+    // Clear the div.
+    this.permissionDiv.removeAllChilds()
+
+    let permissionReadDiv = this.permissionDiv.appendElement({ tag: "div", style: "flex-grow: 1; display: flex; align-items: center" }).down()
+    permissionReadDiv.appendElement({ tag: "span", innerHtml: "read", style: "margin-right: 15px; margin-left: 5px;" })
+
+    if (!this.editable) {
+      // Here I will set icons...
+      permissionReadDiv.appendElement({ tag: "i", id: "read_deny_ico", class: "tiny material-icons", innerHtml: "clear" })
+        .appendElement({ tag: "i", id: "read_allow_ico", class: "tiny material-icons", innerHtml: "check" })
+    } else {
+      // Here I will set checkbox.
+      permissionReadDiv.appendElement({ tag: "label" }).down()
+        .appendElement({ tag: "input", id: "read_checkbox", class: "filled-in", type: "checkbox" })
+        .appendElement({ tag: "span" })
+    }
+
+    let permissionWriteDiv = this.permissionDiv.appendElement({ tag: "div", style: "flex-grow: 1; display: flex; align-items: center" }).down()
+    permissionWriteDiv.appendElement({ tag: "span", innerHtml: "write", style: "margin-right: 15px; margin-left: 5px;" })
+
+    if (!this.editable) {
+      // Here I will set icons...
+      permissionWriteDiv.appendElement({ tag: "i", id: "write_deny_ico", class: "tiny material-icons", innerHtml: "clear" })
+        .appendElement({ tag: "i", id: "write_allow_ico", class: "tiny material-icons", innerHtml: "check" })
+    } else {
+      // Here I will set checkbox.
+      permissionWriteDiv.appendElement({ tag: "label" }).down()
+        .appendElement({ tag: "input", id: "write_checkbox", class: "filled-in", type: "checkbox" })
+        .appendElement({ tag: "span" })
+    }
+
+
+    let permissionDeleteDiv = this.permissionDiv.appendElement({ tag: "div", style: "flex-grow: 1; display: flex; align-items: center" }).down()
+    permissionDeleteDiv.appendElement({ tag: "span", innerHtml: "delete", style: "margin-right: 15px; margin-left: 5px;" })
+
+    if (!this.editable) {
+      // Here I will set icons...
+      permissionDeleteDiv.appendElement({ tag: "i", id: "delete_deny_ico", class: "tiny material-icons", innerHtml: "clear" })
+        .appendElement({ tag: "i", id: "delete_allow_ico", class: "tiny material-icons", innerHtml: "check" })
+    } else {
+      // Here I will set checkbox.
+      permissionDeleteDiv.appendElement({ tag: "label" }).down()
+        .appendElement({ tag: "input", id: "delete_checkbox", class: "filled-in", type: "checkbox" })
+        .appendElement({ tag: "span" })
+    }
+
+    // Now depending of the permission number I will set the permission.
+    if (this.permission == 0) {
+      // No permission.
+      if (!this.editable) {
+        this.permissionDiv.getChildById("read_allow_ico").element.style.display = "none"
+        this.permissionDiv.getChildById("write_allow_ico").element.style.display = "none"
+        this.permissionDiv.getChildById("delete_allow_ico").element.style.display = "none"
+
+        this.permissionDiv.getChildById("read_deny_ico").element.style.display = ""
+        this.permissionDiv.getChildById("write_deny_ico").element.style.display = ""
+        this.permissionDiv.getChildById("delete_deny_ico").element.style.display = ""
+      } else {
+        this.permissionDiv.getChildById("read_checkbox").element.checked = false
+        this.permissionDiv.getChildById("write_checkbox").element.checked = false
+        this.permissionDiv.getChildById("delete_checkbox").element.checked = false
+      }
+    } else if (this.permission == 1) {
+      // delete
+      if (!this.editable) {
+        this.permissionDiv.getChildById("read_allow_ico").element.style.display = "none"
+        this.permissionDiv.getChildById("write_allow_ico").element.style.display = "none"
+        this.permissionDiv.getChildById("delete_allow_ico").element.style.display = ""
+
+        this.permissionDiv.getChildById("read_deny_ico").element.style.display = ""
+        this.permissionDiv.getChildById("write_deny_ico").element.style.display = ""
+        this.permissionDiv.getChildById("delete_deny_ico").element.style.display = "none"
+      } else {
+        this.permissionDiv.getChildById("read_checkbox").element.checked = false
+        this.permissionDiv.getChildById("write_checkbox").element.checked = false
+        this.permissionDiv.getChildById("delete_checkbox").element.checked = true
+      }
+    } else if (this.permission == 2) {
+      // write
+      if (!this.editable) {
+        this.permissionDiv.getChildById("read_allow_ico").element.style.display = "none"
+        this.permissionDiv.getChildById("write_allow_ico").element.style.display = ""
+        this.permissionDiv.getChildById("delete_allow_ico").element.style.display = "none"
+
+        this.permissionDiv.getChildById("read_deny_ico").element.style.display = ""
+        this.permissionDiv.getChildById("write_deny_ico").element.style.display = "none"
+        this.permissionDiv.getChildById("delete_deny_ico").element.style.display = ""
+      } else {
+        this.permissionDiv.getChildById("read_checkbox").element.checked = false
+        this.permissionDiv.getChildById("write_checkbox").element.checked = true
+        this.permissionDiv.getChildById("delete_checkbox").element.checked = false
+      }
+    } else if (this.permission == 3) {
+      // delete + Write.
+      if (!this.editable) {
+        this.permissionDiv.getChildById("read_allow_ico").element.style.display = "none"
+        this.permissionDiv.getChildById("write_allow_ico").element.style.display = ""
+        this.permissionDiv.getChildById("delete_allow_ico").element.style.display = ""
+
+        this.permissionDiv.getChildById("read_deny_ico").element.style.display = ""
+        this.permissionDiv.getChildById("write_deny_ico").element.style.display = "none"
+        this.permissionDiv.getChildById("delete_deny_ico").element.style.display = "none"
+      } else {
+        this.permissionDiv.getChildById("read_checkbox").element.checked = false
+        this.permissionDiv.getChildById("write_checkbox").element.checked = true
+        this.permissionDiv.getChildById("delete_checkbox").element.checked = true
+      }
+    } else if (this.permission == 4) {
+      // Read
+      if (!this.editable) {
+        this.permissionDiv.getChildById("read_allow_ico").element.style.display = ""
+        this.permissionDiv.getChildById("write_allow_ico").element.style.display = "none"
+        this.permissionDiv.getChildById("delete_allow_ico").element.style.display = "none"
+
+        this.permissionDiv.getChildById("read_deny_ico").element.style.display = "none"
+        this.permissionDiv.getChildById("write_deny_ico").element.style.display = ""
+        this.permissionDiv.getChildById("delete_deny_ico").element.style.display = ""
+
+      } else {
+        this.permissionDiv.getChildById("read_checkbox").element.checked = true
+        this.permissionDiv.getChildById("write_checkbox").element.checked = false
+        this.permissionDiv.getChildById("delete_checkbox").element.checked = false
+      }
+    } else if (this.permission == 5) {
+      // Read + delete
+      if (!this.editable) {
+        this.permissionDiv.getChildById("read_allow_ico").element.style.display = ""
+        this.permissionDiv.getChildById("write_allow_ico").element.style.display = "none"
+        this.permissionDiv.getChildById("delete_allow_ico").element.style.display = ""
+
+        this.permissionDiv.getChildById("read_deny_ico").element.style.display = "none"
+        this.permissionDiv.getChildById("write_deny_ico").element.style.display = ""
+        this.permissionDiv.getChildById("delete_deny_ico").element.style.display = "none"
+      } else {
+        this.permissionDiv.getChildById("read_checkbox").element.checked = true
+        this.permissionDiv.getChildById("write_checkbox").element.checked = false
+        this.permissionDiv.getChildById("delete_checkbox").element.checked = true
+      }
+    } else if (this.permission == 6) {
+      // Read + Write
+      if (!this.editable) {
+        this.permissionDiv.getChildById("read_allow_ico").element.style.display = ""
+        this.permissionDiv.getChildById("write_allow_ico").element.style.display = ""
+        this.permissionDiv.getChildById("delete_allow_ico").element.style.display = "none"
+
+        this.permissionDiv.getChildById("read_deny_ico").element.style.display = "none"
+        this.permissionDiv.getChildById("write_deny_ico").element.style.display = "none"
+        this.permissionDiv.getChildById("delete_deny_ico").element.style.display = ""
+      } else {
+        this.permissionDiv.getChildById("read_checkbox").element.checked = true
+        this.permissionDiv.getChildById("write_checkbox").element.checked = true
+        this.permissionDiv.getChildById("delete_checkbox").element.checked = false
+      }
+    } else if (this.permission == 7) {
+      // Read + Write + delete
+      if (!this.editable) {
+        this.permissionDiv.getChildById("read_allow_ico").element.style.display = ""
+        this.permissionDiv.getChildById("write_allow_ico").element.style.display = ""
+        this.permissionDiv.getChildById("delete_allow_ico").element.style.display = ""
+
+        this.permissionDiv.getChildById("read_deny_ico").element.style.display = "none"
+        this.permissionDiv.getChildById("write_deny_ico").element.style.display = "none"
+        this.permissionDiv.getChildById("delete_deny_ico").element.style.display = "none"
+      } else {
+        this.permissionDiv.getChildById("read_checkbox").element.checked = true
+        this.permissionDiv.getChildById("write_checkbox").element.checked = true
+        this.permissionDiv.getChildById("delete_checkbox").element.checked = true
+      }
+    }
+
+    if (this.editable) {
+      this.permissionDiv.getChildById("read_checkbox").element.onchange = this.permissionDiv.getChildById("delete_checkbox").element.onchange = this.permissionDiv.getChildById("write_checkbox").element.onchange = () => {
+        let isRead = this.permissionDiv.getChildById("read_checkbox").element.checked
+        let isWrite = this.permissionDiv.getChildById("write_checkbox").element.checked
+        let isDelete = this.permissionDiv.getChildById("delete_checkbox").element.checked
+        let permission_number: number
+        if (!isRead && !isWrite && !isDelete) {
+          permission_number = 0
+        } else if (!isRead && !isWrite && isDelete) {
+          permission_number = 1
+        } else if (!isRead && isWrite && !isDelete) {
+          permission_number = 2
+        } else if (!isRead && isWrite && isDelete) {
+          permission_number = 3
+        } else if (isRead && !isWrite && !isDelete) {
+          permission_number = 4
+        } else if (isRead && !isWrite && isDelete) {
+          permission_number = 5
+        } else if (isRead && isWrite && !isDelete) {
+          permission_number = 6
+        } else if (isRead && isWrite && isDelete) {
+          permission_number = 7
+        }
+
+        // Set the permission.
+        this.onSetPermission(permission_number)
+      }
+
+      // Here I will also append the remove button.
+      let removePermissionBtn = this.permissionDiv.appendElement({ tag: "i", class: "Small material-icons col s1", innerHtml: "delete" }).down()
+      removePermissionBtn.element.onmouseenter = function () {
+        this.style.cursor = "pointer"
+      }
+
+      removePermissionBtn.element.onmouseleave = function () {
+        this.style.cursor = "default"
+      }
+
+      // remove the file permission.
+      removePermissionBtn.element.onclick = () => {
+        this.onDeletePermission();
+      }
+    }
+  }
 }

@@ -18,6 +18,8 @@ import { PersistenceServicePanel } from "./services/persistenceServicePanel";
 import { FileServicePanel } from './services/fileServicePanel';
 import { PlcServerConfigPanel } from './services/plcServerConfigPanel';
 import { PlcExporterConfigPanel } from "./services/plcExporterConfigPanel";
+import { RessourceManager } from "./ressourcePanel";
+import { MetricManager } from "./metricPanel";
 
 
 export class MainPage {
@@ -41,8 +43,10 @@ export class MainPage {
   private rolePanel: RolePanel;
   private accountPanel: AccountManager;
   private filePanel: FileManager;
+  private ressourcePanel: RessourceManager;
   private applicationPanel: ApplicationManager;
   private logPanel: LogManager;
+  private metricPanel: MetricManager;
 
   constructor() {
     // Here I will create the main container.
@@ -386,7 +390,7 @@ export class MainPage {
         style: "margin-bottom: 0px; margin-top:10px;"
       })
       .down()
-      .appendElement({ tag: "div", class: "col s12 m10 offset-m1" })
+      .appendElement({ tag: "div", class: "col s12 /*m10 offset-m1*/" })
       .down()
       .appendElement({ tag: "ul", id: "main_tabs", class: "tabs" })
       .down()
@@ -400,7 +404,7 @@ export class MainPage {
         innerHtml: "Services"
       })
       .up()
-      .appendElement({ tag: "li", class: "tab col s2" })
+      .appendElement({ tag: "li", class: "tab col s1" })
       .down()
       .appendElement({
         tag: "a",
@@ -430,7 +434,7 @@ export class MainPage {
         innerHtml: "Applications"
       })
       .up()
-      .appendElement({ tag: "li", class: "tab col s2" })
+      .appendElement({ tag: "li", class: "tab col s1" })
       .down()
       .appendElement({
         tag: "a",
@@ -445,9 +449,29 @@ export class MainPage {
       .appendElement({
         tag: "a",
         id: "main_tabs_tab_5",
+        class: "grey-text text-darken-4",
+        href: "javascript:void(0)",
+        innerHtml: "Ressource"
+      })
+      .up()
+      .appendElement({ tag: "li", class: "tab col s1" })
+      .down()
+      .appendElement({
+        tag: "a",
+        id: "main_tabs_tab_6",
         class: "grey-text text-darken-3",
         href: "javascript:void(0)",
         innerHtml: "Logs"
+      })
+      .up()
+      .appendElement({ tag: "li", class: "tab col s1" })
+      .down()
+      .appendElement({
+        tag: "a",
+        id: "main_tabs_tab_7",
+        class: "grey-text text-darken-3",
+        href: "javascript:void(0)",
+        innerHtml: "Metrics"
       })
 
     // Initialyse various panels.
@@ -463,6 +487,10 @@ export class MainPage {
       this.filePanel = new FileManager(randomUUID());
     }
 
+    if (this.ressourcePanel == null) {
+      this.ressourcePanel = new RessourceManager();
+    }
+
     if (this.accountPanel == null) {
       this.accountPanel = new AccountManager(randomUUID());
     }
@@ -473,6 +501,10 @@ export class MainPage {
 
     if (this.applicationPanel == null) {
       this.applicationPanel = new ApplicationManager(randomUUID());
+    }
+
+    if (this.metricPanel == null) {
+      this.metricPanel = new MetricManager();
     }
 
     // Set tabs.
@@ -504,7 +536,17 @@ export class MainPage {
     let tab_5_content = this.container
       .appendElement({ tag: "div", style: "display: none" })
       .down();
-    this.logPanel.setParent(tab_5_content);
+    this.ressourcePanel.setParent(tab_5_content);
+
+    let tab_6_content = this.container
+      .appendElement({ tag: "div", style: "display: none" })
+      .down();
+    this.logPanel.setParent(tab_6_content);
+
+    let tab_7_content = this.container
+      .appendElement({ tag: "div", style: "display: none" })
+      .down();
+    this.metricPanel.setParent(tab_7_content);
 
     // Init the materialyse tabs.
     M.Tabs.init(document.getElementById("main_tabs"));
@@ -517,6 +559,8 @@ export class MainPage {
       tab_3_content.element.style.display = "none";
       tab_4_content.element.style.display = "none";
       tab_5_content.element.style.display = "none";
+      tab_6_content.element.style.display = "none";
+      tab_7_content.element.style.display = "none";
     };
 
     this.container.getChildById("main_tabs_tab_1").element.onclick = () => {
@@ -526,6 +570,8 @@ export class MainPage {
       tab_3_content.element.style.display = "none";
       tab_4_content.element.style.display = "none";
       tab_5_content.element.style.display = "none";
+      tab_6_content.element.style.display = "none";
+      tab_7_content.element.style.display = "none";
     };
 
     this.container.getChildById("main_tabs_tab_2").element.onclick = () => {
@@ -535,6 +581,8 @@ export class MainPage {
       tab_3_content.element.style.display = "none";
       tab_4_content.element.style.display = "none";
       tab_5_content.element.style.display = "none";
+      tab_6_content.element.style.display = "none";
+      tab_7_content.element.style.display = "none";
     };
 
     this.container.getChildById("main_tabs_tab_3").element.onclick = () => {
@@ -544,6 +592,8 @@ export class MainPage {
       tab_3_content.element.style.display = "";
       tab_4_content.element.style.display = "none";
       tab_5_content.element.style.display = "none";
+      tab_6_content.element.style.display = "none";
+      tab_7_content.element.style.display = "none";
     };
 
     this.container.getChildById("main_tabs_tab_4").element.onclick = () => {
@@ -553,6 +603,8 @@ export class MainPage {
       tab_3_content.element.style.display = "none";
       tab_4_content.element.style.display = "";
       tab_5_content.element.style.display = "none";
+      tab_6_content.element.style.display = "none";
+      tab_7_content.element.style.display = "none";
     };
 
     this.container.getChildById("main_tabs_tab_5").element.onclick = () => {
@@ -562,8 +614,33 @@ export class MainPage {
       tab_3_content.element.style.display = "none";
       tab_4_content.element.style.display = "none";
       tab_5_content.element.style.display = "";
-      M.Tabs.init(document.getElementById("logs_tabs"));
+      tab_6_content.element.style.display = "none";
+      tab_7_content.element.style.display = "none";
     };
+
+    this.container.getChildById("main_tabs_tab_6").element.onclick = () => {
+      tab_0_content.element.style.display = "none";
+      tab_1_content.element.style.display = "none";
+      tab_2_content.element.style.display = "none";
+      tab_3_content.element.style.display = "none";
+      tab_4_content.element.style.display = "none";
+      tab_5_content.element.style.display = "none";
+      tab_6_content.element.style.display = "";
+      tab_7_content.element.style.display = "none";
+    };
+
+    this.container.getChildById("main_tabs_tab_7").element.onclick = () => {
+      tab_0_content.element.style.display = "none";
+      tab_1_content.element.style.display = "none";
+      tab_2_content.element.style.display = "none";
+      tab_3_content.element.style.display = "none";
+      tab_4_content.element.style.display = "none";
+      tab_5_content.element.style.display = "none";
+      tab_6_content.element.style.display = "none";
+      tab_7_content.element.style.display = "";
+    };
+    
+    M.Tabs.init(document.getElementById("logs_tabs"));
   }
 
   showServicesPanel(container: any) {
@@ -575,7 +652,7 @@ export class MainPage {
         style: "margin-bottom: 0px; margin-top:10px; margin-left: 10px; margin-right: 10px;"
       })
       .down()
-      .appendElement({ id: "service_tabs", tag: "div", class: "col s12 m10 offset-m1" })
+      .appendElement({ id: "service_tabs", tag: "div", class: "col s12 /*m10 offset-m1*/" })
       .down()
       .appendElement({ tag: "ul", id: "services_list", class: "collapsible" })
       .down();
@@ -604,31 +681,31 @@ export class MainPage {
             title,
             key
           );
-        }else if (globular.config.Services[key].Name == "persistence_server") {
+        } else if (globular.config.Services[key].Name == "persistence_server") {
           servicePanel = new PersistenceServicePanel(
             globular.config.Services[key],
             title,
             key
           );
-        }else if (globular.config.Services[key].Name == "file_server") {
+        } else if (globular.config.Services[key].Name == "file_server") {
           servicePanel = new FileServicePanel(
             globular.config.Services[key],
             title,
             key
           );
-        }else if (globular.config.Services[key].Name.startsWith("plc_server_")) {
+        } else if (globular.config.Services[key].Name.startsWith("plc_server_")) {
           servicePanel = new PlcServerConfigPanel(
             globular.config.Services[key],
             title,
             key
           );
-        }else if (globular.config.Services[key].Name.startsWith("plc_exporter")) {
+        } else if (globular.config.Services[key].Name.startsWith("plc_exporter")) {
           servicePanel = new PlcExporterConfigPanel(
             globular.config.Services[key],
             title,
             key
           );
-        }else {
+        } else {
           servicePanel = new ServicePanel(
             globular.config.Services[key],
             title,
@@ -636,7 +713,7 @@ export class MainPage {
           );
         }
 
-        
+
         // Here I will create the tab...
         let panel = div
           .appendElement({ tag: "li" })

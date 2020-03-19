@@ -356,7 +356,7 @@ export class AccountManager extends Panel {
       .down()
       .appendElement({
         tag: "nav",
-        class: "card col s12 m10 offset-m1 indigo darken-4"
+        class: "card col s12 /*m10 offset-m1*/ indigo darken-4"
       })
       .down()
       .appendElement({ tag: "nav-wrapper" })
@@ -494,7 +494,7 @@ export class AccountManager extends Panel {
         let div = this.div.appendElement({ tag: "div", class: "row" }).down();
         // Here I will get the list of all accounts.
         let ul = div
-          .appendElement({ tag: "div", class: "col s12 m10 offset-m1", style: "padding: 0px;" })
+          .appendElement({ tag: "div", class: "col s12 /*m10 offset-m1*/", style: "padding: 0px;" })
           .down()
           .appendElement({ tag: "ul", class: "collapsible" })
           .down();
