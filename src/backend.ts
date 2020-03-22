@@ -64,8 +64,8 @@ import {
   LogType,
   SetActionPermissionRqst,
   Ressource,
-  RemoveActionPermissionRqst
-
+  RemoveActionPermissionRqst,
+  GetRessourcesRqst
 } from "globular-web-client/lib/ressource/ressource_pb";
 import * as jwt from "jwt-decode";
 import {
@@ -1062,7 +1062,6 @@ export function authenticate(
 
       readFullConfig((config: any) => {
         // Publish local login event.
-        console.log("-----------> 1048:", config)
         eventHub.publish("onlogin", config, true); // return the full config...
         callback(decoded);
       }, (err: any) => {
@@ -1707,6 +1706,38 @@ export function readAllActionPermission(callback: (results: any) => void, errorC
   // Get the stream and set event on it...
   stream.on("data", rsp => {
     results = results.concat(JSON.parse(rsp.getJsonstr()));
+  });
+
+  stream.on("status", status => {
+    if (status.code == 0) {
+      callback(results);
+    } else {
+      errorCallback({ "message": status.details })
+    }
+  });
+
+  stream.on("end", () => {
+    // stream end signal
+  });
+}
+
+export function getRessources(path: string, name: string, callback: (results: Ressource[]) => void, errorCallback: (err: any) => void) {
+
+  let rqst = new GetRessourcesRqst
+  rqst.setPath(path)
+  rqst.setName(name)
+
+  // call persist data
+  let stream = globular.ressourceService.getRessources(rqst, {
+    token: localStorage.getItem("user_token"),
+    application: application
+  });
+
+  let results = new Array<Ressource>();
+
+  // Get the stream and set event on it...
+  stream.on("data", rsp => {
+    results = results.concat(rsp.getRessourcesList())
   });
 
   stream.on("status", status => {

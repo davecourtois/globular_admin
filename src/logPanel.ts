@@ -3,6 +3,7 @@ import { Panel } from "./panel";
 
 import * as M from "materialize-css";
 import "materialize-css/sass/materialize.scss";
+
 import { getErrorMessage, getAllActions, eventHub, readLogs, clearAllLog } from "./backend";
 import { LogInfo, LogType } from "globular-web-client/lib/ressource/ressource_pb";
 import { fireResize } from "./utility.js";

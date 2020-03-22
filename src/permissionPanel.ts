@@ -52,8 +52,8 @@ export class PermissionExplorer extends Panel {
   private permissions: any; // contain the list of permission.
   private applications: any; // Contain the list of application
 
-  constructor(parent?: any) {
-    super(randomUUID());
+  constructor(id: string, parent?: any) {
+    super(id);
     if (parent != undefined) {
       parent.appendElement(this.div);
     }
@@ -92,21 +92,49 @@ export class PermissionExplorer extends Panel {
 
     // event to react to.
     eventHub.subscribe(
+      "set_ressource_event",
+      (uuid: string) => { },
+      (evt: any) => {
+        if(evt.id != this.id){
+          return
+        }
+
+        // Set the dir to display.
+        // Here I must retreive the directory from the given path.
+        getRessourcePermissions(evt.ressource.path,
+            (permissions: Array<RessourcePermission>) => {
+              this.path = evt.ressource.path;
+              this.permissions = permissions;
+              this.setRessource(evt.ressource);
+            },
+            (err: any) => {
+              console.log(err)
+              M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
+            })
+      },
+      true
+    );
+
+    eventHub.subscribe(
       "set_file_event",
       (uuid: string) => { },
       (evt: any) => {
+        if(evt.id != this.id){
+          return
+        }
+
         // Set the dir to display.
         // Here I must retreive the directory from the given path.
-        getRessourcePermissions(this.ressourceInfo.path,
-          (permissions: Array<RessourcePermission>) => {
-            this.path = this.ressourceInfo.path;
-            this.permissions = permissions;
-            this.setRessource(evt.file);
-          },
-          (err: any) => {
-            console.log(err)
-            M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
-          })
+        getRessourcePermissions(evt.file.path,
+            (permissions: Array<RessourcePermission>) => {
+              this.path = evt.file.path;
+              this.permissions = permissions;
+              this.setRessource(evt.file);
+            },
+            (err: any) => {
+              console.log(err)
+              M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
+            })
       },
       true
     );
@@ -115,6 +143,8 @@ export class PermissionExplorer extends Panel {
   // Set the file or the directory.
   setRessource(ressourceInfo: any, callback?: () => void) {
     if (ressourceInfo == undefined) {
+      this.div.element.style.display = "none"
+      this.div.element.innerHTML = ""
       return
     }
 
@@ -681,8 +711,8 @@ export class PermissionExplorer extends Panel {
 export class PermissionPanel extends Panel {
   private editable: boolean;
 
-  constructor(id: string, public permissionDiv: any, public permission: number, public onSetPermission: (permission: number) => void, public onDeletePermission: () => void, editable:boolean) {
-  
+  constructor(id: string, public permissionDiv: any, public permission: number, public onSetPermission: (permission: number) => void, public onDeletePermission: () => void, editable: boolean) {
+
     super(id);
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -691,18 +721,18 @@ export class PermissionPanel extends Panel {
     this.setPermission()
   }
 
-    // Here I will react to login information...
-    onlogin(data: any) {
-      // overide...
-      this.editable = true;
-      this.setPermission()
-    }
-  
-    onlogout() {
-      // overide...
-      this.editable = false;
-      this.setPermission()
-    }
+  // Here I will react to login information...
+  onlogin(data: any) {
+    // overide...
+    this.editable = true;
+    this.setPermission()
+  }
+
+  onlogout() {
+    // overide...
+    this.editable = false;
+    this.setPermission()
+  }
 
   setPermission() {
 

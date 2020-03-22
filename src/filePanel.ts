@@ -25,8 +25,9 @@ export class FileManager extends Panel {
     this.fileNavigator = new FileNavigator(this.div);
 
     // Create the permission explorer.
-    this.permissionExplorer = new PermissionExplorer(this.div);
+    this.permissionExplorer = new PermissionExplorer("file_permission_explorer", this.div);
 
+    
     // first off all will get the file info that contain all directory and file information.
     GetAllFilesInfo(
       (filesInfo: any) => {
@@ -61,7 +62,7 @@ export class FileManager extends Panel {
 
         // Emit when user click on the path
         eventHub.subscribe(
-          "set_path_event",
+          "set_file_path_event",
           (uuid: string) => { },
           (evt: any) => {
             // Set the dir to display.
@@ -220,7 +221,7 @@ class PathNavigator extends Panel {
               path_ += "/";
             }
           }
-          eventHub.publish("set_path_event", { path: path_ }, true);
+          eventHub.publish("set_file_path_event", { path: path_ }, true);
         };
       }
     }
@@ -495,7 +496,7 @@ class FilePanel {
       let lastModified = new Date(file.last_modified * 1000);
       this.div.appendElement({
         tag: "div",
-        class: "col s3",
+        class: "col s6 m3",
         innerHtml:
           lastModified.toLocaleDateString() +
           " " +
@@ -505,7 +506,7 @@ class FilePanel {
       let fileSizeDiv = this.div
         .appendElement({
           tag: "div",
-          class: "col s2"
+          class: "col s6 m2"
         })
         .down();
 
@@ -527,7 +528,7 @@ class FilePanel {
           fileSizeDiv.element.innerHTML = file.size + " bytes";
         }
         ico.element.onclick = () => {
-          eventHub.publish("set_file_event", { file: file }, true);
+          eventHub.publish("set_file_event", { id: "file_permission_explorer", file: file }, true);
         }
       } else {
         // publish local event.
@@ -626,7 +627,7 @@ class FilePanel {
           tag: "a",
           heref: "javascript:void(0)",
           innerHtml: file.name,
-          class: "col s6",
+          class: "col s12 m6",
           title: "Download file."
         })
         .down();
@@ -634,7 +635,7 @@ class FilePanel {
       let lastModified = new Date(file.last_modified * 1000);
       this.div.appendElement({
         tag: "div",
-        class: "col s3",
+        class: "col s6 m3",
         innerHtml:
           lastModified.toLocaleDateString() +
           " " +
@@ -644,7 +645,7 @@ class FilePanel {
       let fileSizeDiv = this.div
         .appendElement({
           tag: "div",
-          class: "col s2"
+          class: "col s6 m2"
         })
         .down();
 
@@ -667,7 +668,7 @@ class FilePanel {
         }
 
         ico.element.onclick = () => {
-          eventHub.publish("set_file_event", { file: file }, true);
+          eventHub.publish("set_file_event", {id: "file_permission_explorer", file: file }, true);
         }
 
         // On follow link
@@ -719,6 +720,7 @@ class FileNavigator extends Panel {
   constructor(parent: any) {
     super(randomUUID());
     this.div.element.className = "card col s12 /*m10 offset-m1*/";
+    this.div.element.style = "padding: 10px;";
     parent.appendElement(this.div);
   }
 
@@ -726,46 +728,46 @@ class FileNavigator extends Panel {
     if (!this.editable) {
       // Set the header...
       this.div
-        .appendElement({ tag: "div", class: "row" })
+        .appendElement({ tag: "div", class: "row hide-on-small-only" })
         .down()
         .appendElement({
           tag: "div",
-          class: "col s7",
+          class: "col s12 m7",
           id: "file_name_div",
           innerHtml: "Name",
           style: "border-right: 1px solid lightgray;"
         })
         .appendElement({
           tag: "div",
-          class: "col s3",
-          innerHtml: "Date modifed",
+          class: "col s6 m3",
+          innerHtml: "Date modified",
           style: "border-right: 1px solid lightgray;"
         })
         .appendElement({
           tag: "div",
-          class: "col s2",
+          class: "col s6 m2",
           innerHtml: "Size"
         });
     } else {
       this.div
-        .appendElement({ tag: "div", class: "row" })
+        .appendElement({ tag: "div", class: "row hide-on-small-only" })
         .down()
         .appendElement({
           tag: "div",
-          class: "col s6",
+          class: "col s12 m6",
           id: "file_name_div",
           innerHtml: "Name",
           style: "border-right: 1px solid lightgray;"
         })
         .appendElement({
           tag: "div",
-          class: "col s3",
+          class: "col s6 m3",
           innerHtml: "Date modifed",
           style: "border-right: 1px solid lightgray;"
         })
         .appendElement({
           tag: "div",
-          class: "col s2",
+          class: "col s6 m2",
           innerHtml: "Size"
         })
         .appendElement({

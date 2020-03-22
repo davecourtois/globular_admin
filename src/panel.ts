@@ -3,15 +3,14 @@ import { createElement } from "./element";
 
 export class Panel {
   protected div: any;
-  private uuid: string;
+  protected uuid: string;
   protected id: string;
 
   constructor(id: string) {
     // Div is the html element div.
     this.div = createElement(null, {
       tag: "div",
-      id: id,
-      style: "padding: 10px;"
+      id: id
     });
     this.id = id;
 

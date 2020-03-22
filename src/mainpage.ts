@@ -648,8 +648,7 @@ export class MainPage {
     let div = container
       .appendElement({
         tag: "div",
-        class: "row",
-        style: "margin-bottom: 0px; margin-top:10px; margin-left: 10px; margin-right: 10px;"
+        class: "row"
       })
       .down()
       .appendElement({ id: "service_tabs", tag: "div", class: "col s12 /*m10 offset-m1*/" })
