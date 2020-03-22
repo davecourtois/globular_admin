@@ -65,7 +65,8 @@ import {
   SetActionPermissionRqst,
   Ressource,
   RemoveActionPermissionRqst,
-  GetRessourcesRqst
+  GetRessourcesRqst,
+  RemoveRessourceRqst
 } from "globular-web-client/lib/ressource/ressource_pb";
 import * as jwt from "jwt-decode";
 import {
@@ -1779,6 +1780,22 @@ export function removeActionPermission(action: string, callback: (results: any) 
   .catch((err: any)=>{
     errorCallback(err)
   })
+}
+
+export function removeRessource(path:string, name:string, callback:()=>void, errorCallback: (err: any) => void){
+  let rqst = new RemoveRessourceRqst
+  let ressource = new Ressource
+  ressource.setPath(path)
+  ressource.setName(name)
+  rqst.setRessource(ressource)
+  globular.ressourceService.removeRessource(rqst, {
+    token: localStorage.getItem("user_token"),
+    application: application
+  }).then(callback)
+  .catch((err: any)=>{
+    errorCallback(err)
+  })
+
 }
 
 ///////////////////////////// Logging ////////////////////////////////////////

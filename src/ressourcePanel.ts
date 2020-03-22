@@ -1,7 +1,7 @@
 import { Panel } from "./panel";
 import { PermissionExplorer, PermissionPanel } from "./permissionPanel";
-import { getAllActions, getErrorMessage, readAllActionPermission, setActionPermission, removeActionPermission, globular, getRessources, eventHub } from "./backend";
-import { randomUUID } from "./utility";
+import { getAllActions, getErrorMessage, readAllActionPermission, setActionPermission, removeActionPermission, globular, getRessources, eventHub, removeRessource } from "./backend";
+import { randomUUID, rgbToHsl } from "./utility";
 import { Ressource } from "globular-web-client/lib/ressource/ressource_pb";
 
 let emptyPath = "...";
@@ -50,6 +50,18 @@ export class RessourceManager extends Panel {
       true
     );
 
+    eventHub.subscribe(
+      "delete_ressource_event",
+      (uuid: string) => { },
+      (evt: any) => {
+        // Set the dir to display.
+        this.pathNavigator.setPath("")
+        this.permissionExplorer.setRessource(null);
+
+      },
+      true
+    );
+
     // Emit when user change the ressource directory.
     eventHub.subscribe(
       "set_ressource_event",
@@ -73,6 +85,8 @@ export class RessourceManager extends Panel {
  * The action permission can be READ | WRITE | DELETE or any combination of those permission.
  */
 class ActionPermissionManager extends Panel {
+
+  // Set editable.
   private editable: boolean;
 
   // The ressource manager
@@ -102,8 +116,8 @@ class ActionPermissionManager extends Panel {
     let content = this.div.appendElement({ tag: "div", class: "card col s12", style: "padding:10px;" }).down()
 
     content.appendElement({ tag: "div", class: "row hide-on-small-only" }).down()
-      .appendElement({ tag: "div", class: "col s8", style: "border-right: 1px solid lightgray;", innerHtml: "Action(s)" })
-      .appendElement({ tag: "div", class: "col s4", innerHtml: "Permission(s)" })
+      .appendElement({ tag: "div", class: "col m6 l8", style: "border-right: 1px solid lightgray;", innerHtml: "Action(s)" })
+      .appendElement({ tag: "div", class: "col m6 l4", innerHtml: "Permission(s)" })
 
     if (this.editable) {
       // In that case I will append the action selector.
@@ -176,9 +190,9 @@ class ActionPermissionManager extends Panel {
         for (var i = 0; i < actionPermission.length; i++) {
           let action = actionPermission[i].action;
           let permission = actionPermission[i].permission;
-          let div = content.appendElement({ tag: "div", class: "row", style: "padding: 0px; margin: 0px;" }).down();
-          div.appendElement({ tag: "div", id: "permission_div_0", class: "input-field col s12 m8", style: "padding: 0px; margin-left: 10px; margin: 0px;", innerHtml: action })
-          let permissionDiv = div.appendElement({ tag: "div", id: "permission_div_1", class: "input-field col s12 m4", style: "padding: 0px; margin: 0px; display: flex; margin-bottom: 5px;" }).down()
+          let div = content.appendElement({ tag: "div", class: "row", style: "padding: 5px 10px 5px 10px; margin: 0px;" }).down();
+          div.appendElement({ tag: "div", id: "permission_div_0", class: "input-field col s12 m6 l8", style: "padding: 0px; margin-left: 10px; margin: 0px;", innerHtml: action })
+          let permissionDiv = div.appendElement({ tag: "div", id: "permission_div_1", class: "input-field col s12 m6 l4", style: "padding: 0px; margin: 0px; display: flex; margin-bottom: 5px;" }).down()
 
           // Mouse over to make reading little easier.
           div.getChildById("permission_div_0").element.onmouseenter = div.getChildById("permission_div_1").element.onmouseenter = () => {
@@ -346,6 +360,7 @@ class RessourcesPanel extends Panel {
 
   // The list of ressources...
   private ressources: Map<string, RessourceDir>;
+  private editable: boolean;
 
   constructor() {
     super(randomUUID())
@@ -359,6 +374,21 @@ class RessourcesPanel extends Panel {
       // Set the editable parameter.
       this.displayRessources(null);
     })
+
+    // Display the div.
+    eventHub.subscribe(
+      "delete_ressource_event",
+      (uuid: string) => { },
+      (evt: any) => {
+        // Set the dir to display.
+        this.initRessources(() => {
+
+          // Set the editable parameter.
+          this.displayRessources(null);
+        })
+      },
+      true
+    );
 
     // Display the div.
     eventHub.subscribe(
@@ -382,6 +412,20 @@ class RessourcesPanel extends Panel {
       },
       true
     );
+  }
+
+
+  // Here I will react to login information...
+  onlogin(data: any) {
+    // overide...
+    this.editable = true;
+    this.div.getChildById("name_title").element.className = "col m6"
+  }
+
+  onlogout() {
+    // overide...
+    this.editable = false;
+    this.div.getChildById("name_title").element.className = "col m7"
   }
 
   /**
@@ -424,6 +468,8 @@ class RessourcesPanel extends Panel {
   }
 
   initRessources(callback: () => void) {
+    this.ressources.clear();
+    this.div.removeAllChilds();
     getRessources("", "",
       (ressources: Array<Ressource>) => {
         // So here I will inialyse the ressources.
@@ -452,29 +498,36 @@ class RessourcesPanel extends Panel {
     let content = this.div.appendElement({ tag: "div", class: "card col s12", style: "padding: 10px;" }).down();
 
     content.appendElement({ tag: "div", class: "row hide-on-small-only" }).down()
-      .appendElement({ tag: "div", class: "col s12 m7", style: "border-right: 1px solid lightgray;", innerHtml: "Name" })
-      .appendElement({ tag: "div", class: "col s6 m3", innerHtml: "Date modified" })
-      .appendElement({ tag: "div", class: "col s6 m2", innerHtml: "Size" })
+      .appendElement({ tag: "div", id: "name_title", class: "col m7", style: "border-right: 1px solid lightgray;", innerHtml: "Name" })
+      .appendElement({ tag: "div", id: "date_title", class: "col m3", style: "border-right: 1px solid lightgray;", innerHtml: "Date modified" })
+      .appendElement({ tag: "div", id: "size_title", class: "col m2", innerHtml: "Size" })
+
+
+    if (this.editable) {
+      this.div.getChildById("name_title").element.className = "col m6"
+    } else {
+      this.div.getChildById("name_title").element.className = "col m7"
+    }
 
     // Now I will retreive all ressources from the server.
     if (dir == undefined) {
       // Here I will display all dir with not parent...
       this.ressources.forEach((dir: RessourceDir) => {
         if (dir.parent == null) {
-          let ressourcePanel = new RessourcePanel(content)
+          let ressourcePanel = new RessourcePanel(content, this.editable)
           ressourcePanel.setRessourceDir(dir)
         }
       })
     } else {
       // Set dir
       dir.ressourceDirs.forEach((dir: RessourceDir) => {
-        let ressourcePanel = new RessourcePanel(content)
+        let ressourcePanel = new RessourcePanel(content, this.editable)
         ressourcePanel.setRessourceDir(dir)
       })
 
       // Set ressource
       dir.ressources.forEach((r: Ressource) => {
-        let ressourcePanel = new RessourcePanel(content)
+        let ressourcePanel = new RessourcePanel(content, this.editable)
         ressourcePanel.setRessource(r)
       })
     }
@@ -488,9 +541,12 @@ class RessourcePanel extends Panel {
   private dir: RessourceDir;
   private ressource: Ressource;
   private ico: any;
+  private editable: boolean;
 
-  constructor(parent: any) {
+  constructor(parent: any, editable: boolean) {
     super(randomUUID())
+    this.editable = editable;
+
     this.div = parent
       .appendElement({
         tag: "div",
@@ -512,6 +568,9 @@ class RessourcePanel extends Panel {
 
   // Here I will display a ressource dir...
   setRessourceDir(dir: RessourceDir) {
+    // clear the div.
+    this.div.removeAllChilds()
+
     this.dir = dir;
     this.ico = this.div
       .appendElement({
@@ -534,19 +593,59 @@ class RessourcePanel extends Panel {
     }
 
     // The file name link...
-    this.div
-      .appendElement({
-        tag: "span",
-        innerHtml: dir.name,
-        class: "col s11"
-      })
-      .down();
+    if (this.editable) {
+      this.div
+        .appendElement({
+          tag: "span",
+          innerHtml: dir.name,
+          class: "col s10"
+        })
+        .down();
 
+      // I will append a delete button in that particular case.
+      let deleteFileBtn = this.div
+        .appendElement({
+          tag: "i",
+          class: "Small material-icons col s1",
+          innerHtml: "delete",
+          style: "text-align: right;"
+        })
+        .down();
+
+      deleteFileBtn.element.onmouseenter = function () {
+        this.style.cursor = "pointer"
+      }
+
+      deleteFileBtn.element.onmouseleave = function () {
+        this.style.cursor = "default"
+      }
+
+      deleteFileBtn.element.onclick = () => {
+        removeRessource(dir.path, "",
+          () => {
+            eventHub.publish("delete_ressource_event", {}, true);
+            M.toast({ html: "ressource for " + dir.path + " have been deleted!", displayLength: 2000 });
+          },
+          (err: any) => {
+            M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
+          });
+      }
+
+    } else {
+      this.div
+        .appendElement({
+          tag: "span",
+          innerHtml: dir.name,
+          class: "col s11"
+        })
+        .down();
+    }
   }
 
   // Here I will display a ressource.
   setRessource(ressource: Ressource) {
     this.ressource = ressource;
+    this.div.removeAllChilds();
 
     this.ico = this.div
       .appendElement({
@@ -568,7 +667,7 @@ class RessourcePanel extends Panel {
       this.style.cursor = "default"
     }
 
-    this.div
+    let nameSpan = this.div
       .appendElement({
         tag: "span",
         innerHtml: ressource.getName(),
@@ -610,6 +709,63 @@ class RessourcePanel extends Panel {
       ressourceSizeDiv.element.innerHTML = ressource.getSize() + " bytes";
     }
 
+    if (this.editable) {
+
+      // give space to delete button.
+      nameSpan.element.className = "col s10 m5"
+
+      // I will append a delete button in that particular case.
+      let deleteFileBtn = this.div
+        .appendElement({
+          tag: "i",
+          class: "Small material-icons col s1",
+          innerHtml: "delete",
+          style: "text-align: right;"
+        })
+        .down();
+
+      deleteFileBtn.element.onmouseenter = function () {
+        this.style.cursor = "pointer"
+      }
+
+      deleteFileBtn.element.onmouseleave = function () {
+        this.style.cursor = "default"
+      }
+
+      deleteFileBtn.element.onclick = () => {
+        // removeActionPermission
+        removeRessource(ressource.getPath(), ressource.getName(),
+          () => {
+            eventHub.publish("delete_ressource_event", {}, true);
+            M.toast({ html: "ressource for " + ressource.getName() + " have been deleted!", displayLength: 2000 });
+          },
+          (err: any) => {
+            M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
+          });
+      }
+
+    }
+
+  }
+
+  onlogin(data: any) {
+    // overide...
+    this.editable = true;
+    if (this.ressource != undefined) {
+      this.setRessource(this.ressource)
+    } else {
+      this.setRessourceDir(this.dir)
+    }
+  }
+
+  onlogout() {
+    // overide...
+    this.editable = false;
+    if (this.ressource != undefined) {
+      this.setRessource(this.ressource)
+    } else {
+      this.setRessourceDir(this.dir)
+    }
   }
 
 }

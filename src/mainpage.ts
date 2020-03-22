@@ -5,7 +5,7 @@ import { GeneralInfoPanel } from "./generalInfoPanel";
 import { SearchServicesPanel } from "./searchServicesPanel";
 import { ServicePanel } from "./servicePanel";
 import { RolePanel } from "./rolePanel";
-import { randomUUID } from "./utility";
+import { randomUUID, fireResize } from "./utility";
 import { AccountManager } from "./accountPanel";
 import { FileManager } from "./filePanel";
 import { ApplicationManager } from "./applicationPanel";
@@ -23,6 +23,8 @@ import { MetricManager } from "./metricPanel";
 
 
 export class MainPage {
+  private div: any;
+
   // The outer most div.
   private container: any;
 
@@ -50,19 +52,19 @@ export class MainPage {
 
   constructor() {
     // Here I will create the main container.
-    let div = createElement(null, { tag: "div" });
-    document.body.appendChild(div.element);
+    this.div = createElement(null, { tag: "div", style: "position: relative" });
+    document.body.appendChild(this.div.element);
 
     ////////////////////////////// Navigation //////////////////////////////
     // Now Will create the navbar.
-    let navBar = div
+    let navBar = this.div
       .appendElement({ tag: "div", class: "navbar-fixed" })
       .down()
       .appendElement({ tag: "nav" })
       .down();
 
     // The mobile nav menu..
-    div
+    this.div
       .appendElement({ tag: "ul", class: "sidenav", id: "slide-out" })
       .down()
       .appendElement({ tag: "li", id: "home-side-lnk" })
@@ -129,7 +131,7 @@ export class MainPage {
       //.appendElement({ "tag": "a", "id": "logo_btn", "class": "flow-text", "innerHtml": "Globular" })
       .appendElement({ tag: "ul", class: "left" })
       .down()
-      .appendElement({ tag: "li" })
+      .appendElement({ tag: "li", id: "slide-out-li" })
       .down()
       .appendElement({
         tag: "a",
@@ -218,14 +220,14 @@ export class MainPage {
     this.searchLnk = navBar.getChildById("Search");
     this.homeLnk = navBar.getChildById("Home");
 
-    this.sideLoginLnk = div.getChildById("login-side-lnk");
-    this.sideLogoutLnk = div.getChildById("logout-side-lnk");
-    this.sideSearchLnk = div.getChildById("search-side-lnk");
-    this.sideHomeLnk = div.getChildById("home-side-lnk");
+    this.sideLoginLnk = this.div.getChildById("login-side-lnk");
+    this.sideLogoutLnk = this.div.getChildById("logout-side-lnk");
+    this.sideSearchLnk = this.div.getChildById("search-side-lnk");
+    this.sideHomeLnk = this.div.getChildById("home-side-lnk");
 
     ////////////////////////////// General informations //////////////////////////////
     // This will be the workspace...
-    this.container = div
+    this.container = this.div
       .appendElement({ tag: "div", class: "container" })
       .down();
     this.showSearchServicePanel(); // must be call once to initialyse it
@@ -384,15 +386,9 @@ export class MainPage {
 
     // Show the tabs...
     this.container
-      .appendElement({
-        tag: "div",
-        class: "row",
-        style: "margin-bottom: 0px; margin-top:10px;"
-      })
+      .appendElement({ tag: "div", class: "col hide-on-med-and-down m3 l2", style: "position: fixed; left: 20px; top: 55px" })
       .down()
-      .appendElement({ tag: "div", class: "col s12 /*m10 offset-m1*/" })
-      .down()
-      .appendElement({ tag: "ul", id: "main_tabs", class: "tabs" })
+      .appendElement({ tag: "ul", id: "main_tabs", class: "section table-of-contents" })
       .down()
       .appendElement({ tag: "li", class: "tab col s2" })
       .down()
@@ -451,7 +447,7 @@ export class MainPage {
         id: "main_tabs_tab_5",
         class: "grey-text text-darken-4",
         href: "javascript:void(0)",
-        innerHtml: "Ressource"
+        innerHtml: "Ressources"
       })
       .up()
       .appendElement({ tag: "li", class: "tab col s1" })
@@ -639,8 +635,30 @@ export class MainPage {
       tab_6_content.element.style.display = "none";
       tab_7_content.element.style.display = "";
     };
-    
-    M.Tabs.init(document.getElementById("logs_tabs"));
+
+    // add resize handler
+    window.addEventListener("resize", () => {
+      let mainTabs = this.container.getChildById("main_tabs");
+      let sideNav = this.div.getChildById("slide-out")
+      if (document.body.offsetWidth < 992) {
+        for (var id in mainTabs.childs) {
+          let li = mainTabs.childs[id]
+          sideNav.appendElement(li)
+        }
+      } else {
+        for (var id in sideNav.childs) {
+          let li = sideNav.childs[id]
+          if (li.element.classList.contains("tab")) {
+            mainTabs.appendElement(li)
+          }
+        }
+      }
+    });
+
+
+    // fire resize event...
+    fireResize()
+
   }
 
   showServicesPanel(container: any) {

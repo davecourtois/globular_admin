@@ -194,10 +194,9 @@ export class LogManager extends Panel {
     // Create the dom table element
     table.appendChild(header)
     table.rowheight = 35
-    table.style.width = "1260px"
-    table.style.maxHeight = "700px";
+    table.width = 1200
+    table.style.maxHeight = screen.height - 235 + "px"; // use the screen to calculate the table heigth.
     table.data = []
-
 
     for (var i = 0; i < this.logs.length; i++) {
       let row = new Array<any>();
@@ -212,7 +211,7 @@ export class LogManager extends Panel {
     // The method
     var methodHeaderCell = <any>(document.createElement("table-header-cell-element"))
     methodHeaderCell.innerHTML = "<table-sorter-element></table-sorter-element><div>Method</div> <table-filter-element></table-filter-element>"
-    methodHeaderCell.style.minWidth = "320px";
+    methodHeaderCell.width = 400;
     header.appendChild(methodHeaderCell)
 
     // The application
@@ -228,6 +227,7 @@ export class LogManager extends Panel {
     // The creation date
     var dateHeaderCell = <any>(document.createElement("table-header-cell-element"))
     dateHeaderCell.innerHTML = "<table-sorter-element></table-sorter-element><div>Date</div> <table-filter-element></table-filter-element>"
+    dateHeaderCell.width = 300
     dateHeaderCell.onrender = function (div: any, value: any) {
       if (value != undefined) {
         div.innerHTML = value.toDateString() + " " + value.toLocaleTimeString();

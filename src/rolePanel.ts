@@ -210,7 +210,7 @@ export class RolePanel extends Panel {
         let div = this.div.appendElement({ tag: "div", class: "row" }).down();
 
         let ul = div
-          .appendElement({ tag: "div", class: "col s12 /*m10 offset-m1*/" })
+          .appendElement({ tag: "div", class: "col s12 m10 offset-m1" })
           .down()
           .appendElement({ tag: "ul", class: "collapsible" })
           .down();
