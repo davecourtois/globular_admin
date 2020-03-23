@@ -714,9 +714,6 @@ export function readDir(path: string, callback: (dir: any) => void, errorCallbac
     }
   });
 
-  stream.on("end", () => {
-    // stream end signal
-  });
 }
 
 /**
@@ -1639,10 +1636,6 @@ export function readUserData(query: string, callback: (results: any) => void, er
       errorCallback({ "message": status.details })
     }
   });
-
-  stream.on("end", () => {
-    // stream end signal
-  });
 }
 
 
@@ -1680,10 +1673,6 @@ export function readErrors(callback: (results: any) => void, errorCallback: (err
       errorCallback({ "message": status.details })
     }
   });
-
-  stream.on("end", () => {
-    // stream end signal
-  });
 }
 
 export function readAllActionPermission(callback: (results: any) => void, errorCallback: (err: any) => void) {
@@ -1716,10 +1705,6 @@ export function readAllActionPermission(callback: (results: any) => void, errorC
       errorCallback({ "message": status.details })
     }
   });
-
-  stream.on("end", () => {
-    // stream end signal
-  });
 }
 
 export function getRessources(path: string, name: string, callback: (results: Ressource[]) => void, errorCallback: (err: any) => void) {
@@ -1747,10 +1732,6 @@ export function getRessources(path: string, name: string, callback: (results: Re
     } else {
       errorCallback({ "message": status.details })
     }
-  });
-
-  stream.on("end", () => {
-    // stream end signal
   });
 }
 
@@ -1830,10 +1811,6 @@ export function readLogs(callback: (results: any) => void, errorCallback: (err: 
       errorCallback({ "message": status.details })
     }
   });
-
-  stream.on("end", () => {
-    // stream end signal
-  });
 }
 
 export function clearAllLog(logType: LogType, callback: ()=>void, errorCallback: (err:any)=>void){
@@ -1888,9 +1865,6 @@ export function getNumbeOfLogsByMethod(callback: (resuts: Array<any>) => void, e
     }
   });
 
-  stream.on("end", () => {
-    // stream end signal
-  });
 }
 
 //////////////////////////// PLC functions ///////////////////////////////////

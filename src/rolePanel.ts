@@ -210,19 +210,20 @@ export class RolePanel extends Panel {
         let div = this.div.appendElement({ tag: "div", class: "row" }).down();
 
         let ul = div
-          .appendElement({ tag: "div", class: "col s12 m10 offset-m1" })
+          .appendElement({ tag: "div", class: "col s11" })
           .down()
           .appendElement({ tag: "ul", class: "collapsible" })
           .down();
 
         if (this.editable) {
           let newRoleBtn = div
-            .appendElement({
+            .prependElement({
               tag: "i",
               id: "append_role_btn",
               class: "material-icons col s1",
               title: "Append new role",
-              innerHtml: "group_add"
+              innerHtml: "group_add",
+              style:"margin-top: 10px; text-align: end;"
             })
             .down();
 

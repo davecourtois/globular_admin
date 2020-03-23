@@ -13,7 +13,6 @@ import {
   RemoveRoleFromAccount,
   registerAccount
 } from "./backend";
-import { SetEmailRequest } from "globular-web-client/lib/admin/admin_pb";
 
 /**
  * This class is use to manage file on the server.
@@ -350,17 +349,9 @@ export class AccountManager extends Panel {
   displayAccounts() {
     // clear the panel before recreate information inside it.
     this.div.removeAllChilds();
+    let div = this.div.appendElement({ tag: "div", class: "row" }).down();
 
-    let newRoleBtn = this.div
-      .appendElement({ tag: "div", class: "row", style: "margin-bottom: 0px;" })
-      .down()
-      .appendElement({
-        tag: "nav",
-        class: "card col s12 /*m10 offset-m1*/ indigo darken-4"
-      })
-      .down()
-      .appendElement({ tag: "nav-wrapper" })
-      .down()
+    let newAccountBtn = div
       .appendElement({ tag: "a", class: "modal-trigger", href: "#modal1" })
       .down()
       .appendElement({
@@ -368,20 +359,21 @@ export class AccountManager extends Panel {
         id: "append_role_btn",
         class: "material-icons col s1",
         title: "Create new account",
-        innerHtml: "person_add"
+        innerHtml: "person_add",
+        style:"margin-top: 10px; text-align: end;"
       })
       .down();
 
-    newRoleBtn.element.onmouseenter = function () {
+    newAccountBtn.element.onmouseenter = function () {
       this.style.cursor = "pointer";
     };
 
-    newRoleBtn.element.onmouseout = function () {
+    newAccountBtn.element.onmouseout = function () {
       this.style.cursor = "default";
     };
 
     // Append a new role.
-    newRoleBtn.element.onclick = () => {
+    newAccountBtn.element.onclick = () => {
       // Here I will create a modal dialog where the user will create a new account.
       let modal = this.div
         .appendElement({ tag: "div", class: "modal", id: "modal1" })
@@ -480,21 +472,18 @@ export class AccountManager extends Panel {
             this.displayAccounts();
           },
           (err: any) => {
-            
             M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
           }
         );
       };
-
       M.Modal.init(modal.element, {});
     };
 
     GetAllAccountsInfo(
       (accounts: Array<any>) => {
-        let div = this.div.appendElement({ tag: "div", class: "row" }).down();
         // Here I will get the list of all accounts.
         let ul = div
-          .appendElement({ tag: "div", class: "col s12 /*m10 offset-m1*/", style: "padding: 0px;" })
+          .appendElement({ tag: "div", class: "col s11", style: "padding: 0px;" })
           .down()
           .appendElement({ tag: "ul", class: "collapsible" })
           .down();
