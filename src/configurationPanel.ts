@@ -103,6 +103,9 @@ class ConfigurationEnum extends ConfigurationLine {
     constructor(panel: ConfigurationPanel, name: string, options: Array<string>, label: string, content: any, numericIndex: boolean) {
         super(panel, name, label, content);
         let value = this.getValue()
+        if(value== null){
+            return
+        }
 
         // Set the value div.
         this.valueDiv = this.content.appendElement({ "tag": "div", "id": name + "_div", class: "col s12 m8", "innerHtml": value.toString() }).down()
@@ -160,6 +163,9 @@ class ConfigurationTextLine extends ConfigurationLine {
     constructor(panel: ConfigurationPanel, name: string, label: string, content: any, type?: string, step?: number, min?: number, max?: number) {
         super(panel, name, label, content);
         let value = this.getValue()
+        if(value== null){
+            return
+        }
 
         // Type can be any type that input box can support.
         if (type == undefined) {
@@ -209,6 +215,11 @@ class ConfigurationToggleLine extends ConfigurationLine {
     constructor(panel: ConfigurationPanel, name: string, label: string, content: any, labels: Array<string>) {
         super(panel, name, label, content);
         let value = this.getValue()
+        if(value== null){
+            console.log("---> propertie " + name  + " is null!")
+            return
+        }
+
         // Set the value div.
         this.valueDiv = this.content.appendElement({ "tag": "div", "id": name + "_div", "class": "col s12 m8", "innerHtml": value.toString() }).down()
 

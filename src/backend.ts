@@ -102,6 +102,7 @@ export let eventHub: GlobularWebClient.EventHub;
 
 // The name of the application
 let application = "admin";
+let domain = window.location.hostname;
 let config: any;
 
 /**
@@ -162,7 +163,7 @@ export function readFullConfig(
     globular.adminService
       .getFullConfig(rqst, {
         token: localStorage.getItem("user_token"),
-        application: application
+        application: application, domain: domain
       })
       .then(rsp => {
         config = JSON.parse(rsp.getResult());
@@ -174,19 +175,19 @@ export function readFullConfig(
   }
 }
 
-export function pingSql(connectionId: string, callback: (pong: string)=>{}, errorCallback:(err:any)=>void){
+export function pingSql(connectionId: string, callback: (pong: string) => {}, errorCallback: (err: any) => void) {
   let rqst = new PingConnectionRqst
   rqst.setId(connectionId)
 
   globular.sqlService.ping(rqst, {
     token: localStorage.getItem("user_token"),
-    application: application
-  }).then((rsp:PingConnectionRsp)=>{
+    application: application, domain: domain
+  }).then((rsp: PingConnectionRsp) => {
     callback(rsp.getResult());
   })
-  .catch((err:any)=>{
-    errorCallback(err);
-  })
+    .catch((err: any) => {
+      errorCallback(err);
+    })
 }
 
 // Save the configuration.
@@ -201,7 +202,7 @@ export function saveConfig(
     globular.adminService
       .saveConfig(rqst, {
         token: localStorage.getItem("user_token"),
-        application: application
+        application: application, domain: domain
       })
       .then(rsp => {
         config = JSON.parse(rsp.getResult());
@@ -243,7 +244,7 @@ export function syncLdapInfos(info: any, timeout: number, callback: () => void, 
   // Try to synchronyze the ldap service.
   globular.ressourceService.synchronizeLdap(rqst, {
     token: localStorage.getItem("user_token"),
-    application: application
+    application: application, domain: domain
   }).then((rsp: SynchronizeLdapRsp) => {
 
   }).catch((err: any) => {
@@ -269,7 +270,7 @@ export function getRessourceOwners(
 
   globular.ressourceService.getRessourceOwners(rqst, {
     token: localStorage.getItem("user_token"),
-    application: application
+    application: application, domain: domain
   }).then((rsp: GetRessourceOwnersRsp) => {
     callback(rsp.getOwnersList())
   }).catch((err: any) => {
@@ -299,7 +300,7 @@ export function setRessourceOwners(
 
   globular.ressourceService.setRessourceOwner(rqst, {
     token: localStorage.getItem("user_token"),
-    application: application
+    application: application, domain: domain
   }).then(() => {
     callback()
   }).catch((err: any) => {
@@ -329,7 +330,7 @@ export function deleteRessourceOwners(
 
   globular.ressourceService.deleteRessourceOwner(rqst, {
     token: localStorage.getItem("user_token"),
-    application: application
+    application: application, domain: domain
   }).then(() => {
     callback()
   }).catch((err: any) => {
@@ -358,7 +359,7 @@ export function getRessourcePermissions(
 
   globular.ressourceService
     .getPermissions(rqst, {
-      application: application
+      application: application, domain: domain
     })
     .then((rsp: GetPermissionsRsp) => {
       let permissions = JSON.parse(rsp.getPermissions())
@@ -422,7 +423,7 @@ export function setRessourcePermission(
   globular.ressourceService
     .setPermission(rqst, {
       token: localStorage.getItem("user_token"),
-      application: application
+      application: application, domain: domain
     })
     .then((rsp: SetPermissionRsp) => {
       callback();
@@ -460,7 +461,7 @@ export function deleteRessourcePermissions(
   globular.ressourceService
     .deletePermissions(rqst, {
       token: localStorage.getItem("user_token"),
-      application: application
+      application: application, domain: domain
     })
     .then((rsp: DeletePermissionsRsp) => {
       callback();
@@ -500,7 +501,7 @@ export function renameFile(
   globular.fileService
     .rename(rqst, {
       token: localStorage.getItem("user_token"),
-      application: application
+      application: application, domain: domain
     })
     .then((rsp: RenameResponse) => {
       callback();
@@ -533,7 +534,7 @@ export function deleteFile(
   globular.fileService
     .deleteFile(rqst, {
       token: localStorage.getItem("user_token"),
-      application: application
+      application: application, domain: domain
     })
     .then((rsp: RenameResponse) => {
       callback();
@@ -565,7 +566,7 @@ export function deleteDir(
   globular.fileService
     .deleteDir(rqst, {
       token: localStorage.getItem("user_token"),
-      application: application
+      application: application, domain: domain
     })
     .then((rsp: RenameResponse) => {
       callback();
@@ -595,7 +596,7 @@ export function createArchive(path: string, name: string, callback: (path: strin
 
   globular.fileService.createAchive(rqst, {
     token: localStorage.getItem("user_token"),
-    application: application
+    application: application, domain: domain
   }).then(
     (rsp: CreateArchiveResponse) => {
       callback(rsp.getResult())
@@ -657,7 +658,7 @@ export function downloadDir(path: string, callback: () => void, errorCallback: (
         rqst.setPath(path)
         globular.fileService.deleteFile(rqst, {
           token: localStorage.getItem("user_token"),
-          application: application
+          application: application, domain: domain
         }).then(callback)
           .catch(errorCallback)
       }, 5000); // wait 5 second, arbritary...
@@ -696,7 +697,7 @@ export function readDir(path: string, callback: (dir: any) => void, errorCallbac
 
   var stream = globular.fileService.readDir(rqst, {
     token: localStorage.getItem("user_token"),
-    application: application
+    application: application, domain: domain
   });
 
   stream.on("data", rsp => {
@@ -760,7 +761,7 @@ export function createDir(path: string, callback: (dirName: string) => void, err
     // Create a directory at the given path.
     globular.fileService.createDir(rqst, {
       token: localStorage.getItem("user_token"),
-      application: application
+      application: application, domain: domain
     }).then(() => {
       // The new directory was created.
       callback(newDirName)
@@ -793,7 +794,7 @@ export function query(
   globular.monitoringService
     .query(request, {
       token: localStorage.getItem("user_token"),
-      application: application
+      application: application, domain: domain
     })
     .then(resp => {
       if (callback != undefined) {
@@ -829,7 +830,7 @@ export function queryRange(
 
   var stream = globular.monitoringService.queryRange(request, {
     token: localStorage.getItem("user_token"),
-    application: application
+    application: application, domain: domain
   });
   stream.on("data", rsp => {
     buffer.value += rsp.getValue();
@@ -878,7 +879,7 @@ export function registerAccount(
 
   // Create the user account.
   globular.ressourceService
-    .registerAccount(request, { application: application })
+    .registerAccount(request, { application: application, domain: domain })
     .then(rsp => {
       callback(rsp.getResult());
     })
@@ -902,7 +903,7 @@ export function DeleteAccount(
 
   // Remove the account from the database.
   globular.ressourceService
-    .deleteAccount(rqst, { token: localStorage.getItem("user_token"), application: application })
+    .deleteAccount(rqst, { token: localStorage.getItem("user_token"), application: application, domain: domain })
     .then(rsp => {
       callback(rsp.getResult());
     })
@@ -930,7 +931,7 @@ export function RemoveRoleFromAccount(
   rqst.setRoleid(roleId)
 
   globular.ressourceService
-    .removeAccountRole(rqst, { token: localStorage.getItem("user_token"), application: application })
+    .removeAccountRole(rqst, { token: localStorage.getItem("user_token"), application: application, domain: domain })
     .then(rsp => {
       callback(rsp.getResult());
     })
@@ -959,7 +960,7 @@ export function AppendRoleToAccount(
   rqst.setRoleid(roleId)
 
   globular.ressourceService
-    .addAccountRole(rqst, { token: localStorage.getItem("user_token"), application: application })
+    .addAccountRole(rqst, { token: localStorage.getItem("user_token"), application: application, domain: domain })
     .then(rsp => {
       callback(rsp.getResult());
     })
@@ -986,7 +987,7 @@ export function updateAccountEmail(accountId: string, old_email: string, new_ema
   globular.adminService.setEmail(rqst,
     {
       token: localStorage.getItem("user_token"),
-      application: application
+      application: application, domain: domain
     }).then(rsp => {
       callback()
     })
@@ -1018,7 +1019,7 @@ export function updateAccountPassword(accountId: string, old_password: string, n
   globular.adminService.setPassword(rqst,
     {
       token: localStorage.getItem("user_token"),
-      application: application
+      application: application, domain: domain
     }).then(rsp => {
       callback()
     })
@@ -1048,7 +1049,7 @@ export function authenticate(
 
   // Create the user account.
   globular.ressourceService
-    .authenticate(rqst, { application: application })
+    .authenticate(rqst, { application: application, domain: domain })
     .then(rsp => {
       // Here I will set the token in the localstorage.
       let token = rsp.getToken();
@@ -1085,7 +1086,7 @@ function refreshToken(onError: (err: any) => void) {
   globular.ressourceService
     .refreshToken(rqst, {
       token: localStorage.getItem("user_token"),
-      application: application
+      application: application, domain: domain
     })
     .then((rsp: RefreshTokenRsp) => {
       // Here I will set the token in the localstorage.
@@ -1128,7 +1129,7 @@ export function appendUserData(data: any, callback: (id: string) => void) {
   globular.persistenceService
     .insertOne(rqst, {
       token: localStorage.getItem("user_token"),
-      application: application
+      application: application, domain: domain
     })
     .then((rsp: any) => {
       callback(rsp.getId());
@@ -1160,7 +1161,7 @@ export function readOneUserData(
   globular.persistenceService
     .findOne(rqst, {
       token: localStorage.getItem("user_token"),
-      application: application
+      application: application, domain: domain
     })
     .then((rsp: any) => {
       callback(JSON.parse(rsp.getJsonstr()));
@@ -1189,7 +1190,7 @@ export function GetAllAccountsInfo(callback: (
   rqst.setQuery("{}"); // means all values.
 
   var stream = globular.persistenceService.find(rqst, {
-    application: application
+    application: application, domain: domain
   });
 
   let accounts = new Array<any>()
@@ -1218,7 +1219,7 @@ export function getAllActions(
 ) {
   let rqst = new GetAllActionsRqst();
   globular.ressourceService
-    .getAllActions(rqst, { application: application })
+    .getAllActions(rqst, { application: application, domain: domain })
     .then((rsp: GetAllActionsRsp) => {
       callback(rsp.getActionsList());
     })
@@ -1243,7 +1244,7 @@ export function getAllRoles(
   rqst.setQuery("{}"); // means all values.
 
   var stream = globular.persistenceService.find(rqst, {
-    application: application
+    application: application, domain: domain
   });
 
   var roles = new Array<any>();
@@ -1281,7 +1282,7 @@ export function AppendActionToRole(
   globular.ressourceService
     .addRoleAction(rqst, {
       token: localStorage.getItem("user_token"),
-      application: application
+      application: application, domain: domain
     })
     .then((rsp: AddRoleActionRsp) => {
       callback();
@@ -1311,7 +1312,7 @@ export function RemoveActionFromRole(
   globular.ressourceService
     .removeRoleAction(rqst, {
       token: localStorage.getItem("user_token"),
-      application: application
+      application: application, domain: domain
     })
     .then((rsp: AddRoleActionRsp) => {
       callback();
@@ -1335,7 +1336,7 @@ export function CreateRole(
   globular.ressourceService
     .createRole(rqst, {
       token: localStorage.getItem("user_token"),
-      application: application
+      application: application, domain: domain
     })
     .then((rsp: CreateRoleRsp) => {
       callback();
@@ -1356,7 +1357,7 @@ export function DeleteRole(
   globular.ressourceService
     .deleteRole(rqst, {
       token: localStorage.getItem("user_token"),
-      application: application
+      application: application, domain: domain
     })
     .then((rsp: CreateRoleRsp) => {
       callback();
@@ -1375,7 +1376,7 @@ export function GetAllFilesInfo(
 ) {
   let rqst = new GetAllFilesInfoRqst();
   globular.ressourceService
-    .getAllFilesInfo(rqst, { application: application })
+    .getAllFilesInfo(rqst, { application: application, domain: domain })
     .then((rsp: GetAllFilesInfoRsp) => {
       let filesInfo = JSON.parse(rsp.getResult());
       callbak(filesInfo);
@@ -1410,7 +1411,7 @@ export function AppendActionToApplication(
   let rqst = new AddApplicationActionRqst;
   rqst.setApplicationid(applicationId)
   rqst.setAction(action)
-  globular.ressourceService.addApplicationAction(rqst, { token: localStorage.getItem("user_token"), application: application })
+  globular.ressourceService.addApplicationAction(rqst, { token: localStorage.getItem("user_token"), application: application, domain: domain })
     .then((rsp: AddApplicationActionRsp) => {
       callback()
     })
@@ -1430,7 +1431,7 @@ export function RemoveActionFromApplication(
   let rqst = new RemoveApplicationActionRqst;
   rqst.setApplicationid(applicationId)
   rqst.setAction(action)
-  globular.ressourceService.removeApplicationAction(rqst, { token: localStorage.getItem("user_token"), application: application })
+  globular.ressourceService.removeApplicationAction(rqst, { token: localStorage.getItem("user_token"), application: application, domain: domain })
     .then((rsp: AddApplicationActionRsp) => {
       callback()
     })
@@ -1448,7 +1449,7 @@ export function DeleteApplication(
 ) {
   let rqst = new DeleteApplicationRqst;
   rqst.setApplicationid(applicationId)
-  globular.ressourceService.deleteApplication(rqst, { token: localStorage.getItem("user_token"), application: application })
+  globular.ressourceService.deleteApplication(rqst, { token: localStorage.getItem("user_token"), application: application, domain: domain })
     .then((rsp: AddApplicationActionRsp) => {
       callback()
     })
@@ -1477,7 +1478,7 @@ export function findServices(
 
   // Find services by keywords.
   globular.servicesDicovery
-    .findServices(rqst, { application: application })
+    .findServices(rqst, { application: application, domain: domain })
     .then((rsp: FindServicesDescriptorResponse) => {
       console.log(rsp);
       callback(rsp.getResultsList());
@@ -1504,7 +1505,7 @@ export function installService(
   globular.adminService
     .installService(rqst, {
       token: localStorage.getItem("user_token"),
-      application: application
+      application: application, domain: domain
     })
     .then((rsp: InstallServiceResponse) => {
       console.log("---> service install");
@@ -1521,7 +1522,7 @@ export function stopService(serviceId: string, callback: () => void, errorCallba
   globular.adminService
     .stopService(rqst, {
       token: localStorage.getItem("user_token"),
-      application: application
+      application: application, domain: domain
     })
     .then(() => {
       callback();
@@ -1542,7 +1543,7 @@ export function startService(serviceId: string, callback: () => void, errorCallb
   globular.adminService
     .startService(rqst, {
       token: localStorage.getItem("user_token"),
-      application: application
+      application: application, domain: domain
     })
     .then(() => {
       callback();
@@ -1567,7 +1568,7 @@ export function saveService(
   globular.adminService
     .saveConfig(rqst, {
       token: localStorage.getItem("user_token"),
-      application: application
+      application: application, domain: domain
     })
     .then((rsp: SaveConfigResponse) => {
       // The service with updated values...
@@ -1594,7 +1595,7 @@ export function getReferencedValue(ref: any, callback: (results: any) => void, e
 
   globular.persistenceService.findOne(rqst, {
     token: localStorage.getItem("user_token"),
-    application: application
+    application: application, domain: domain
   }).then((rsp: FindOneResp) => {
     callback(JSON.parse(rsp.getJsonstr()))
   }).catch((err: any) => {
@@ -1620,7 +1621,7 @@ export function readUserData(query: string, callback: (results: any) => void, er
   // call persist data
   let stream = globular.persistenceService.find(rqst, {
     token: localStorage.getItem("user_token"),
-    application: application
+    application: application, domain: domain
   });
   let results = new Array();
 
@@ -1657,7 +1658,7 @@ export function readErrors(callback: (results: any) => void, errorCallback: (err
   // call persist data
   let stream = globular.persistenceService.find(rqst, {
     token: localStorage.getItem("user_token"),
-    application: application
+    application: application, domain: domain
   });
   let results = new Array();
 
@@ -1689,7 +1690,7 @@ export function readAllActionPermission(callback: (results: any) => void, errorC
   // call persist data
   let stream = globular.persistenceService.find(rqst, {
     token: localStorage.getItem("user_token"),
-    application: application
+    application: application, domain: domain
   });
   let results = new Array();
 
@@ -1716,7 +1717,7 @@ export function getRessources(path: string, name: string, callback: (results: Re
   // call persist data
   let stream = globular.ressourceService.getRessources(rqst, {
     token: localStorage.getItem("user_token"),
-    application: application
+    application: application, domain: domain
   });
 
   let results = new Array<Ressource>();
@@ -1735,7 +1736,7 @@ export function getRessources(path: string, name: string, callback: (results: Re
   });
 }
 
-export function setActionPermission(action: string, permission: number, callback: (results: any) => void, errorCallback: (err: any) => void){
+export function setActionPermission(action: string, permission: number, callback: (results: any) => void, errorCallback: (err: any) => void) {
   let rqst = new SetActionPermissionRqst
   rqst.setAction(action)
   rqst.setPermission(permission)
@@ -1743,27 +1744,27 @@ export function setActionPermission(action: string, permission: number, callback
   // Call set action permission.
   globular.ressourceService.setActionPermission(rqst, {
     token: localStorage.getItem("user_token"),
-    application: application
+    application: application, domain: domain
   }).then(callback)
-  .catch((err: any)=>{
-    errorCallback(err)
-  })
+    .catch((err: any) => {
+      errorCallback(err)
+    })
 }
 
-export function removeActionPermission(action: string, callback: (results: any) => void, errorCallback: (err: any) => void){
+export function removeActionPermission(action: string, callback: (results: any) => void, errorCallback: (err: any) => void) {
   let rqst = new RemoveActionPermissionRqst
   rqst.setAction(action)
   // Call set action permission.
   globular.ressourceService.removeActionPermission(rqst, {
     token: localStorage.getItem("user_token"),
-    application: application
+    application: application, domain: domain
   }).then(callback)
-  .catch((err: any)=>{
-    errorCallback(err)
-  })
+    .catch((err: any) => {
+      errorCallback(err)
+    })
 }
 
-export function removeRessource(path:string, name:string, callback:()=>void, errorCallback: (err: any) => void){
+export function removeRessource(path: string, name: string, callback: () => void, errorCallback: (err: any) => void) {
   let rqst = new RemoveRessourceRqst
   let ressource = new Ressource
   ressource.setPath(path)
@@ -1771,11 +1772,11 @@ export function removeRessource(path:string, name:string, callback:()=>void, err
   rqst.setRessource(ressource)
   globular.ressourceService.removeRessource(rqst, {
     token: localStorage.getItem("user_token"),
-    application: application
+    application: application, domain: domain
   }).then(callback)
-  .catch((err: any)=>{
-    errorCallback(err)
-  })
+    .catch((err: any) => {
+      errorCallback(err)
+    })
 
 }
 
@@ -1793,7 +1794,7 @@ export function readLogs(callback: (results: any) => void, errorCallback: (err: 
   // call persist data
   let stream = globular.ressourceService.getLog(rqst, {
     token: localStorage.getItem("user_token"),
-    application: application
+    application: application, domain: domain
   });
 
   let results = new Array<LogInfo>();
@@ -1813,16 +1814,16 @@ export function readLogs(callback: (results: any) => void, errorCallback: (err: 
   });
 }
 
-export function clearAllLog(logType: LogType, callback: ()=>void, errorCallback: (err:any)=>void){
+export function clearAllLog(logType: LogType, callback: () => void, errorCallback: (err: any) => void) {
   let rqst = new ClearAllLogRqst
   rqst.setType(logType)
   globular.ressourceService.clearAllLog(rqst, {
     token: localStorage.getItem("user_token"),
-    application: application
+    application: application, domain: domain
   }).then(callback)
-  .catch((err: any)=>{
-    errorCallback(err)
-  })
+    .catch((err: any) => {
+      errorCallback(err)
+    })
 }
 
 /**
@@ -1832,7 +1833,7 @@ export function clearAllLog(logType: LogType, callback: ()=>void, errorCallback:
  * @param errorCallback 
  */
 export function getNumbeOfLogsByMethod(callback: (resuts: Array<any>) => void, errorCallback: (err: any) => void) {
-  
+
   let database = "local_ressource";
   let collection = "Logs";
   let rqst = new AggregateRqst
@@ -1848,7 +1849,7 @@ export function getNumbeOfLogsByMethod(callback: (resuts: Array<any>) => void, e
   // call persist data
   let stream = globular.persistenceService.aggregate(rqst, {
     token: localStorage.getItem("user_token"),
-    application: application
+    application: application, domain: domain
   });
   let results = new Array();
 

@@ -236,26 +236,26 @@ export class LogManager extends Panel {
     header.appendChild(dateHeaderCell)
 
     this.logsDiv.element.appendChild(table)
-
-    table.menu.getChildById("delete-filtere-menu-item").element.action = () => {
-      let values = table.getFilteredData();
-      for (var i = 0; i < values.length; i++) {
-        console.log(values[i])
+    if (table.menu != null) {
+      table.menu.getChildById("delete-filtere-menu-item").element.action = () => {
+        let values = table.getFilteredData();
+        for (var i = 0; i < values.length; i++) {
+          console.log(values[i])
+        }
       }
 
-    }
-
-    table.menu.getChildById("delete-all-data-menu-item").element.action = () => {
-      clearAllLog(LogType.INFO, () => {
-        M.toast({ html: "All logs are deleted!", displayLength: 2000 });
-        table.data = new Array<any>();
-        table.refresh();
-        fireResize();
-      },
-        (err: any) => {
-          M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
-        }
-      );
+      table.menu.getChildById("delete-all-data-menu-item").element.action = () => {
+        clearAllLog(LogType.INFO, () => {
+          M.toast({ html: "All logs are deleted!", displayLength: 2000 });
+          table.data = new Array<any>();
+          table.refresh();
+          fireResize();
+        },
+          (err: any) => {
+            M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
+          }
+        );
+      }
     }
   }
 
