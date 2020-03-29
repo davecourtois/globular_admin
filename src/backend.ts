@@ -137,7 +137,7 @@ export async function initServices(callback: () => void, errorCallback: (err: an
   let rqst = new GetConfigRequest();
   if (globular.adminService !== undefined) {
     globular.adminService
-      .getConfig(rqst)
+      .getConfig(rqst, {domain:domain, applicaiton:application})
       .then(rsp => {
         let config = JSON.parse(rsp.getResult());
         // init the services from the configuration retreived.
@@ -619,7 +619,8 @@ export function downloadFileHttp(urlToSend: string, fileName: string, callback: 
   // Set the token to manage downlaod access.
   req.setRequestHeader("token", localStorage.getItem("user_token"))
   req.setRequestHeader("application", "admin")
-
+  req.setRequestHeader("domain", domain)
+  
   req.responseType = "blob";
   req.onload = function (event) {
     var blob = req.response;
