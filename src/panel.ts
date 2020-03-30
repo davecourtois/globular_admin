@@ -2,13 +2,22 @@ import { eventHub } from "./backend";
 import { createElement } from "./element";
 
 export class Panel {
-  protected div: any;
+  private _div: any;
+
+  protected get div(): any {
+    return this._div;
+  }
+
+  protected set div(div: any) {
+    this._div=div;
+  }
+
   protected uuid: string;
   protected id: string;
 
   constructor(id: string) {
     // Div is the html element div.
-    this.div = createElement(null, {
+    this._div = createElement(null, {
       tag: "div",
       id: id
     });
@@ -25,6 +34,16 @@ export class Panel {
       true
     );
 
+    eventHub.subscribe(
+      "onlogout",
+      (uuid: string) => {
+        this.uuid = uuid;
+      },
+      (data: any) => {
+        this.onlogout();
+      },
+      true
+    );
   }
 
   // Here I will react to login information...
@@ -43,5 +62,13 @@ export class Panel {
 
   setParent(parent: any) {
     parent.appendElement(this.div);
+  }
+
+  hide(){
+    this.div.style.display = "none"
+  }
+
+  show(){
+    this.div.style.display = ""
   }
 }

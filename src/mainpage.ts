@@ -1,6 +1,6 @@
 import * as M from "materialize-css";
 import "materialize-css/sass/materialize.scss";
-import { globular, authenticate } from "./backend";
+import { globular, authenticate, eventHub } from "./backend";
 import { GeneralInfoPanel } from "./generalInfoPanel";
 import { SearchServicesPanel } from "./searchServicesPanel";
 import { ServicePanel } from "./servicePanel";
@@ -20,6 +20,7 @@ import { PlcServerConfigPanel } from './services/plcServerConfigPanel';
 import { PlcExporterConfigPanel } from "./services/plcExporterConfigPanel";
 import { RessourceManager } from "./ressourcePanel";
 import { MetricManager } from "./metricPanel";
+import { DnsServicePanel } from "./services/dnsServicePanel";
 
 
 export class MainPage {
@@ -262,6 +263,17 @@ export class MainPage {
     this.loginLnk.element.onclick = () => {
       this.showLogin();
     };
+
+    // Publish logout event.
+    this.logoutLnk.element.onclick = () => {
+      eventHub.publish("onlogout", {}, true); // return the full config...
+      M.toast({ html: "Bye Bye!!" });
+      
+      this.logoutLnk.element.style.display = "none";
+      this.loginLnk.element.style.display = "";
+      this.sideLogoutLnk.element.style.display = "none";
+      this.sideLoginLnk.element.style.display = "";
+    }
 
     // Show the login dialog
     this.sideLoginLnk.element.onclick = () => {
@@ -710,7 +722,13 @@ export class MainPage {
             title,
             key
           );
-        } else if (globular.config.Services[key].Name.startsWith("plc_server_")) {
+        } else if (globular.config.Services[key].Name == "dns_server") {
+          servicePanel = new DnsServicePanel(
+            globular.config.Services[key],
+            title,
+            key
+          );
+        }else if (globular.config.Services[key].Name.startsWith("plc_server_")) {
           servicePanel = new PlcServerConfigPanel(
             globular.config.Services[key],
             title,

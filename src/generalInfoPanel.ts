@@ -1,5 +1,5 @@
 import { IConfig } from "globular-web-client";
-import { ConfigurationPanel } from "./configurationPanel";
+import { ConfigurationPanel, ConfigurationLine } from "./configurationPanel";
 import { saveConfig, readFullConfig, getErrorMessage } from "./backend";
 import { LdapSyncServicePanel } from "./services/ldapSyncServicePanel";
 
@@ -10,6 +10,10 @@ export class GeneralInfoPanel extends ConfigurationPanel {
   private ldapSyncInfosLine: any;
   private ldapSyncPanels: Array<LdapSyncServicePanel>;
   private ldapServices: any;
+  private persistenceHostConfig: ConfigurationLine;
+  private persistencePortConfig: ConfigurationLine;
+  private persistenceUserConfig: ConfigurationLine;
+  private persistencePasswordConfig: ConfigurationLine;
 
   constructor(config: IConfig) {
     // Init the configuration panel informations.
@@ -25,10 +29,10 @@ export class GeneralInfoPanel extends ConfigurationPanel {
     this.appendMultipleOptionsSingleChoiceConfig("Protocol", ["http", "https"]);
 
     // Set the Ports..
-    this.appendTextualConfig("PortHttp", "Http port", "number", 1, 0, 65535);
+    this.appendTextualConfig("PortHttp", "Http Port", "number", 1, 0, 65535);
 
     // Set the Ports..
-    this.appendTextualConfig("PortHttps", "Https port", "number", 1, 0, 65535);
+    this.appendTextualConfig("PortHttps", "Https Port", "number", 1, 0, 65535);
 
     // Display list of domains
     this.appendStringListConfig("Discoveries", "Services Discorvery");
@@ -107,7 +111,7 @@ export class GeneralInfoPanel extends ConfigurationPanel {
     // Now I will create a new coniguration panel.
     let synInfoPanel = new LdapSyncServicePanel(info, "", "")
     synInfoPanel.setLdap(ldap)
-    
+
     idSelect.element.onchange = () => {
       // Set the value...
       idSpan.element.innerHTML = idSelect.element.value;
@@ -142,16 +146,30 @@ export class GeneralInfoPanel extends ConfigurationPanel {
 
   }
 
+
+  onlogout() {
+    super.onlogout();
+    if(this.ldapSyncInfosLine != null){
+      this.ldapSyncInfosLine.hide()
+    }
+    this.persistenceHostConfig.content.delete()
+    this.persistenceHostConfig = null;
+    this.persistencePortConfig.content.delete()
+    this.persistencePortConfig = null;
+    this.persistenceUserConfig.content.delete()
+    this.persistenceUserConfig = null;
+    this.persistencePasswordConfig.content.delete()
+    this.persistencePasswordConfig = null;
+  }
+
   // create control...
   onlogin(data: any) {
     // Display textual input
     super.onlogin(data);
-    
+
     readFullConfig((config: IConfig) => {
       // read the full configuration...
       this.config = config;
-
-      console.log("-----------> ", this.config)
 
       // Here I will try to get the ldap information to synchronise user/group
       for (var serviceId in this.config.Services) {
@@ -160,10 +178,8 @@ export class GeneralInfoPanel extends ConfigurationPanel {
         }
       }
 
-      if (Object.keys(this.ldapServices).length > 0) {
-
-        // get the ldap service.
-        // let ldap_service = this.config.Services["ldap_server"]
+      // The ldap synchronization interface.
+      if (Object.keys(this.ldapServices).length > 0 && this.ldapSyncInfosLine == null) {
 
         // Create an empty panel. 
         this.ldapSyncInfosLine = this.appendEmptyConfig("LdapSyncInfos", "LDAP Sync infos")
@@ -179,7 +195,7 @@ export class GeneralInfoPanel extends ConfigurationPanel {
         // Now in each ul I will append the synchronization panel.
         for (var id in this.config.LdapSyncInfos) {
           let syncInfos = this.config.LdapSyncInfos[id]
-          for(var i=0; i < syncInfos.length; i++){
+          for (var i = 0; i < syncInfos.length; i++) {
             this.createLdapSynInfoPanel(ul, syncInfos[i])
           }
         }
@@ -197,15 +213,33 @@ export class GeneralInfoPanel extends ConfigurationPanel {
         }
 
         newSyncInfoBtn.element.onclick = () => {
-          let connection = { ldapSeriveId: "", connectionId: "", refresh:1, userSyncInfos:{ base:"",  query:"", id:"", email:"" },  groupSyncInfos:{ base:"", query:"", id:"" }}
+          let connection = { ldapSeriveId: "", connectionId: "", refresh: 1, userSyncInfos: { base: "", query: "", id: "", email: "" }, groupSyncInfos: { base: "", query: "", id: "" } }
           let li = this.createLdapSynInfoPanel(ul, connection)
+        }
+      } else {
+        // display the panel
+        if(this.ldapSyncInfosLine != null){
+          this.ldapSyncInfosLine.show();
         }
       }
 
+      // The persistence database informations.
+      this.persistenceHostConfig = this.appendTextualConfig("PersistenceHost", "Persistence Host");
+      this.persistenceHostConfig.unlock()
+
+      this.persistencePortConfig = this.appendTextualConfig("PersistencePort", "Persistence Port", "number", 1, 0, 65535);
+      this.persistencePortConfig.unlock()
+
+      this.persistenceUserConfig = this.appendTextualConfig("PersistenceUser", "Persistence User");
+      this.persistenceUserConfig.unlock()
+
+      this.persistencePasswordConfig = this.appendTextualConfig("PersistencePassword", "Persistence Password", "password");
+      this.persistencePasswordConfig.unlock()
+
     },
-    (err: any) => {
-      M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
-    });
+      (err: any) => {
+        M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
+      });
   }
 
   // That function is the same for all configuration panels.
@@ -223,8 +257,8 @@ export class GeneralInfoPanel extends ConfigurationPanel {
       }
 
     },
-    (err: any) => {
-      M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
-    });
+      (err: any) => {
+        M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
+      });
   }
 }

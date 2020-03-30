@@ -4,7 +4,7 @@ import { Panel } from './panel';
  * That represent a single configuration information ex.
  * Domain -> globular3.globular.app
  */
-class ConfigurationLine {
+export class ConfigurationLine {
     // The panel inside where the line is display
     protected panel: ConfigurationPanel;
 
@@ -96,9 +96,23 @@ class ConfigurationLine {
         this.valueEditor.element.style.display = ""
         this.valueDiv.element.style.display = "none"
     }
+
+    /**
+     * Hide the line
+     */
+    hide(){
+        this.content.element.style.display = "none";
+    }
+
+    /**
+     * Show the line.
+     */
+    show(){
+        this.content.element.style.display = "";
+    }
 }
 
-class ConfigurationEnum extends ConfigurationLine {
+export class ConfigurationEnum extends ConfigurationLine {
 
     constructor(panel: ConfigurationPanel, name: string, options: Array<string>, label: string, content: any, numericIndex: boolean) {
         super(panel, name, label, content);
@@ -158,7 +172,7 @@ class ConfigurationEnum extends ConfigurationLine {
     }
 }
 
-class ConfigurationTextLine extends ConfigurationLine {
+export class ConfigurationTextLine extends ConfigurationLine {
 
     constructor(panel: ConfigurationPanel, name: string, label: string, content: any, type?: string, step?: number, min?: number, max?: number) {
         super(panel, name, label, content);
@@ -210,7 +224,7 @@ class ConfigurationTextLine extends ConfigurationLine {
 }
 
 
-class ConfigurationToggleLine extends ConfigurationLine {
+export class ConfigurationToggleLine extends ConfigurationLine {
 
     constructor(panel: ConfigurationPanel, name: string, label: string, content: any, labels: Array<string>) {
         super(panel, name, label, content);
@@ -263,7 +277,7 @@ class ConfigurationToggleLine extends ConfigurationLine {
 /**
  * That class implement multiple options single choice configuration line.
  */
-class ConfigurationMultipleOptionsSingleChoiceLine extends ConfigurationLine {
+export class ConfigurationMultipleOptionsSingleChoiceLine extends ConfigurationLine {
 
     constructor(panel: ConfigurationPanel, name: string, options: Array<string>, label: string, content: any) {
         super(panel, name, label, content);
@@ -319,7 +333,7 @@ class ConfigurationMultipleOptionsSingleChoiceLine extends ConfigurationLine {
 /**
  * Use to display a liste of string values in a configuration.
  */
-class ConfigurationStringListLine extends ConfigurationLine {
+export class ConfigurationStringListLine extends ConfigurationLine {
     constructor(panel: ConfigurationPanel, name: string, label: string, content: any) {
         super(panel, name, label, content);
 
