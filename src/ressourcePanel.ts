@@ -450,11 +450,11 @@ class RessourcesPanel extends Panel {
     for (var j = 0; j < paths.length; j++) {
       parent = path_
       path_ += "/" + paths[j]
-      if (!this.ressources.has(paths[j])) {
+      if (!this.ressources.has(path_)) {
         let dir = new RessourceDir(path_)
         this.ressources.set(path_, dir);
       }
-
+     
       // append the dir.
       if (this.ressources.has(parent)) {
         this.ressources.get(parent).appendRessourceDir(this.ressources.get(path_))
@@ -675,7 +675,7 @@ class RessourcePanel extends Panel {
       })
       .down();
 
-    let lastModified = new Date(ressource.getModified());
+    let lastModified = new Date(ressource.getModified() * 1000);
     this.div.appendElement({
       tag: "div",
       class: "col s6 m3",
