@@ -73,14 +73,14 @@ export class LogsPanel extends Panel {
 
     let body = this.ul.getChildById(info.getMethod() + "_body")
     if (body != undefined) {
-      let row = body.appendElement({ tag: "div", class: "row", style: "margin: 0px;" }).down();
+      let row = body.appendElement({ tag: "div", class: "row ", style: "margin: 0px; border-bottom: solid 1px rgba(51,51,51,0.12);" }).down();
       let p: any;
       if (info.getMethod().startsWith("/")) {
         let time = new Date(info.getDate() * 1000).toDateString() + " " + new Date(info.getDate() * 1000).toLocaleTimeString()
         p = row.appendElement({ tag: "span", class: "col s3", innerHtml: time })
           .appendElement({ tag: "p", class: "col s9", style: "overflow-y: scroll; margin-top: 0px;", innerHtml: info.getMessage().replace(new RegExp('\r?\n', 'g'), '<br />') }).down()
       } else {
-        p = row.appendElement({ tag: "p", class: "col s12", style: "overflow-y: scroll; margin-top: 0px;", innerHtml: info.getMessage().replace(new RegExp('\r?\n', 'g'), '<br />') }).down()
+        p = row.appendElement({ tag: "p", class: "col s12", style: "overflow-y: scroll; margin-top: 4px; margin-bottom: 4px;", innerHtml: info.getMessage().replace(new RegExp('\r?\n', 'g'), '<br />') }).down()
       }
 
       if (this.editable == true) {
@@ -170,7 +170,7 @@ export class LogManager extends Panel {
 
     // The services console tab.
     let servicesConsoleTab = ul.appendElement({ tag: "li", class: "tab col s4" }).down()
-      .appendElement({ tag: "a", href: "javascript:void(0)", innerHtml: "Console(s)", class: "grey-text text-darken-3", title: "sevices console output." }).down()
+      .appendElement({ tag: "a", href: "javascript:void(0)", innerHtml: "Services(s)", class: "grey-text text-darken-3", title: "sevices console output." }).down()
 
     this.servicesConsoleDiv = this.div.appendElement({ tag: "div", class: "row", style: "display: none;" }).down()
     let servicesConsolePanel = this.servicesConsoleDiv.appendElement({ tag: "div", class: "col s12" }).down()
@@ -190,6 +190,7 @@ export class LogManager extends Panel {
         info.setDate(parseInt(evt.date))
         info.setMethod(evt.method)
         info.setUserid(evt.userId)
+        info.setUsername(evt.userName)
         info.setMessage(evt.message)
 
         // If the method start with / it's a grpc action log
