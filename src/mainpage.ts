@@ -268,7 +268,7 @@ export class MainPage {
     this.logoutLnk.element.onclick = () => {
       eventHub.publish("onlogout", {}, true); // return the full config...
       M.toast({ html: "Bye Bye!!" });
-      
+
       this.logoutLnk.element.style.display = "none";
       this.loginLnk.element.style.display = "";
       this.sideLogoutLnk.element.style.display = "none";
@@ -695,56 +695,56 @@ export class MainPage {
         if (globular.config.Services[key].Name == "sql_server") {
           servicePanel = new SqlServicePanel(
             globular.config.Services[key],
-            title,
-            key
+            key,
+            title
           );
         } else if (globular.config.Services[key].Name == "smtp_server") {
           servicePanel = new SmtpServicePanel(
             globular.config.Services[key],
-            title,
-            key
+            key,
+            title
           );
         } else if (globular.config.Services[key].Name == "ldap_server") {
           servicePanel = new LdapServicePanel(
             globular.config.Services[key],
-            title,
-            key
+            key,
+            title
           );
         } else if (globular.config.Services[key].Name == "persistence_server") {
           servicePanel = new PersistenceServicePanel(
             globular.config.Services[key],
-            title,
-            key
+            key,
+            title
           );
         } else if (globular.config.Services[key].Name == "file_server") {
           servicePanel = new FileServicePanel(
             globular.config.Services[key],
-            title,
-            key
+            key,
+            title
           );
         } else if (globular.config.Services[key].Name == "dns_server") {
           servicePanel = new DnsServicePanel(
             globular.config.Services[key],
-            title,
-            key
+            key,
+            title
           );
-        }else if (globular.config.Services[key].Name.startsWith("plc_server_")) {
+        } else if (globular.config.Services[key].Name.startsWith("plc_server_")) {
           servicePanel = new PlcServerConfigPanel(
             globular.config.Services[key],
-            title,
-            key
+            key,
+            title
           );
         } else if (globular.config.Services[key].Name.startsWith("plc_exporter")) {
           servicePanel = new PlcExporterConfigPanel(
             globular.config.Services[key],
-            title,
-            key
+            key,
+            title
           );
         } else {
           servicePanel = new ServicePanel(
             globular.config.Services[key],
-            title,
-            key
+            key,
+            title
           );
         }
 

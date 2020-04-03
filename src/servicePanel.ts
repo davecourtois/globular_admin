@@ -31,7 +31,7 @@ export class ServicePanel extends ConfigurationPanel {
   private tlsConfig: any;
   public stateDiv: any;
 
-  constructor(service: IServiceConfig, name: string, id: string) {
+  constructor(service: IServiceConfig, id: string, name: string) {
     super(service, name, randomUUID());
 
     // So Here I will display common service function...

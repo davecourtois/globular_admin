@@ -11,7 +11,7 @@ export class PlcExporterConfigPanel extends ServicePanel {
     private plcServicesIds: Array<string>;
 
     constructor(service: IServiceConfig, id: string, name: string) {
-        super(service, name, id)
+        super(service, id, name)
         this.tags = new Array<any>()
     }
 

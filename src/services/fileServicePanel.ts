@@ -7,7 +7,7 @@ import { IServiceConfig } from "globular-web-client"
 export class FileServicePanel extends ServicePanel {
 
     constructor(service: IServiceConfig, id: string, name: string) {
-        super(service, name, id)
+        super(service, id, name)
     }
 
     onlogin(data: any) {

@@ -4,7 +4,7 @@ import { Panel } from "./panel";
 import * as M from "materialize-css";
 import "materialize-css/sass/materialize.scss";
 
-import { getErrorMessage, getAllActions, eventHub, readLogs, clearAllLog } from "./backend";
+import { getErrorMessage, getAllActions, eventHub, readLogs, clearAllLog, deleteLog, globular } from "./backend";
 import { LogInfo, LogType } from "globular-web-client/lib/ressource/ressource_pb";
 import { fireResize } from "./utility.js";
 import "@davecourtois/elementui/components/table/table.js";
@@ -26,12 +26,17 @@ export class ErrosPanel extends Panel {
     for (var i = 0; i < logs.length; i++) {
       if (!this.logs.has(logs[i].getMethod())) {
         this.logs.set(logs[i].getMethod(), new Array<LogInfo>())
-        this.ul.appendElement({ tag: "li" }).down()
-          .appendElement({ tag: "div", class: "collapsible-header", id: logs[i].getMethod() + "_header" }).down()
+        let li: any
+        if (logs[i].getMethod().startsWith("/")) {
+          li = this.ul.appendElement({ tag: "li" }).down()
+        } else {
+          // all service at top
+          li = this.ul.prependElement({ tag: "li" }).down()
+        }
+
+        li.appendElement({ tag: "div", class: "collapsible-header", id: logs[i].getMethod() + "_header" }).down()
           .appendElement({ tag: "span", innerHtml: logs[i].getMethod() }).up()
-          .appendElement({ tag: "div", class: "collapsible-body" }).down()
-          .appendElement({ tag: "div", class: "row" }).down()
-          .appendElement({ tag: "ul", class: "collection col s12", id: logs[i].getMethod() + "_body" })
+          .appendElement({ tag: "div", class: "collapsible-body", id: logs[i].getMethod() + "_body" }).down()
       }
       this.logs.get(logs[i].getMethod()).push(logs[i])
       this.displayError(logs[i]);
@@ -44,10 +49,16 @@ export class ErrosPanel extends Panel {
 
     let body = this.ul.getChildById(info.getMethod() + "_body")
     if (body != undefined) {
-      if (this.editable == true) {
-        body.appendElement({ tag: "li", class: "collection-item", innerHtml: new Date(info.getDate() * 1000).toDateString() + " " + new Date(info.getDate() * 1000).toLocaleTimeString() })
+      let row = body.appendElement({ tag: "div", class: "row", style: "margin: 0px;" }).down();
+      if (info.getMethod().startsWith("/")) {
+        let time = new Date(info.getDate() * 1000).toDateString() + " " + new Date(info.getDate() * 1000).toLocaleTimeString()
+        row.appendElement({ tag: "span", class: "col s3", innerHtml: time })
+          .appendElement({ tag: "p", class: "col s9", style: "overflow-y: scroll;", innerHtml: info.getMessage().replace(new RegExp('\r?\n', 'g'), '<br />') })
       } else {
-        body.appendElement({ tag: "li", class: "collection-item", innerHtml: new Date(info.getDate() * 1000).toDateString() + " " + new Date(info.getDate() * 1000).toLocaleTimeString() })
+        row.appendElement({ tag: "p", class: "col s12", style: "overflow-y: scroll;", innerHtml: info.getMessage().replace(new RegExp('\r?\n', 'g'), '<br />') })
+      }
+      if (this.editable == true) {
+
       }
     }
   }
@@ -92,10 +103,10 @@ export class LogManager extends Panel {
       .appendElement({ tag: "ul", class: "tabs", id: "logs_tabs" }).down()
 
     let log = ul.appendElement({ tag: "li", class: "tab col s6" }).down()
-      .appendElement({ tag: "a", href: "javascript:void(0)", innerHtml: "Log(s)", class: "grey-text text-darken-3 active" }).down()
+      .appendElement({ tag: "a", href: "javascript:void(0)", innerHtml: "Log(s)", class: "grey-text text-darken-3 active", title:"table of gRPC actions activity." }).down()
 
     let error = ul.appendElement({ tag: "li", class: "tab col s6" }).down()
-      .appendElement({ tag: "a", href: "javascript:void(0)", innerHtml: "Error(s)", class: "grey-text text-darken-3" }).down()
+      .appendElement({ tag: "a", href: "javascript:void(0)", innerHtml: "Detail(s)", class: "grey-text text-darken-3", title:"error's information and services console outputs." }).down()
 
     this.errorsDiv = this.div.appendElement({ tag: "div", class: "row", style: "display: none;" }).down()
     let errorsPanel = this.errorsDiv.appendElement({ tag: "div", class: "col s12 /*m10 offset-m1*/" }).down()
@@ -105,44 +116,58 @@ export class LogManager extends Panel {
 
     this.errorsPanel = new ErrosPanel(errorsPanel);
 
-    getAllActions((actions) => {
-      for (var i = 0; i < actions.length; i++) {
-        let action = actions[i];
-        eventHub.subscribe(action, (uuid) => {
-          this.listeners.set(action, uuid);
-        }, (evt: any) => {
-          // When log about user is created.
-          evt = JSON.parse(evt)
-          let info = new LogInfo()
-          info.setApplication(evt.application)
-          info.setDate(parseInt(evt.date))
-          info.setMethod(evt.method)
-          info.setUserid(evt.userId)
-          info.setMessage(evt.message)
+    let connectListener = (channel: string) => {
+      eventHub.subscribe(channel, (uuid) => {
+        this.listeners.set(channel, uuid);
+      }, (evt: any) => {
 
-          if (evt.message != undefined) {
-            info.setType(LogType.ERROR)
-            this.errors.push(info)
-            this.errorsPanel.displayErrors(this.errors);
-          } else {
-            info.setType(LogType.INFO)
-            this.logs.push(info)
+        // When log about user is created.
+        evt = JSON.parse(evt)
+        let info = new LogInfo()
+        console.log(evt)
+        info.setApplication(evt.application)
+        info.setDate(parseInt(evt.date))
+        info.setMethod(evt.method)
+        info.setUserid(evt.userId)
+        info.setMessage(evt.message)
 
-            let row = new Array<any>();
-            row.push(info.getMethod())
-            row.push(info.getApplication())
-            row.push(info.getUsername())
-            row.push(new Date(info.getDate() * 1000))
-            let table = <any>document.getElementById("log_table");
-            if (table != undefined) {
-              table.data.unshift(row)
-              table.sort();
-              table.refresh();
-            }
-            fireResize();
+        if (evt.message != undefined) {
+          info.setType(LogType.ERROR)
+          this.errors.push(info)
+          this.errorsPanel.displayErrors(this.errors);
+          // diplay the message in the toast to get attention of the admin.
+          M.toast({ html: evt.message.replace(new RegExp('\r?\n', 'g')), displayLength: 4000 });
+        } else {
+          info.setType(LogType.INFO)
+          this.logs.push(info)
+          let row = new Array<any>();
+          row.push(info.getMethod())
+          row.push(info.getApplication())
+          row.push(info.getUsername())
+          row.push(new Date(info.getDate() * 1000))
+          let table = <any>document.getElementById("log_table");
+          if (table != undefined) {
+            table.data.unshift(row)
+            table.sort();
+            table.refresh();
           }
+          fireResize();
+        }
 
-        }, false)
+      }, false)
+    }
+
+    // Connect listeners.
+    getAllActions((actions) => {
+
+      // Here I will connect a listener to each action....
+      for (var i = 0; i < actions.length; i++) {
+        connectListener(actions[i]);
+      }
+
+      // I will also connect the listener to each services.
+      for (let serviceId in globular.config.Services) {
+        connectListener(serviceId);
       }
 
     },
@@ -163,7 +188,7 @@ export class LogManager extends Panel {
     }
 
     // overide...
-    readLogs((logs: Array<LogInfo>) => {
+    readLogs("", (logs: Array<LogInfo>) => {
       for (var i = 0; i < logs.length; i++) {
         let info = logs[i];
         if (info.getMessage().length > 0) {
@@ -177,14 +202,12 @@ export class LogManager extends Panel {
 
     },
       (err: any) => {
-
         M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
       }
     );
 
   }
 
-  //let errorsPanel = this.logsDiv.appendElement({ tag: "div", class: "col s12 /*m10 offset-m1*/" }).down()
   initLogTable() {
     var table = <any>(document.createElement("table-element"))
     var header = <any>(document.createElement("table-header-element"))
@@ -197,14 +220,13 @@ export class LogManager extends Panel {
     table.width = 1200
     table.style.maxHeight = screen.height - 235 + "px"; // use the screen to calculate the table heigth.
     table.data = []
-
     for (var i = 0; i < this.logs.length; i++) {
       let row = new Array<any>();
       row.push(this.logs[i].getMethod())
       row.push(this.logs[i].getApplication())
       row.push(this.logs[i].getUsername())
       row.push(new Date(this.logs[i].getDate() * 1000))
-      table.data.unshift(row)
+      table.data.push(row)
     }
 
     // Create the column headers.
@@ -239,15 +261,42 @@ export class LogManager extends Panel {
     if (table.menu != null) {
       table.menu.getChildById("delete-filtere-menu-item").element.action = () => {
         let values = table.getFilteredData();
-        for (var i = 0; i < values.length; i++) {
-          console.log(values[i])
+        // Now I will reset the table data.
+        table.data = []
+        let logs = new Array<LogInfo>();
+        for (var i = 0; i < this.logs.length; i++) {
+          // if the value is in filtered data I will not keep it...
+          if (values.find((e: any) => e.index == i) == undefined) {
+            let row = new Array<any>();
+            row.push(this.logs[i].getMethod())
+            row.push(this.logs[i].getApplication())
+            row.push(this.logs[i].getUsername())
+            row.push(new Date(this.logs[i].getDate() * 1000))
+            table.data.push(row)
+            logs.push(this.logs[i])
+          } else {
+            // delete log from the logs.
+            deleteLog(this.logs[i], () => { }, (err: any) => {
+              M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
+            })
+          }
         }
+
+        // Set back logs and refresh the table.
+        this.logs = logs;
+        table.filtered = []
+        table.sorted = []
+        table.sort()
+        table.refresh()
+        fireResize();
       }
 
       table.menu.getChildById("delete-all-data-menu-item").element.action = () => {
         clearAllLog(LogType.INFO, () => {
           M.toast({ html: "All logs are deleted!", displayLength: 2000 });
-          table.data = new Array<any>();
+          table.data = []
+          table.filtered = []
+          table.sorted = []
           table.refresh();
           fireResize();
         },
@@ -261,7 +310,7 @@ export class LogManager extends Panel {
 
   onlogin(data: any) {
     this.errorsPanel.onlogin(null); // be sure the editable variable is set.
-    this.errorsPanel.displayErrors(this.logs)
+    this.errorsPanel.displayErrors(this.errors)
     document.getElementById("delete-filtere-menu-item").style.display = "block"
     document.getElementById("delete-all-data-menu-item").style.display = "block"
 
@@ -270,7 +319,7 @@ export class LogManager extends Panel {
   onlogout() {
     this.errorsPanel.onlogin(null); // be su
     // overide...
-    this.errorsPanel.displayErrors(this.logs)
+    this.errorsPanel.displayErrors(this.errors)
     document.getElementById("delete-filtere-menu-item").style.display = "none"
     document.getElementById("delete-all-data-menu-item").style.display = "none"
 

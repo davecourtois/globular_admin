@@ -66,7 +66,8 @@ import {
   Ressource,
   RemoveActionPermissionRqst,
   GetRessourcesRqst,
-  RemoveRessourceRqst
+  RemoveRessourceRqst,
+  DeleteLogRqst
 } from "globular-web-client/lib/ressource/ressource_pb";
 import * as jwt from "jwt-decode";
 import {
@@ -137,7 +138,7 @@ export async function initServices(callback: () => void, errorCallback: (err: an
   let rqst = new GetConfigRequest();
   if (globular.adminService !== undefined) {
     globular.adminService
-      .getConfig(rqst, {domain:domain, applicaiton:application})
+      .getConfig(rqst, { domain: domain, applicaiton: application })
       .then(rsp => {
         let config = JSON.parse(rsp.getResult());
         // init the services from the configuration retreived.
@@ -620,7 +621,7 @@ export function downloadFileHttp(urlToSend: string, fileName: string, callback: 
   req.setRequestHeader("token", localStorage.getItem("user_token"))
   req.setRequestHeader("application", "admin")
   req.setRequestHeader("domain", domain)
-  
+
   req.responseType = "blob";
   req.onload = function (event) {
     var blob = req.response;
@@ -1787,10 +1788,10 @@ export function removeRessource(path: string, name: string, callback: () => void
  * Read all logs
  * @param callback The success callback.
  */
-export function readLogs(callback: (results: any) => void, errorCallback: (err: any) => void) {
+export function readLogs(query: string, callback: (results: any) => void, errorCallback: (err: any) => void) {
 
   let rqst = new GetLogRqst();
-  rqst.setQuery("{}");
+  rqst.setQuery(query);
 
   // call persist data
   let stream = globular.ressourceService.getLog(rqst, {
@@ -1807,6 +1808,14 @@ export function readLogs(callback: (results: any) => void, errorCallback: (err: 
 
   stream.on("status", status => {
     if (status.code == 0) {
+      results = results.sort((t1, t2) => {
+        const name1 = t1.getDate();
+        const name2 = t2.getDate();
+        if (name1 < name2) { return 1; }
+        if (name1 > name2) { return -1; }
+        return 0;
+      });
+
       callback(results);
     } else {
       console.log(status.details)
@@ -1819,6 +1828,18 @@ export function clearAllLog(logType: LogType, callback: () => void, errorCallbac
   let rqst = new ClearAllLogRqst
   rqst.setType(logType)
   globular.ressourceService.clearAllLog(rqst, {
+    token: localStorage.getItem("user_token"),
+    application: application, domain: domain
+  }).then(callback)
+    .catch((err: any) => {
+      errorCallback(err)
+    })
+}
+
+export function deleteLog(log: LogInfo, callback: () => void, errorCallback: (err: any) => void) {
+  let rqst = new DeleteLogRqst
+  rqst.setLog(log)
+  globular.ressourceService.deleteLog(rqst, {
     token: localStorage.getItem("user_token"),
     application: application, domain: domain
   }).then(callback)

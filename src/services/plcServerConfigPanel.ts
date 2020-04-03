@@ -10,7 +10,7 @@ export class PlcServerConfigPanel extends ServicePanel {
     private connections: Array<ConfigurationPanel>;
 
     constructor(service: IServiceConfig, id: string, name: string) {
-        super(service, name, id)
+        super(service, id, name)
         this.connections = new Array<any>()
     }
 
