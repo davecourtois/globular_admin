@@ -10,10 +10,6 @@ export class GeneralInfoPanel extends ConfigurationPanel {
   private ldapSyncInfosLine: any;
   private ldapSyncPanels: Array<LdapSyncServicePanel>;
   private ldapServices: any;
-  private persistenceHostConfig: ConfigurationLine;
-  private persistencePortConfig: ConfigurationLine;
-  private persistenceUserConfig: ConfigurationLine;
-  private persistencePasswordConfig: ConfigurationLine;
 
   constructor(config: IConfig) {
     // Init the configuration panel informations.
@@ -152,14 +148,7 @@ export class GeneralInfoPanel extends ConfigurationPanel {
     if(this.ldapSyncInfosLine != null){
       this.ldapSyncInfosLine.hide()
     }
-    this.persistenceHostConfig.content.delete()
-    this.persistenceHostConfig = null;
-    this.persistencePortConfig.content.delete()
-    this.persistencePortConfig = null;
-    this.persistenceUserConfig.content.delete()
-    this.persistenceUserConfig = null;
-    this.persistencePasswordConfig.content.delete()
-    this.persistencePasswordConfig = null;
+
   }
 
   // create control...
@@ -222,19 +211,6 @@ export class GeneralInfoPanel extends ConfigurationPanel {
           this.ldapSyncInfosLine.show();
         }
       }
-
-      // The persistence database informations.
-      this.persistenceHostConfig = this.appendTextualConfig("PersistenceHost", "Persistence Host");
-      this.persistenceHostConfig.unlock()
-
-      this.persistencePortConfig = this.appendTextualConfig("PersistencePort", "Persistence Port", "number", 1, 0, 65535);
-      this.persistencePortConfig.unlock()
-
-      this.persistenceUserConfig = this.appendTextualConfig("PersistenceUser", "Persistence User");
-      this.persistenceUserConfig.unlock()
-
-      this.persistencePasswordConfig = this.appendTextualConfig("PersistencePassword", "Persistence Password", "password");
-      this.persistencePasswordConfig.unlock()
 
     },
       (err: any) => {
