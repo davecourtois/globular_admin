@@ -134,6 +134,7 @@ export class PlcExporterConfigPanel extends ServicePanel {
         configPanel.appendTextualConfig("Unit");
         configPanel.appendEnumConfig("TypeName", ["BOOL", "SINT", "INT", "DINT", "REAL"], false);
         configPanel.appendTextualConfig("Offset", "Offset", "number", 1, 0, 65535);
+        configPanel.appendTextualConfig("Length", "Length", "number", 1, 0, 65535);
 
         // Connect event on serviceId select change.
         let onChange_ = serviceIdSelect.getValueEditor().element.onchange
