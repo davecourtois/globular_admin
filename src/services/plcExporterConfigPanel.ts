@@ -59,7 +59,7 @@ export class PlcExporterConfigPanel extends ServicePanel {
         }
 
         newTagBtn.element.onclick =  ()=> {
-            let Tag = {ServiceId:"", ConnectionId:"", Description:"", Domain:"", Label:"", Name:"", TypeName:"INT", Offset:0, Unit:"NA"}
+            let Tag = {ServiceId:"", ConnectionId:"", Description:"", Domain:"", Label:"", Name:"", TypeName:"INT", Offset:0, Length:0, Unit:"NA"}
             let li = this.createTagConfigPanel(ul, Tag)
             
             let idInput = li.getChildById("id_input")

@@ -18,6 +18,7 @@ import { PersistenceServicePanel } from "./services/persistenceServicePanel";
 import { FileServicePanel } from './services/fileServicePanel';
 import { PlcServerConfigPanel } from './services/plcServerConfigPanel';
 import { PlcExporterConfigPanel } from "./services/plcExporterConfigPanel";
+import { PlcLinkConfigPanel } from "./services/plcLinkConfigPanel";
 import { RessourceManager } from "./ressourcePanel";
 import { MetricManager } from "./metricPanel";
 import { DnsServicePanel } from "./services/dnsServicePanel";
@@ -740,6 +741,12 @@ export class MainPage {
             key,
             title
           );
+        } else if (globular.config.Services[key].Name.startsWith("plc_link")) {
+          servicePanel = new PlcLinkConfigPanel(
+            globular.config.Services[key],
+            key,
+            title
+          );         
         } else {
           servicePanel = new ServicePanel(
             globular.config.Services[key],
