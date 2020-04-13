@@ -20,7 +20,7 @@ import { PlcServerConfigPanel } from './services/plcServerConfigPanel';
 import { PlcExporterConfigPanel } from "./services/plcExporterConfigPanel";
 import { PlcLinkConfigPanel } from "./services/plcLinkConfigPanel";
 import { RessourceManager } from "./ressourcePanel";
-import { MetricManager } from "./metricPanel";
+import { PeerManager } from "./peersPanel";
 import { DnsServicePanel } from "./services/dnsServicePanel";
 
 
@@ -50,7 +50,7 @@ export class MainPage {
   private ressourcePanel: RessourceManager;
   private applicationPanel: ApplicationManager;
   private logPanel: LogManager;
-  private metricPanel: MetricManager;
+  private PeerPanel: PeerManager;
 
   constructor() {
     // Here I will create the main container.
@@ -413,31 +413,41 @@ export class MainPage {
         innerHtml: "Services"
       })
       .up()
-      .appendElement({ tag: "li", class: "tab col s1" })
+      .appendElement({ tag: "li", class: "tab col s2" })
       .down()
       .appendElement({
         tag: "a",
         id: "main_tabs_tab_1",
         class: "grey-text text-darken-3",
         href: "javascript:void(0)",
-        innerHtml: "Roles"
+        innerHtml: "Accounts"
       })
       .up()
-      .appendElement({ tag: "li", class: "tab col s2" })
+      .appendElement({ tag: "li", class: "tab col s1" })
       .down()
       .appendElement({
         tag: "a",
         id: "main_tabs_tab_2",
         class: "grey-text text-darken-3",
         href: "javascript:void(0)",
-        innerHtml: "Accounts"
+        innerHtml: "Roles"
+      })
+      .up()
+      .appendElement({ tag: "li", class: "tab col s1" })
+      .down()
+      .appendElement({
+        tag: "a",
+        id: "main_tabs_tab_3",
+        class: "grey-text text-darken-3",
+        href: "javascript:void(0)",
+        innerHtml: "Peers"
       })
       .up()
       .appendElement({ tag: "li", class: "tab col s2" })
       .down()
       .appendElement({
         tag: "a",
-        id: "main_tabs_tab_3",
+        id: "main_tabs_tab_4",
         class: "grey-text text-darken-4",
         href: "javascript:void(0)",
         innerHtml: "Applications"
@@ -447,7 +457,7 @@ export class MainPage {
       .down()
       .appendElement({
         tag: "a",
-        id: "main_tabs_tab_4",
+        id: "main_tabs_tab_5",
         class: "grey-text text-darken-4",
         href: "javascript:void(0)",
         innerHtml: "Files"
@@ -457,7 +467,7 @@ export class MainPage {
       .down()
       .appendElement({
         tag: "a",
-        id: "main_tabs_tab_5",
+        id: "main_tabs_tab_6",
         class: "grey-text text-darken-4",
         href: "javascript:void(0)",
         innerHtml: "Ressources"
@@ -467,20 +477,10 @@ export class MainPage {
       .down()
       .appendElement({
         tag: "a",
-        id: "main_tabs_tab_6",
-        class: "grey-text text-darken-3",
-        href: "javascript:void(0)",
-        innerHtml: "Logs"
-      })
-      .up()
-      .appendElement({ tag: "li", class: "tab col s1" })
-      .down()
-      .appendElement({
-        tag: "a",
         id: "main_tabs_tab_7",
         class: "grey-text text-darken-3",
         href: "javascript:void(0)",
-        innerHtml: "Metrics"
+        innerHtml: "Logs"
       })
 
     // Initialyse various panels.
@@ -512,8 +512,8 @@ export class MainPage {
       this.applicationPanel = new ApplicationManager(randomUUID());
     }
 
-    if (this.metricPanel == null) {
-      this.metricPanel = new MetricManager();
+    if (this.PeerPanel == null) {
+      this.PeerPanel = new PeerManager(randomUUID());
     }
 
     // Set tabs.
@@ -523,39 +523,39 @@ export class MainPage {
 
     // The tab content.
     let tab_1_content = this.container
-      .appendElement({ tag: "div", style: "display: none" })
-      .down();
-    this.rolePanel.setParent(tab_1_content);
+    .appendElement({ tag: "div", style: "display: none" })
+    .down();
+  this.accountPanel.setParent(tab_1_content);
 
     let tab_2_content = this.container
       .appendElement({ tag: "div", style: "display: none" })
       .down();
-    this.accountPanel.setParent(tab_2_content);
+    this.rolePanel.setParent(tab_2_content);
 
     let tab_3_content = this.container
-      .appendElement({ tag: "div", style: "display: none" })
-      .down();
-    this.applicationPanel.setParent(tab_3_content);
+    .appendElement({ tag: "div", style: "display: none" })
+    .down();
+  this.PeerPanel.setParent(tab_3_content);
 
     let tab_4_content = this.container
       .appendElement({ tag: "div", style: "display: none" })
       .down();
-    this.filePanel.setParent(tab_4_content);
+    this.applicationPanel.setParent(tab_4_content);
 
     let tab_5_content = this.container
       .appendElement({ tag: "div", style: "display: none" })
       .down();
-    this.ressourcePanel.setParent(tab_5_content);
+    this.filePanel.setParent(tab_5_content);
 
     let tab_6_content = this.container
       .appendElement({ tag: "div", style: "display: none" })
       .down();
-    this.logPanel.setParent(tab_6_content);
+    this.ressourcePanel.setParent(tab_6_content);
 
     let tab_7_content = this.container
       .appendElement({ tag: "div", style: "display: none" })
       .down();
-    this.metricPanel.setParent(tab_7_content);
+    this.logPanel.setParent(tab_7_content);
 
     // Init the materialyse tabs.
     M.Tabs.init(document.getElementById("main_tabs"));

@@ -67,7 +67,14 @@ import {
   RemoveActionPermissionRqst,
   GetRessourcesRqst,
   RemoveRessourceRqst,
-  DeleteLogRqst
+  DeleteLogRqst,
+  GetPeersRqst,
+  GetPeersRsp,
+  Peer,
+  AddPeerActionRqst,
+  AddPeerActionRsp,
+  RemovePeerActionRqst,
+  DeletePeerRqst
 } from "globular-web-client/lib/ressource/ressource_pb";
 import * as jwt from "jwt-decode";
 import {
@@ -1463,6 +1470,95 @@ export function DeleteApplication(
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
+// Peers
+///////////////////////////////////////////////////////////////////////////////////////////////
+export function GetAllPeersInfo(
+  query: string,
+  callback: (peers: Peer[]) => void,
+  errorCallback: (err: any) => void
+) {
+  let rqst = new GetPeersRqst();
+  rqst.setQuery(query)
+
+  let peers = new Array<Peer>();
+
+  let stream = globular.ressourceService.getPeers(rqst, {
+    token: localStorage.getItem("user_token"),
+    application: application, domain: domain
+  });
+
+  // Get the stream and set event on it...
+  stream.on("data", (rsp: GetPeersRsp) => {
+    peers = peers.concat(rsp.getPeersList());
+  });
+
+  stream.on("status", status => {
+    if (status.code == 0) {
+      callback(peers);
+    } else {
+      errorCallback({ "message": status.details })
+    }
+  });
+}
+
+export function AppendActionToPeer(
+  id: string,
+  action: string,
+  callback: () => void,
+  errorCallback: (err: any) => void
+) {
+  let rqst = new AddPeerActionRqst;
+  rqst.setPeerid(id)
+  rqst.setAction(action)
+  globular.ressourceService.addPeerAction(rqst, { token: localStorage.getItem("user_token"), application: application, domain: domain })
+    .then((rsp: AddPeerActionRsp) => {
+      callback()
+    })
+    .catch((err: any) => {
+      console.log(err)
+      errorCallback(err);
+    });
+
+}
+
+export function RemoveActionFromPeer(
+  id: string,
+  action: string,
+  callback: () => void,
+  errorCallback: (err: any) => void
+) {
+  let rqst = new RemovePeerActionRqst;
+  rqst.setPeerid(id)
+  rqst.setAction(action)
+  globular.ressourceService.removePeerAction(rqst, { token: localStorage.getItem("user_token"), application: application, domain: domain })
+    .then((rsp: AddApplicationActionRsp) => {
+      callback()
+    })
+    .catch((err: any) => {
+      console.log(err)
+      errorCallback(err);
+    });
+
+}
+
+export function DeletePeer(
+  peer: Peer,
+  callback: () => void,
+  errorCallback: (err: any) => void
+) {
+  let rqst = new DeletePeerRqst;
+  rqst.setPeer(peer)
+  globular.ressourceService.deletePeer(rqst, { token: localStorage.getItem("user_token"), application: application, domain: domain })
+    .then((rsp: AddApplicationActionRsp) => {
+      callback()
+    })
+    .catch((err: any) => {
+      console.log(err)
+      errorCallback(err);
+    });
+
+}
+///////////////////////////////////////////////////////////////////////////////////////////////
 // Services
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -1920,14 +2016,14 @@ export async function readPlcTag(plcType: PLC_TYPE, connectionId: string, name: 
     if (plcType == PLC_TYPE.ALEN_BRADLEY) {
       if (globular.plcService_ab != undefined) {
         let rsp = await globular.plcService_ab.readTag(rqst);
-        result = rsp.getResult()
+        result = rsp.getValues()
       } else {
         return "No Alen Bradlay PLC server configured!"
       }
     } else if (plcType == PLC_TYPE.SIEMENS) {
       if (globular.plcService_siemens != undefined) {
         let rsp = await globular.plcService_siemens.readTag(rqst);
-        result = rsp.getResult()
+        result = rsp.getValues()
       } else {
         return "No Siemens PLC server configured!"
       }
