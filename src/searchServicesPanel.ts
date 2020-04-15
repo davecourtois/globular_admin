@@ -1,7 +1,6 @@
 import { Panel } from "./panel";
-import { findServices, readFullConfig, installService, getErrorMessage } from "./backend";
+import { findServices, installService, getErrorMessage } from "./backend";
 import { ServiceDescriptor } from "globular-web-client/lib/services/services_pb";
-import { IConfig } from "globular-web-client";
 
 /**
  * Search panel is use to retreive services on registerd discoveries.
@@ -9,7 +8,7 @@ import { IConfig } from "globular-web-client";
 export class SearchServicesPanel extends Panel {
   private resultsPanel: any;
   private isAdmin: boolean;
-  private loginInfo: any;
+  private fullConfig: any;
 
   constructor() {
     super("search_panel");
@@ -26,11 +25,10 @@ export class SearchServicesPanel extends Panel {
     this.resultsPanel.removeAllChilds();
     findServices(keywords, (services: Array<ServiceDescriptor>) => {
       for (var i = 0; i < services.length; i++) {
-        console.log(services[i].getId(), services[i].getVersion());
         let descriptorPanel = new ServiceDescriptorPanel(services[i]);
         descriptorPanel.setParent(this.resultsPanel);
         if (this.isAdmin) {
-          descriptorPanel.onlogin(this.loginInfo);
+          descriptorPanel.onlogin(this.fullConfig);
         }
       }
     });
@@ -38,11 +36,11 @@ export class SearchServicesPanel extends Panel {
 
   onlogin(data: any) {
     this.isAdmin = true;
+    this.fullConfig = data;
   }
 
   onlogout() {
     this.isAdmin = false;
-    this.loginInfo = null;
   }
 }
 
@@ -53,6 +51,8 @@ class ServiceDescriptorPanel extends Panel {
   private descriptor: ServiceDescriptor;
   private content: any;
   private installBtn: any;
+  private uninstallBtn:any;
+  private updateBtn:any;
   private btnGroup: any;
   private idInput: any;
 
@@ -60,15 +60,18 @@ class ServiceDescriptorPanel extends Panel {
     // Set the panel id.
     super(
       "service_description_panel_" +
-        descriptor.getPublisherid() +
-        "_" +
-        descriptor.getId() +
-        "_" +
-        descriptor.getVersion()
+      descriptor.getPublisherid() +
+      "_" +
+      descriptor.getId() +
+      "_" +
+      descriptor.getVersion()
     );
 
+    // keep track of the service diplayed.
+    this.descriptor = descriptor;
+
     // Display general information.
-    this.installBtn = this.div
+    this.div
       .appendElement({ tag: "div", class: "row service_descriptor_panel" })
       .down()
       .appendElement({ tag: "div", class: "col s12 /*m10 offset-m1*/" })
@@ -80,7 +83,7 @@ class ServiceDescriptorPanel extends Panel {
       .appendElement({
         tag: "span",
         class: "card-title",
-        style: "font-size: 1.5em;",
+        style: "font-size: medium; font-weight: inherit;",
         innerHtml: descriptor.getId()
       })
       .appendElement({ tag: "div", id: "content" })
@@ -97,7 +100,8 @@ class ServiceDescriptorPanel extends Panel {
       .appendElement({
         tag: "input",
         id: this.id + "_install_id_input",
-        placeholder: "id",
+        placeholder: "service id",
+        title: "the is of the service on the server.",
         type: "text"
       })
       .appendElement({ tag: "label", for: this.id + "_install_id_input" })
@@ -109,8 +113,26 @@ class ServiceDescriptorPanel extends Panel {
         class: "waves-effect waves-light btn disabled col s2",
         innerHtml: "Install"
       })
-      .down();
+      .appendElement({
+        tag: "a",
+        id: this.id + "_update_btn",
+        href: "javascript:void(0)",
+        class: "waves-effect waves-light btn disabled col s2",
+        style: "display: none;",
+        innerHtml: "Update"
+      })
+      .appendElement({
+        tag: "a",
+        id: this.id + "_uninstall_btn",
+        href: "javascript:void(0)",
+        class: "waves-effect waves-light btn disabled col s2",
+        style: "display: none;",
+        innerHtml: "Uninstall"
+      })
 
+    this.installBtn = this.div.getChildById(this.id + "_install_btn");
+    this.uninstallBtn = this.div.getChildById(this.id + "_uinstall_btn");
+    this.updateBtn = this.div.getChildById(this.id + "_update_btn");
     this.content = this.div.getChildById("content");
     this.btnGroup = this.div.getChildById("btn_group");
     this.idInput = this.div.getChildById(this.id + "_install_id_input");
@@ -177,14 +199,17 @@ class ServiceDescriptorPanel extends Panel {
         this.installBtn.element.classList.add("disabled");
       }
       if (evt.keyCode == 13) {
-        console.log("----> install service", descriptor);
         installService(
           descriptor.getDiscoveriesList()[0],
           descriptor.getId(),
           descriptor.getPublisherid(),
           descriptor.getVersion(),
           () => {
-            console.log("---> eva!");
+            
+            M.toast({ html: "Service " + descriptor.getId() + " installed successfully!", displayLength: 3000 });
+          },
+          (err: any) => {
+            M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
           }
         );
       }
@@ -192,9 +217,15 @@ class ServiceDescriptorPanel extends Panel {
   }
 
   onlogin(data: any) {
-    console.log("ServiceDescriptorPanel --> onlogin: ", this.id);
     // Display textual input
     this.btnGroup.element.style.display = "flex";
+
+    if(data.Services[this.descriptor.getId()] != undefined){
+      // The service is already install.
+      let service = data.Services[this.descriptor.getId()]
+      console.log("----> ", service)
+    }
+    
   }
 
   onlogout() {

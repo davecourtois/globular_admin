@@ -1591,7 +1591,8 @@ export function installService(
   serviceId: string,
   publisherId: string,
   version: string,
-  callback: () => void
+  callback: () => void,
+  errorCallback:(err:any)=>void
 ) {
   let rqst = new InstallServiceRequest();
   rqst.setPublisherid(publisherId);
@@ -1608,7 +1609,11 @@ export function installService(
     .then((rsp: InstallServiceResponse) => {
       console.log("---> service install");
       callback();
-    });
+    }).catch(
+      (err:any)=>{
+        errorCallback(err);
+      }
+    );
 }
 
 /**

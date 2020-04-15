@@ -157,7 +157,6 @@ export class FileManager extends Panel {
   // Here I will react to login information...
   onlogin(data: any) {
     // overide...
-    console.log("Panel --> onlogin: ", this.id);
   }
 
   onlogout() {
@@ -400,6 +399,11 @@ class FilePanel {
           .down();
       }
 
+      let file_edit_input = randomUUID()
+      let file_edit_lnk = randomUUID()
+      let file_save_lnk = randomUUID()
+      let file_lnk = randomUUID()
+      
       // The file name link...
       this.div
         .appendElement({
@@ -409,36 +413,36 @@ class FilePanel {
         .down()
         .appendElement({
           tag: "a",
-          id: "file_lnk",
+          id: file_lnk,
           heref: "javascript:void(0)",
           innerHtml: file.name,
           class: "col s10"
         })
         .appendElement({
           tag: "i",
-          id: "file_edit_lnk",
+          id: file_edit_lnk,
           class: "Small material-icons col s2",
           innerHtml: "edit"
         })
         .appendElement({
           tag: "input",
-          id: "file_edit_input",
+          id: file_edit_input,
           class: "col s10",
           style: "display: none",
           value: file.name
         })
         .appendElement({
           tag: "i",
-          id: "file_save_lnk",
+          id: file_save_lnk,
           class: "Small material-icons col s2",
           style: "display: none",
           innerHtml: "save"
         });
 
-      let lnk = this.div.getChildById("file_lnk");
-      let edit_lnk = this.div.getChildById("file_edit_lnk");
-      let edit_input = this.div.getChildById("file_edit_input");
-      let save_lnk = this.div.getChildById("file_save_lnk");
+      let lnk = this.div.getChildById(file_lnk);
+      let edit_lnk = this.div.getChildById(file_edit_lnk);
+      let edit_input = this.div.getChildById(file_edit_input);
+      let save_lnk = this.div.getChildById(file_save_lnk);
 
       /**
        * Display name input.
@@ -791,7 +795,6 @@ class FileNavigator extends Panel {
   // Here I will react to login information...
   onlogin(data: any) {
     // overide...
-    console.log("Panel --> onlogin: ", this.id);
     this.editable = true;
     this.setDir(this.currentDirectory);
   }

@@ -13,6 +13,7 @@ import {
   RemoveRoleFromAccount,
   registerAccount
 } from "./backend";
+import { randomUUID } from "./utility";
 
 /**
  * This class is use to manage file on the server.
@@ -195,6 +196,8 @@ export class AccountManager extends Panel {
         }
       }
     } else {
+      // generate an id for the autocomplete
+
       // Here I will append the roles list.
       let role_input = roles_div
         .prependElement({ tag: "div", class: "row" })
@@ -204,7 +207,8 @@ export class AccountManager extends Panel {
         .appendElement({
           tag: "input",
           class: "autocomplete",
-          placeholder: "Append Role"
+          placeholder: "Append Role",
+          id: randomUUID()
         })
         .down();
 
@@ -264,7 +268,7 @@ export class AccountManager extends Panel {
               }
             );
           };
-          M.Autocomplete.init(role_input.element, {
+          M.Autocomplete.init(document.getElementById(role_input.element.id), {
             data: data,
             onAutocomplete: onAutocomplete
           });

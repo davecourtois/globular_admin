@@ -410,7 +410,7 @@ export class MainPage {
         id: "main_tabs_tab_0",
         class: "grey-text text-darken-3",
         href: "javascript:void(0)",
-        innerHtml: "Services"
+        innerHtml: "Server"
       })
       .up()
       .appendElement({ tag: "li", class: "tab col s2" })
@@ -523,9 +523,9 @@ export class MainPage {
 
     // The tab content.
     let tab_1_content = this.container
-    .appendElement({ tag: "div", style: "display: none" })
-    .down();
-  this.accountPanel.setParent(tab_1_content);
+      .appendElement({ tag: "div", style: "display: none" })
+      .down();
+    this.accountPanel.setParent(tab_1_content);
 
     let tab_2_content = this.container
       .appendElement({ tag: "div", style: "display: none" })
@@ -533,9 +533,9 @@ export class MainPage {
     this.rolePanel.setParent(tab_2_content);
 
     let tab_3_content = this.container
-    .appendElement({ tag: "div", style: "display: none" })
-    .down();
-  this.PeerPanel.setParent(tab_3_content);
+      .appendElement({ tag: "div", style: "display: none" })
+      .down();
+    this.PeerPanel.setParent(tab_3_content);
 
     let tab_4_content = this.container
       .appendElement({ tag: "div", style: "display: none" })
@@ -679,6 +679,12 @@ export class MainPage {
     let div = container
       .appendElement({
         tag: "div",
+        class: "row",
+        style: "margin-bottom: 5px; padding-left: 10px; font-size: medium;",
+        innerHtml: "Installed services"
+      })
+      .appendElement({
+        tag: "div",
         class: "row"
       })
       .down()
@@ -746,7 +752,7 @@ export class MainPage {
             globular.config.Services[key],
             key,
             title
-          );         
+          );
         } else {
           servicePanel = new ServicePanel(
             globular.config.Services[key],

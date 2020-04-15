@@ -1,4 +1,5 @@
 import { Panel } from './panel';
+import { randomUUID } from './utility';
 
 /**
  * That represent a single configuration information ex.
@@ -187,15 +188,14 @@ export class ConfigurationTextLine extends ConfigurationLine {
         }
 
         if(value == undefined){
-            console.log("no value found for attribute ", name)
             return
         }
 
         // Set the value div.
-        this.valueDiv = this.content.appendElement({ "tag": "div", "id": name + "_div", "class": "col s12 m8", "innerHtml": value.toString() }).down()
+        this.valueDiv = this.content.appendElement({ "tag": "div", "id": randomUUID() + "_div", "class": "col s12 m8", "innerHtml": value.toString() }).down()
 
         // Set the value editor.
-        this.valueEditor = this.content.appendElement({ "tag": "input", "id": name + "_input", "style": "display: none;", "class": "col s12 m8", "type": type, "value": value }).down()
+        this.valueEditor = this.content.appendElement({ "tag": "input", "id": randomUUID() + "_input", "style": "display: none;", "class": "col s12 m8", "type": type, "value": value }).down()
 
         this.valueEditor.element.onchange = () => {
             // set the value in the interface.
@@ -230,7 +230,6 @@ export class ConfigurationToggleLine extends ConfigurationLine {
         super(panel, name, label, content);
         let value = this.getValue()
         if(value== null){
-            console.log("---> propertie " + name  + " is null!")
             return
         }
 
@@ -241,14 +240,16 @@ export class ConfigurationToggleLine extends ConfigurationLine {
         this.valueEditor = this.content
             .appendElement({ "tag": "div", "class": "switch col s12 m8", "style": "display: none;" }).down()
 
+        let uuid = randomUUID()
+
         this.valueEditor.appendElement({ "tag": "label" }).down()
             .appendElement({ "tag": "span", "innerHtml": labels[1] })
-            .appendElement({ "tag": "input", "id": name + "_input", "type": "checkbox" })
+            .appendElement({ "tag": "input", "id": uuid, "type": "checkbox" })
             .appendElement({ "tag": "span", "class": "lever" })
             .appendElement({ "tag": "span", "innerHtml": labels[0] })
 
         if (value == true) {
-            this.valueEditor.getChildById(name + "_input").element.click()
+            this.valueEditor.getChildById(uuid).element.click()
         }
 
         this.valueEditor.element.onchange = () => {
@@ -259,12 +260,12 @@ export class ConfigurationToggleLine extends ConfigurationLine {
 
         // Return the value of the input.
         this.valueEditor.getValue = function () {
-            return this.getChildById(name + "_input").element.checked
+            return this.getChildById(uuid).element.checked
         }
 
         // Return the value of the input.
         this.valueEditor.setValue = function (v: any) {
-            this.getChildById(name + "_input").element.checked = v
+            this.getChildById(uuid).element.checked = v
         }
 
         // Return the value of the input.
@@ -450,7 +451,7 @@ export class ConfigurationPanel extends Panel {
             .appendElement({ "tag": "div", "class": "col s12 /*m10 offset-m1*/" }).down()
             .appendElement({ "tag": "div", "class": "card" }).down()
             .appendElement({ "tag": "div", "class": "card-content" }).down()
-            .appendElement({ "tag": "span", "class": "card-title", "style": "font-size: 1.5em;", "innerHtml": title })
+            .appendElement({ "tag": "span", "class": "card-title", "style": "font-size: medium; font-weight: inherit;", "innerHtml": title })
             .appendElement({ "tag": "div", "id": "content" })
 
             // The action buttons.

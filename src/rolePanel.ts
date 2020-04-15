@@ -9,6 +9,7 @@ import {
   DeleteRole,
   getErrorMessage
 } from "./backend";
+import { randomUUID } from "./utility";
 
 export class RolePanel extends Panel {
   private editable: boolean;
@@ -80,6 +81,7 @@ export class RolePanel extends Panel {
         }
       }
     } else {
+ 
       // Here I will append the actions list.
       let action_input = actions_div
         .prependElement({ tag: "div", class: "row" })
@@ -89,7 +91,8 @@ export class RolePanel extends Panel {
         .appendElement({
           tag: "input",
           class: "autocomplete",
-          placeholder: "New Action"
+          placeholder: "New Action",
+          id: randomUUID()
         })
         .down();
 
@@ -138,10 +141,13 @@ export class RolePanel extends Panel {
           }
         );
       };
-      M.Autocomplete.init(action_input.element, {
+
+
+      M.Autocomplete.init(document.getElementById(action_input.element.id), {
         data: data,
         onAutocomplete: onAutocomplete
       });
+
 
       // Now the actions...
       if (role.actions != undefined) {
@@ -223,7 +229,7 @@ export class RolePanel extends Panel {
               class: "material-icons col s1",
               title: "Append new role",
               innerHtml: "group_add",
-              style:"margin-top: 10px; text-align: end;"
+              style: "margin-top: 10px; text-align: end;"
             })
             .down();
 

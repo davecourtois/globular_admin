@@ -125,6 +125,7 @@ class ActionPermissionManager extends Panel {
         (actions: Array<string>) => {
           // In that case I wil get the list of all operations.
           // Here I will append the actions list.
+          let uuid = randomUUID()
           let action_input = content
             .prependElement({ tag: "div", class: "row" })
             .down()
@@ -133,7 +134,8 @@ class ActionPermissionManager extends Panel {
             .appendElement({
               tag: "input",
               class: "autocomplete",
-              placeholder: "New Action"
+              placeholder: "New Action",
+              id: uuid
             })
             .down();
 
@@ -160,10 +162,12 @@ class ActionPermissionManager extends Panel {
 
           // call after the ressource actions are retreived.
           let callback = () => {
-            M.Autocomplete.init(action_input.element, {
-              data: data,
-              onAutocomplete: onAutocomplete
-            });
+            
+              M.Autocomplete.init(document.getElementById(uuid), {
+                data: data,
+                onAutocomplete: onAutocomplete
+              });
+            
           }
 
           readAllActionPermission(
@@ -454,7 +458,7 @@ class RessourcesPanel extends Panel {
         let dir = new RessourceDir(path_)
         this.ressources.set(path_, dir);
       }
-     
+
       // append the dir.
       if (this.ressources.has(parent)) {
         this.ressources.get(parent).appendRessourceDir(this.ressources.get(path_))

@@ -2,6 +2,7 @@ import { Panel } from "./panel";
 import { GetAllApplicationsInfo, getAllActions, getErrorMessage, AppendActionToApplication, RemoveActionFromApplication, DeleteApplication } from "./backend";
 import * as M from "materialize-css";
 import "materialize-css/sass/materialize.scss";
+import { randomUUID } from "./utility";
 
 /**
  * This class is use to manage file on the server.
@@ -73,10 +74,11 @@ export class ApplicationManager extends Panel {
         }
       }
     } else {
+
       // Here I will append the actions list.
       let action_input = actions_div.prependElement({ tag: "div", class: "row" }).down()
         .appendElement({ tag: "div", class: "input-field col s12" }).down()
-        .appendElement({ tag: "input", class: "autocomplete", placeholder: "New Action" }).down()
+        .appendElement({ tag: "input", id:randomUUID(), class: "autocomplete", placeholder: "New Action" }).down()
 
       getAllActions(
         (actions: any) => {
@@ -125,7 +127,7 @@ export class ApplicationManager extends Panel {
             );
 
           }
-          M.Autocomplete.init(action_input.element, { data: data, onAutocomplete: onAutocomplete })
+          M.Autocomplete.init(document.getElementById(action_input.element.id), { data: data, onAutocomplete: onAutocomplete })
 
         },
         (err: any) => {

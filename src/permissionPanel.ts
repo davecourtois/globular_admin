@@ -337,6 +337,7 @@ export class PermissionExplorer extends Panel {
 
       // here I will append the list of all account...
       GetAllAccountsInfo((accounts: Array<any>) => {
+
         // The user permission input.
         let user_input = inputUserRow
           .appendElement({ tag: "div", class: "input-field col s4" })
@@ -344,7 +345,8 @@ export class PermissionExplorer extends Panel {
           .appendElement({
             tag: "input",
             class: "autocomplete",
-            placeholder: "Append User Permission"
+            placeholder: "Append User Permission",
+            id: randomUUID()
           })
           .down();
 
@@ -407,12 +409,10 @@ export class PermissionExplorer extends Panel {
             })
         }
 
-        M.Autocomplete.init(user_input.element, {
+        M.Autocomplete.init(document.getElementById(user_input.element.id), {
           data: data_0,
           onAutocomplete: onAutocomplete_0
         });
-
-
         // The owner input.
         let owner_input = ownersPermissionRow
           .appendElement({ tag: "div", class: "input-field col s4" })
@@ -420,7 +420,8 @@ export class PermissionExplorer extends Panel {
           .appendElement({
             tag: "input",
             class: "autocomplete",
-            placeholder: "Append User Permission"
+            placeholder: "Append User Permission",
+            id: randomUUID()
           })
           .down();
 
@@ -459,7 +460,7 @@ export class PermissionExplorer extends Panel {
             })
         }
 
-        M.Autocomplete.init(owner_input.element, {
+        M.Autocomplete.init(document.getElementById(owner_input.element.id), {
           data: data_1,
           onAutocomplete: onAutocomplete_1
         });
@@ -477,7 +478,6 @@ export class PermissionExplorer extends Panel {
       .appendElement({ tag: "div", class: "row", style: "margin-bottom: 0px;" }).down()
 
     if (this.editable == true) {
-
       // here I will append the list of all account...
       getAllRoles((roles: Array<any>) => {
         let role_input = inputRoleRow
@@ -486,7 +486,8 @@ export class PermissionExplorer extends Panel {
           .appendElement({
             tag: "input",
             class: "autocomplete",
-            placeholder: "Append Role Permission"
+            placeholder: "Append Role Permission",
+            id:randomUUID()
           })
           .down();
 
@@ -551,7 +552,7 @@ export class PermissionExplorer extends Panel {
             })
         }
 
-        M.Autocomplete.init(role_input.element, {
+        M.Autocomplete.init(document.getElementById(role_input.element.id), {
           data: data,
           onAutocomplete: onAutocomplete
         });
@@ -577,7 +578,8 @@ export class PermissionExplorer extends Panel {
           .appendElement({
             tag: "input",
             class: "autocomplete",
-            placeholder: "Append Application Permission"
+            placeholder: "Append Application Permission",
+            id: randomUUID()
           })
           .down();
 
@@ -640,7 +642,7 @@ export class PermissionExplorer extends Panel {
             })
         }
 
-        M.Autocomplete.init(application_input.element, {
+        M.Autocomplete.init(document.getElementById(application_input.element.id), {
           data: data,
           onAutocomplete: onAutocomplete
         });
