@@ -18,6 +18,11 @@ export class PlcExporterConfigPanel extends ServicePanel {
     onlogin(data: any) {
         super.onlogin(data);
 
+        // Do nothing in case the tags are ready exist.
+        if (this.content.getChildById("tags_div") != undefined) {
+            return;
+        }
+
         this.plcServices = new Map<string, any>()
         this.plcServicesIds = new Array<string>()
 
@@ -26,11 +31,6 @@ export class PlcExporterConfigPanel extends ServicePanel {
                 this.plcServices.set(id, data.Services[id])
                 this.plcServicesIds.push(id)
             }
-        }
-
-        // Do nothing in case the tags are ready exist.
-        if (this.content.getChildById("tags_div") != undefined) {
-            return;
         }
 
         // Here i will initialyse specifig configurations option.

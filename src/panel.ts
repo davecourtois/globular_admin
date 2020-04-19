@@ -53,6 +53,7 @@ export class Panel {
 
   onlogout() {
     // overide...
+    
   }
 
   close() {

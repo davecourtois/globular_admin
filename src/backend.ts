@@ -9,7 +9,9 @@ import {
   StartServiceRequest,
   SaveConfigResponse,
   SetEmailRequest,
-  SetPasswordRequest
+  SetPasswordRequest,
+  UninstallServiceRequest,
+  UninstallServiceResponse
 } from "globular-web-client/lib/admin/admin_pb";
 import {
   QueryRangeRequest,
@@ -175,6 +177,7 @@ export function readFullConfig(
       })
       .then(rsp => {
         config = JSON.parse(rsp.getResult());
+        globular.config = config; // set the globular config with the full config.
         callback(config);
       })
       .catch(err => {
@@ -1075,12 +1078,6 @@ export function authenticate(
       }, (err: any) => {
         errorCallback(err)
       })
-
-
-      // Refresh the token at session timeout
-      setTimeout(() => {
-        refreshToken(errorCallback);
-      }, globular.config.SessionTimeout.valueOf()); // 1 second before token expire.
     })
     .catch(err => {
       console.log(err)
@@ -1088,7 +1085,12 @@ export function authenticate(
     });
 }
 
-function refreshToken(onError: (err: any) => void) {
+/**
+ * Function to be use to refresh token or full configuration.
+ * @param callback On success callback
+ * @param errorCallback On error callback
+ */
+export function refreshToken(callback:(token:any)=>void, errorCallback: (err: any) => void) {
   let rqst = new RefreshTokenRqst();
   rqst.setToken(localStorage.getItem("user_token"));
 
@@ -1106,16 +1108,18 @@ function refreshToken(onError: (err: any) => void) {
       localStorage.setItem("user_token", token);
       localStorage.setItem("user_name", (<any>decoded).username);
 
-      // Publish local login event.
-      eventHub.publish("onlogin", decoded, true);
+      readFullConfig((config: any) => {
+        // Publish local login event.
+        eventHub.publish("onlogin", config, true); // return the full config...
+        
+        callback(decoded);
+      }, (err: any) => {
+        errorCallback(err)
+      })
 
-      // Refresh the token at session timeout
-      setTimeout(() => {
-        refreshToken(onError);
-      }, globular.config.SessionTimeout.valueOf()); // 1 second before token expire.
     })
     .catch((err: any) => {
-      onError(err);
+      onerror(err);
     });
 }
 
@@ -1578,7 +1582,6 @@ export function findServices(
   globular.servicesDicovery
     .findServices(rqst, { application: application, domain: domain })
     .then((rsp: FindServicesDescriptorResponse) => {
-      console.log(rsp);
       callback(rsp.getResultsList());
     })
     .catch((err: any) => {
@@ -1592,7 +1595,7 @@ export function installService(
   publisherId: string,
   version: string,
   callback: () => void,
-  errorCallback:(err:any)=>void
+  errorCallback: (err: any) => void
 ) {
   let rqst = new InstallServiceRequest();
   rqst.setPublisherid(publisherId);
@@ -1610,7 +1613,7 @@ export function installService(
       console.log("---> service install");
       callback();
     }).catch(
-      (err:any)=>{
+      (err: any) => {
         errorCallback(err);
       }
     );
@@ -1677,6 +1680,30 @@ export function saveService(
       // The service with updated values...
       let service = JSON.parse(rsp.getResult());
       callback(service);
+    })
+    .catch((err: any) => {
+      errorCallback(err)
+    });
+}
+
+export function uninstallService(
+  service: GlobularWebClient.IServiceConfig,
+  callback: () => void,
+  errorCallback: (err: any) => void
+) {
+  let rqst = new UninstallServiceRequest
+  rqst.setServiceid(service.Id)
+  rqst.setPublisherid(service.PublisherId)
+  rqst.setVersion(service.Version)
+
+  globular.adminService
+    .uninstallService(rqst, {
+      token: localStorage.getItem("user_token"),
+      application: application, domain: domain
+    })
+    .then((rsp: UninstallServiceResponse) => {
+      // The service with updated values...
+      callback();
     })
     .catch((err: any) => {
       errorCallback(err)

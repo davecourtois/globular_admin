@@ -1,6 +1,7 @@
 import { Panel } from "./panel";
-import { findServices, installService, getErrorMessage } from "./backend";
+import { findServices, installService, getErrorMessage, eventHub, uninstallService, refreshToken, globular } from "./backend";
 import { ServiceDescriptor } from "globular-web-client/lib/services/services_pb";
+import { randomUUID } from "./utility";
 
 /**
  * Search panel is use to retreive services on registerd discoveries.
@@ -8,7 +9,6 @@ import { ServiceDescriptor } from "globular-web-client/lib/services/services_pb"
 export class SearchServicesPanel extends Panel {
   private resultsPanel: any;
   private isAdmin: boolean;
-  private fullConfig: any;
 
   constructor() {
     super("search_panel");
@@ -28,7 +28,7 @@ export class SearchServicesPanel extends Panel {
         let descriptorPanel = new ServiceDescriptorPanel(services[i]);
         descriptorPanel.setParent(this.resultsPanel);
         if (this.isAdmin) {
-          descriptorPanel.onlogin(this.fullConfig);
+          descriptorPanel.onlogin(globular.config);
         }
       }
     });
@@ -36,7 +36,6 @@ export class SearchServicesPanel extends Panel {
 
   onlogin(data: any) {
     this.isAdmin = true;
-    this.fullConfig = data;
   }
 
   onlogout() {
@@ -51,10 +50,11 @@ class ServiceDescriptorPanel extends Panel {
   private descriptor: ServiceDescriptor;
   private content: any;
   private installBtn: any;
-  private uninstallBtn:any;
-  private updateBtn:any;
+  private uninstallBtn: any;
+  private updateBtn: any;
   private btnGroup: any;
   private idInput: any;
+  private idDiv: any;
 
   constructor(descriptor: ServiceDescriptor) {
     // Set the panel id.
@@ -69,6 +69,37 @@ class ServiceDescriptorPanel extends Panel {
 
     // keep track of the service diplayed.
     this.descriptor = descriptor;
+
+    let install_btn_id = randomUUID()
+    let id_input = randomUUID()
+    let id_div = randomUUID()
+    let uninstall_btn_id = randomUUID()
+    let update_btn_id = randomUUID()
+
+    // In case the service is uninstall...
+    eventHub.subscribe(
+      "uninstall_service_event",
+      (uuid: string) => {
+        //console.log("start_service_event_" + id, uuid);
+      },
+      (evt: any) => {
+        console.log("----> test")
+        this.setButtons()
+      },
+      true
+    );
+
+    eventHub.subscribe(
+      "install_service_event",
+      (uuid: string) => {
+        //console.log("start_service_event_" + id, uuid);
+      },
+      (evt: any) => {
+        console.log("----> test")
+        this.setButtons()
+      },
+      true
+    );
 
     // Display general information.
     this.div
@@ -95,47 +126,49 @@ class ServiceDescriptorPanel extends Panel {
         style: "text-align: right; display: none; align-items: baseline;"
       })
       .down()
-      .appendElement({ tag: "div", class: "input-field col s4 offset-s6" })
+      .appendElement({ tag: "div", id: id_div, class: "input-field col s4 offset-s6" })
       .down()
       .appendElement({
         tag: "input",
-        id: this.id + "_install_id_input",
+        id: id_input,
         placeholder: "service id",
         title: "the is of the service on the server.",
         type: "text"
       })
-      .appendElement({ tag: "label", for: this.id + "_install_id_input" })
+      .appendElement({ tag: "label", for: id_input, innerHtml: "service id" })
       .up()
       .appendElement({
         tag: "a",
-        id: this.id + "_install_btn",
+        id: install_btn_id,
         href: "javascript:void(0)",
-        class: "waves-effect waves-light btn disabled col s2",
+        class: "waves-effect waves-light btn col s2",
         innerHtml: "Install"
       })
       .appendElement({
         tag: "a",
-        id: this.id + "_update_btn",
+        id: update_btn_id,
         href: "javascript:void(0)",
-        class: "waves-effect waves-light btn disabled col s2",
+        class: "waves-effect waves-light btn col s2",
         style: "display: none;",
         innerHtml: "Update"
       })
       .appendElement({
         tag: "a",
-        id: this.id + "_uninstall_btn",
+        id: uninstall_btn_id,
         href: "javascript:void(0)",
-        class: "waves-effect waves-light btn disabled col s2",
+        class: "waves-effect waves-light btn col s2",
         style: "display: none;",
         innerHtml: "Uninstall"
       })
 
-    this.installBtn = this.div.getChildById(this.id + "_install_btn");
-    this.uninstallBtn = this.div.getChildById(this.id + "_uinstall_btn");
-    this.updateBtn = this.div.getChildById(this.id + "_update_btn");
+
+    this.installBtn = this.div.getChildById(install_btn_id);
+    this.uninstallBtn = this.div.getChildById(uninstall_btn_id);
+    this.updateBtn = this.div.getChildById(update_btn_id);
     this.content = this.div.getChildById("content");
     this.btnGroup = this.div.getChildById("btn_group");
-    this.idInput = this.div.getChildById(this.id + "_install_id_input");
+    this.idInput = this.div.getChildById(id_input);
+    this.idDiv = this.div.getChildById(id_div);
 
     // Display the publisher id.
     this.content
@@ -190,6 +223,31 @@ class ServiceDescriptorPanel extends Panel {
       .down();
 
     // Now actions...
+    this.installBtn.element.onclick = () => {
+      installService(
+        descriptor.getDiscoveriesList()[0],
+        descriptor.getId(),
+        descriptor.getPublisherid(),
+        descriptor.getVersion(),
+        () => {
+          // here I will refresh the token and set the full config...
+          refreshToken(
+            () => {
+              eventHub.publish("install_service_event", descriptor.getId(), true)
+              M.toast({ html: "Service " + descriptor.getId() + " installed successfully!", displayLength: 3000 });
+              // refresh the panel again to set the new service to admin mode.
+              eventHub.publish("onlogin", globular.config, true)
+            },
+            (err: any) => {
+              M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
+            })
+        },
+        (err: any) => {
+          M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
+        }
+      );
+    }
+
     this.idInput.element.onkeyup = (evt: any) => {
       let value = this.idInput.element.value.replace(/\s/g, "");
 
@@ -205,8 +263,17 @@ class ServiceDescriptorPanel extends Panel {
           descriptor.getPublisherid(),
           descriptor.getVersion(),
           () => {
-            
-            M.toast({ html: "Service " + descriptor.getId() + " installed successfully!", displayLength: 3000 });
+            refreshToken(
+              () => {
+                eventHub.publish("install_service_event", descriptor.getId(), true)
+                M.toast({ html: "Service " + descriptor.getId() + " installed successfully!", displayLength: 3000 });
+                // refresh the panel again to set the new service to admin mode.
+                eventHub.publish("onlogin", globular.config, true)
+              },
+              (err: any) => {
+                M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
+              })
+
           },
           (err: any) => {
             M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
@@ -216,16 +283,53 @@ class ServiceDescriptorPanel extends Panel {
     };
   }
 
-  onlogin(data: any) {
+  setButtons() {
     // Display textual input
     this.btnGroup.element.style.display = "flex";
 
-    if(data.Services[this.descriptor.getId()] != undefined){
+    // look better without it... uncomment if necessary.
+    M.updateTextFields();
+    this.idInput.element.value = this.descriptor.getId();
+
+    if (globular.config.Services[this.descriptor.getId()] != undefined) {
+
+
       // The service is already install.
-      let service = data.Services[this.descriptor.getId()]
-      console.log("----> ", service)
+      let service = globular.config.Services[this.descriptor.getId()];
+      this.uninstallBtn.element.style.display = "block";
+
+      if (this.descriptor.getVersion() != service.Version) {
+        this.updateBtn.element.style.display = "block";
+      }
+
+      this.installBtn.element.style.display = "none";
+      this.idDiv.element.style.display = "none";
+
+      this.uninstallBtn.element.onclick = (evt: any) => {
+        evt.stopPropagation();
+        uninstallService(service, () => {
+          delete globular.config.Services[this.descriptor.getId()]
+          eventHub.publish("uninstall_service_event", this.descriptor.getId(), true)
+          M.toast({ html: "Service " + this.descriptor.getId() + " was uninstalled successfully!", displayLength: 3000 });
+       
+        },
+          (err: any) => {
+
+            M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
+          });
+
+      };
+    }else{
+      this.installBtn.element.style.display = "";
+      this.idDiv.element.style.display = "";
+      this.uninstallBtn.element.style.display = "none";
+      this.updateBtn.element.style.display = "none";
     }
-    
+  }
+
+  onlogin(data: any) {
+    // keep a pointer to the full configuration.
+    this.setButtons()
   }
 
   onlogout() {

@@ -1,5 +1,5 @@
 import { Panel } from "./panel";
-import { GetAllFilesInfo, eventHub,  getErrorMessage, renameFile, deleteDir, deleteFile, downloadDir, createDir, downloadFileHttp } from "./backend";
+import { GetAllFilesInfo, eventHub, getErrorMessage, renameFile, deleteDir, deleteFile, downloadDir, createDir, downloadFileHttp } from "./backend";
 import { randomUUID } from "./utility";
 import { PermissionExplorer } from "./permissionPanel";
 
@@ -13,7 +13,7 @@ export class FileManager extends Panel {
   private webRoot: any; // contain all file information.
   private directories: Map<string, any>;
 
-  constructor(id:string) {
+  constructor(id: string) {
     super(id);
     this.div.element.className = "row";
     this.directories = new Map<string, any>();
@@ -27,7 +27,7 @@ export class FileManager extends Panel {
     // Create the permission explorer.
     this.permissionExplorer = new PermissionExplorer("file_permission_explorer", this.div);
 
-    
+
     // first off all will get the file info that contain all directory and file information.
     GetAllFilesInfo(
       (filesInfo: any) => {
@@ -333,6 +333,20 @@ class PathNavigator extends Panel {
         xhr.open('POST', "/uploads", true);
         xhr.setRequestHeader("token", localStorage.getItem("user_token"))
         xhr.setRequestHeader("application", "admin")
+        xhr.setRequestHeader("domain", window.location.hostname)
+        xhr.onerror = (err: any) => {
+
+        }
+        xhr.onreadystatechange = () => {
+          if (xhr.readyState === 4) {   //if complete
+            if (xhr.status === 200) {  //check if "OK" (200)
+              //success
+            } else {
+              M.toast({ html: "Permission denied to upload file " + path, displayLength: 2000 });
+            }
+          }
+        }
+        
         xhr.send(fd);
       }
 
@@ -403,7 +417,7 @@ class FilePanel {
       let file_edit_lnk = randomUUID()
       let file_save_lnk = randomUUID()
       let file_lnk = randomUUID()
-      
+
       // The file name link...
       this.div
         .appendElement({
@@ -672,7 +686,7 @@ class FilePanel {
         }
 
         ico.element.onclick = () => {
-          eventHub.publish("set_file_event", {id: "file_permission_explorer", file: file }, true);
+          eventHub.publish("set_file_event", { id: "file_permission_explorer", file: file }, true);
         }
 
         // On follow link
@@ -690,7 +704,7 @@ class FilePanel {
         lnk.element.onmouseenter = function () {
           this.style.cursor = "pointer";
         };
-  
+
         lnk.element.onmouseleave = function () {
           this.style.cursor = "default";
         };
@@ -702,7 +716,7 @@ class FilePanel {
         };
       }
 
-      ico.element.onmouseenter =  function () {
+      ico.element.onmouseenter = function () {
         this.style.cursor = "pointer";
       };
 

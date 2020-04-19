@@ -200,7 +200,7 @@ export class LogManager extends Panel {
             this.errors.push(info)
             this.errorsPanel.displayLogs(this.errors);
             // diplay the message in the toast to get attention of the admin.
-            M.toast({ html: evt.message.replace(new RegExp('\r?\n', 'g')), displayLength: 4000 });
+            M.toast({ html: evt.message.replace(new RegExp('\r?\n', 'g'), "<br />"), displayLength: 4000 });
           } else {
             info.setType(LogType.INFO)
             this.logs.push(info)
@@ -222,7 +222,7 @@ export class LogManager extends Panel {
           this.consoles.push(info)
           this.servicesConsole.displayLogs(this.consoles);
           // diplay the message in the toast to get attention of the admin.
-          M.toast({ html: evt.message.replace(new RegExp('\r?\n', 'g')), displayLength: 4000 });
+          M.toast({ html: evt.message.replace(new RegExp('\r?\n', 'g'), "<br />"), displayLength: 4000 });
         }
 
       }, false)

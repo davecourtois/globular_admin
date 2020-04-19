@@ -1,10 +1,12 @@
 import { ServicePanel } from "../servicePanel"
 import { IServiceConfig } from "globular-web-client"
+import { ConfigurationTextLine } from "../configurationPanel";
 
 /**
  * The sql service admin configuration interface.
  */
 export class FileServicePanel extends ServicePanel {
+    private rootTextLine: ConfigurationTextLine;
 
     constructor(service: IServiceConfig, id: string, name: string) {
         super(service, id, name)
@@ -12,19 +14,15 @@ export class FileServicePanel extends ServicePanel {
 
     onlogin(data: any) {
         super.onlogin(data);
-
-        // Do nothing in case the connections are ready exist.
-        if (this.content.getChildById("connections_div") != undefined) {
-            return;
+        if(this.rootTextLine == undefined){
+            // simply append the root variable.
+            this.rootTextLine = this.appendTextualConfig("Root");
         }
-
-        // simply append the root variable.
-        let rootTextLine = this.appendTextualConfig("Root");
-        rootTextLine.unlock()
+        this.rootTextLine.unlock()
     }
 
     onlogout() {
         super.onlogout();
-        console.log("---------> logout...")
+        this.rootTextLine.lock()
     }
 }

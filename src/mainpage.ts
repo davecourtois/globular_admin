@@ -51,11 +51,45 @@ export class MainPage {
   private applicationPanel: ApplicationManager;
   private logPanel: LogManager;
   private PeerPanel: PeerManager;
+  private servicesPanel: Map<string, ServicePanel>;
 
   constructor() {
     // Here I will create the main container.
     this.div = createElement(null, { tag: "div", style: "position: relative" });
     document.body.appendChild(this.div.element);
+
+    this.servicesPanel = new Map<string, ServicePanel>();
+
+    eventHub.subscribe(
+      "install_service_event",
+      (uuid: string) => {
+         //console.log("install_service_event", uuid);
+      },
+      (evt: any) => {
+        this.showGeneralInfo()
+      },
+      true
+    );
+
+    eventHub.subscribe(
+      "uninstall_service_event",
+      (uuid: string) => {
+        //console.log("uninstall_service_event", uuid);
+      },
+      (evt: any) => {
+        // close the listeners.
+        this.servicesPanel.get(evt).close()
+        // remove the panel.
+        let deleted = this.servicesPanel.delete(evt)
+        // refresh the services.
+        if(deleted){
+          this.showGeneralInfo()
+        }
+      },
+      true
+    );
+
+
 
     ////////////////////////////// Navigation //////////////////////////////
     // Now Will create the navbar.
@@ -698,69 +732,77 @@ export class MainPage {
         let title = key.replace("_", " ");
         let servicePanel: ServicePanel;
 
-        // Here I will instantiate the correct service configuration interface.
-        if (globular.config.Services[key].Name == "sql_server") {
-          servicePanel = new SqlServicePanel(
-            globular.config.Services[key],
-            key,
-            title
-          );
-        } else if (globular.config.Services[key].Name == "smtp_server") {
-          servicePanel = new SmtpServicePanel(
-            globular.config.Services[key],
-            key,
-            title
-          );
-        } else if (globular.config.Services[key].Name == "ldap_server") {
-          servicePanel = new LdapServicePanel(
-            globular.config.Services[key],
-            key,
-            title
-          );
-        } else if (globular.config.Services[key].Name == "persistence_server") {
-          servicePanel = new PersistenceServicePanel(
-            globular.config.Services[key],
-            key,
-            title
-          );
-        } else if (globular.config.Services[key].Name == "file_server") {
-          servicePanel = new FileServicePanel(
-            globular.config.Services[key],
-            key,
-            title
-          );
-        } else if (globular.config.Services[key].Name == "dns_server") {
-          servicePanel = new DnsServicePanel(
-            globular.config.Services[key],
-            key,
-            title
-          );
-        } else if (globular.config.Services[key].Name.startsWith("plc_server_")) {
-          servicePanel = new PlcServerConfigPanel(
-            globular.config.Services[key],
-            key,
-            title
-          );
-        } else if (globular.config.Services[key].Name.startsWith("plc_exporter")) {
-          servicePanel = new PlcExporterConfigPanel(
-            globular.config.Services[key],
-            key,
-            title
-          );
-        } else if (globular.config.Services[key].Name.startsWith("plc_link")) {
-          servicePanel = new PlcLinkConfigPanel(
-            globular.config.Services[key],
-            key,
-            title
-          );
-        } else {
-          servicePanel = new ServicePanel(
-            globular.config.Services[key],
-            key,
-            title
-          );
-        }
+        if (!this.servicesPanel.has(key)) {
+          // Here I will instantiate the correct service configuration interface.
+          if (globular.config.Services[key].Name == "sql_server") {
+            servicePanel = new SqlServicePanel(
+              globular.config.Services[key],
+              key,
+              title
+            );
+          } else if (globular.config.Services[key].Name == "smtp_server") {
+            servicePanel = new SmtpServicePanel(
+              globular.config.Services[key],
+              key,
+              title
+            );
+          } else if (globular.config.Services[key].Name == "ldap_server") {
+            servicePanel = new LdapServicePanel(
+              globular.config.Services[key],
+              key,
+              title
+            );
+          } else if (globular.config.Services[key].Name == "persistence_server") {
+            servicePanel = new PersistenceServicePanel(
+              globular.config.Services[key],
+              key,
+              title
+            );
+          } else if (globular.config.Services[key].Name == "file_server") {
+            servicePanel = new FileServicePanel(
+              globular.config.Services[key],
+              key,
+              title
+            );
+          } else if (globular.config.Services[key].Name == "dns_server") {
+            servicePanel = new DnsServicePanel(
+              globular.config.Services[key],
+              key,
+              title
+            );
+          } else if (globular.config.Services[key].Name.startsWith("plc_server_")) {
+            servicePanel = new PlcServerConfigPanel(
+              globular.config.Services[key],
+              key,
+              title
+            );
+          } else if (globular.config.Services[key].Name.startsWith("plc_exporter")) {
+            servicePanel = new PlcExporterConfigPanel(
+              globular.config.Services[key],
+              key,
+              title
+            );
+          } else if (globular.config.Services[key].Name.startsWith("plc_link")) {
+            servicePanel = new PlcLinkConfigPanel(
+              globular.config.Services[key],
+              key,
+              title
+            );
+          } else {
+            servicePanel = new ServicePanel(
+              globular.config.Services[key],
+              key,
+              title
+            );
+          }
 
+          servicePanel.btnGroup.element.style.display = "none";
+
+          // set for further use
+          this.servicesPanel.set(key, servicePanel);
+        }else{
+          servicePanel = this.servicesPanel.get(key)
+        }
 
         // Here I will create the tab...
         let panel = div
@@ -777,7 +819,8 @@ export class MainPage {
             tag: "span",
             id: key + "_state",
             class: "col s6 right-align",
-            innerHtml: globular.config.Services[key].State
+            innerHtml: globular.config.Services[key].State,
+
           })
           .appendElement(servicePanel.actionBtnGroup)
           .up()
@@ -786,8 +829,8 @@ export class MainPage {
 
         panel.appendElement(servicePanel.content);
         panel.appendElement(servicePanel.btnGroup);
-        servicePanel.btnGroup.element.style.display = "none";
-        servicePanel.stateDiv = div.getChildById(key + "_state");
+        servicePanel.setStateDiv(div.getChildById(key + "_state"));
+
       }
     }
     // initialyse the tab component.

@@ -37,7 +37,7 @@ export class ConfigurationLine {
         this._label = value;
     }
 
-    getValueEditor(): any{
+    getValueEditor(): any {
         return this.valueEditor;
     }
 
@@ -101,14 +101,14 @@ export class ConfigurationLine {
     /**
      * Hide the line
      */
-    hide(){
+    hide() {
         this.content.element.style.display = "none";
     }
 
     /**
      * Show the line.
      */
-    show(){
+    show() {
         this.content.element.style.display = "";
     }
 }
@@ -118,7 +118,7 @@ export class ConfigurationEnum extends ConfigurationLine {
     constructor(panel: ConfigurationPanel, name: string, options: Array<string>, label: string, content: any, numericIndex: boolean) {
         super(panel, name, label, content);
         let value = this.getValue()
-        if(value== null){
+        if (value == null) {
             return
         }
 
@@ -129,19 +129,19 @@ export class ConfigurationEnum extends ConfigurationLine {
         this.valueEditor = this.content.appendElement({ "tag": "select", "id": name + "_select", "style": "display: none;", class: "browser-default col s12 m8" }).down()
 
         this.valueEditor.isNumeric = numericIndex;
-        let i:number;
+        let i: number;
         for (i = 0; i < options.length; i++) {
-            if(!numericIndex){
+            if (!numericIndex) {
                 this.valueEditor.appendElement({ tag: "option", value: options[i], innerHtml: options[i] }).down()
-            }else{
+            } else {
                 this.valueEditor.appendElement({ tag: "option", value: i, innerHtml: options[i] }).down()
             }
         }
 
         M.FormSelect.init(this.valueEditor.element)
-        if(numericIndex == true){
+        if (numericIndex == true) {
             this.valueEditor.element.selectedIndex = value
-        }else{
+        } else {
             this.valueEditor.element.selectedIndex = options.indexOf(value)
         }
 
@@ -153,9 +153,9 @@ export class ConfigurationEnum extends ConfigurationLine {
         }
 
         // Return the value of the input.
-        this.valueEditor.getValue =  ()=> {
+        this.valueEditor.getValue = () => {
             let value = this.valueEditor.element.value
-            if(this.valueEditor.isNumeric == true){
+            if (this.valueEditor.isNumeric == true) {
                 value = parseInt(value)
             }
             return value
@@ -178,7 +178,7 @@ export class ConfigurationTextLine extends ConfigurationLine {
     constructor(panel: ConfigurationPanel, name: string, label: string, content: any, type?: string, step?: number, min?: number, max?: number) {
         super(panel, name, label, content);
         let value = this.getValue()
-        if(value== null){
+        if (value == null) {
             return
         }
 
@@ -187,7 +187,7 @@ export class ConfigurationTextLine extends ConfigurationLine {
             type = "text"
         }
 
-        if(value == undefined){
+        if (value == undefined) {
             return
         }
 
@@ -229,7 +229,7 @@ export class ConfigurationToggleLine extends ConfigurationLine {
     constructor(panel: ConfigurationPanel, name: string, label: string, content: any, labels: Array<string>) {
         super(panel, name, label, content);
         let value = this.getValue()
-        if(value== null){
+        if (value == null) {
             return
         }
 
@@ -534,7 +534,7 @@ export class ConfigurationPanel extends Panel {
         return configLine
     }
 
-    appendEnumConfig(name: string, options: Array<string>, numericalIndex:boolean, label?: string) {
+    appendEnumConfig(name: string, options: Array<string>, numericalIndex: boolean, label?: string) {
         let configLine = new ConfigurationEnum(this, name, options, label, this.content, numericalIndex)
         this.configurationLines.push(configLine)
         return configLine
@@ -542,7 +542,8 @@ export class ConfigurationPanel extends Panel {
 
     // create control...
     onlogin(data: any) {
-        //super.onlogin(data)
+        super.onlogin(data)
+
         // set the config with the full values.
         if (data.Services != undefined) {
             this.config = data.Services[this.config.Id]
@@ -550,15 +551,27 @@ export class ConfigurationPanel extends Panel {
             this.config = data
         }
 
-        // Display textual input
-        for (var i = 0; i < this.configurationLines.length; i++) {
-            this.configurationLines[i].unlock()
-        }
+        if (this.config != undefined) {
+            // Display textual input
+            for (var i = 0; i < this.configurationLines.length; i++) {
+                this.configurationLines[i].unlock()
+            }
+            this.btnGroup.element.style.display = ""
+        }else{
+            this.close() // disconnect listners.
+            this.config = null;
 
-        this.btnGroup.element.style.display = ""
+            console.log(this.id, " has null config!")
+        }
     }
 
     onlogout() {
+        super.onlogout()
+
+        if (this.config == undefined) {
+            return // nothing that we can do here.
+        }
+
         // display values.
         for (var i = 0; i < this.configurationLines.length; i++) {
             this.configurationLines[i].lock()

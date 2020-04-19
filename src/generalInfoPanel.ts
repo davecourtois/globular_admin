@@ -1,5 +1,5 @@
 import { IConfig } from "globular-web-client";
-import { ConfigurationPanel, ConfigurationLine } from "./configurationPanel";
+import { ConfigurationPanel, ConfigurationLine, ConfigurationTextLine, ConfigurationMultipleOptionsSingleChoiceLine, ConfigurationStringListLine } from "./configurationPanel";
 import { saveConfig, readFullConfig, getErrorMessage } from "./backend";
 import { LdapSyncServicePanel } from "./services/ldapSyncServicePanel";
 
@@ -11,30 +11,39 @@ export class GeneralInfoPanel extends ConfigurationPanel {
   private ldapSyncPanels: Array<LdapSyncServicePanel>;
   private ldapServices: any;
 
+  // Various configuration lines.
+  private nameConfigLine: ConfigurationTextLine;
+  private domainConfigLine: ConfigurationTextLine;
+  private protocolConfigLine: ConfigurationMultipleOptionsSingleChoiceLine;
+  private httpPortConfigLine : ConfigurationTextLine;
+  private httpsPortConfigLine : ConfigurationTextLine;
+  private discoveriesConfigLine: ConfigurationStringListLine;
+  private domainsConfigLine: ConfigurationStringListLine;
+
   constructor(config: IConfig) {
     // Init the configuration panel informations.
     super(config, "General Server Informations", "general_info_panel");
 
     // Set the name propertie.
-    this.appendTextualConfig("Name");
+    this.nameConfigLine = this.appendTextualConfig("Name");
 
     // Set the domain propertie.
-    this.appendTextualConfig("Domain");
+    this.domainConfigLine = this.appendTextualConfig("Domain");
 
     // Set the general server informations.
-    this.appendMultipleOptionsSingleChoiceConfig("Protocol", ["http", "https"]);
+    this.protocolConfigLine = this.appendMultipleOptionsSingleChoiceConfig("Protocol", ["http", "https"]);
 
     // Set the Ports..
-    this.appendTextualConfig("PortHttp", "Http Port", "number", 1, 0, 65535);
+    this.httpPortConfigLine = this.appendTextualConfig("PortHttp", "Http Port", "number", 1, 0, 65535);
 
     // Set the Ports..
-    this.appendTextualConfig("PortHttps", "Https Port", "number", 1, 0, 65535);
+    this.httpsPortConfigLine = this.appendTextualConfig("PortHttps", "Https Port", "number", 1, 0, 65535);
 
     // Display list of domains
-    this.appendStringListConfig("Discoveries", "Services Discorvery");
+    this.discoveriesConfigLine = this.appendStringListConfig("Discoveries", "Services Discorvery");
 
     // Display the list nameserver.
-    this.appendStringListConfig("DNS", "Domain Name Servers");
+    this.domainsConfigLine = this.appendStringListConfig("DNS", "Domain Name Servers");
 
     this.ldapSyncPanels = new Array<any>();
     this.ldapServices = {};
@@ -145,77 +154,82 @@ export class GeneralInfoPanel extends ConfigurationPanel {
 
   onlogout() {
     super.onlogout();
-    if(this.ldapSyncInfosLine != null){
+    if (this.ldapSyncInfosLine != null) {
       this.ldapSyncInfosLine.hide()
     }
+
+    this.nameConfigLine.lock();
+    this.domainConfigLine.lock();
+    this.protocolConfigLine.lock();
+    this.httpPortConfigLine.lock();
+    this.httpsPortConfigLine.lock();
+    this.discoveriesConfigLine.lock();
+    this.domainsConfigLine.lock();
 
   }
 
   // create control...
   onlogin(data: any) {
-    // Display textual input
-    super.onlogin(data);
+ 
+    this.nameConfigLine.unlock();
+    this.domainConfigLine.unlock();
+    this.protocolConfigLine.unlock();
+    this.httpPortConfigLine.unlock();
+    this.httpsPortConfigLine.unlock();
+    this.discoveriesConfigLine.unlock();
+    this.domainsConfigLine.unlock();
 
-    readFullConfig((config: IConfig) => {
-      // read the full configuration...
-      this.config = config;
+    // Here I will try to get the ldap information to synchronise user/group
+    for (var serviceId in this.config.Services) {
+      if (this.config.Services[serviceId].Name == "ldap_server") {
+        this.ldapServices[serviceId] = this.config.Services[serviceId]
+      }
+    }
 
-      // Here I will try to get the ldap information to synchronise user/group
-      for (var serviceId in this.config.Services) {
-        if (this.config.Services[serviceId].Name == "ldap_server") {
-          this.ldapServices[serviceId] = this.config.Services[serviceId]
+    // The ldap synchronization interface.
+    if (Object.keys(this.ldapServices).length > 0 && this.ldapSyncInfosLine == null) {
+
+      // Create an empty panel. 
+      this.ldapSyncInfosLine = this.appendEmptyConfig("LdapSyncInfos", "LDAP Sync infos")
+
+      // So here I will get the list of synchronization informations.
+      this.ldapSyncInfosLine.content.element.firstChild.className = "col s11 m3"
+      this.ldapSyncInfosLine.content.appendElement({ tag: "i", class: "material-icons col s1", id: "append_new_connection", innerHtml: "add" })
+
+      let ul = this.ldapSyncInfosLine.content
+        .appendElement({ tag: "div", class: "switch col s12 m8", id: "connections_div" }).down()
+        .appendElement({ tag: "ul", class: "collapsible", style: "box-shadow: none;" }).down()
+
+      // Now in each ul I will append the synchronization panel.
+      for (var id in this.config.LdapSyncInfos) {
+        let syncInfos = this.config.LdapSyncInfos[id]
+        for (var i = 0; i < syncInfos.length; i++) {
+          this.createLdapSynInfoPanel(ul, syncInfos[i])
         }
       }
 
-      // The ldap synchronization interface.
-      if (Object.keys(this.ldapServices).length > 0 && this.ldapSyncInfosLine == null) {
+      M.Collapsible.init(ul.element)
 
-        // Create an empty panel. 
-        this.ldapSyncInfosLine = this.appendEmptyConfig("LdapSyncInfos", "LDAP Sync infos")
-
-        // So here I will get the list of synchronization informations.
-        this.ldapSyncInfosLine.content.element.firstChild.className = "col s11 m3"
-        this.ldapSyncInfosLine.content.appendElement({ tag: "i", class: "material-icons col s1", id: "append_new_connection", innerHtml: "add" })
-
-        let ul = this.ldapSyncInfosLine.content
-          .appendElement({ tag: "div", class: "switch col s12 m8", id: "connections_div" }).down()
-          .appendElement({ tag: "ul", class: "collapsible", style: "box-shadow: none;" }).down()
-
-        // Now in each ul I will append the synchronization panel.
-        for (var id in this.config.LdapSyncInfos) {
-          let syncInfos = this.config.LdapSyncInfos[id]
-          for (var i = 0; i < syncInfos.length; i++) {
-            this.createLdapSynInfoPanel(ul, syncInfos[i])
-          }
-        }
-
-        M.Collapsible.init(ul.element)
-
-        // The connection id.
-        let newSyncInfoBtn = this.ldapSyncInfosLine.content.getChildById("append_new_connection")
-        newSyncInfoBtn.element.onmouseover = function () {
-          this.style.cursor = "pointer"
-        }
-
-        newSyncInfoBtn.element.onmouseout = function () {
-          this.style.cursor = "default"
-        }
-
-        newSyncInfoBtn.element.onclick = () => {
-          let connection = { ldapSeriveId: "", connectionId: "", refresh: 1, userSyncInfos: { base: "", query: "", id: "", email: "" }, groupSyncInfos: { base: "", query: "", id: "" } }
-          let li = this.createLdapSynInfoPanel(ul, connection)
-        }
-      } else {
-        // display the panel
-        if(this.ldapSyncInfosLine != null){
-          this.ldapSyncInfosLine.show();
-        }
+      // The connection id.
+      let newSyncInfoBtn = this.ldapSyncInfosLine.content.getChildById("append_new_connection")
+      newSyncInfoBtn.element.onmouseover = function () {
+        this.style.cursor = "pointer"
       }
 
-    },
-      (err: any) => {
-        M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
-      });
+      newSyncInfoBtn.element.onmouseout = function () {
+        this.style.cursor = "default"
+      }
+
+      newSyncInfoBtn.element.onclick = () => {
+        let connection = { ldapSeriveId: "", connectionId: "", refresh: 1, userSyncInfos: { base: "", query: "", id: "", email: "" }, groupSyncInfos: { base: "", query: "", id: "" } }
+        let li = this.createLdapSynInfoPanel(ul, connection)
+      }
+    } else {
+      // display the panel
+      if (this.ldapSyncInfosLine != null) {
+        this.ldapSyncInfosLine.show();
+      }
+    }
   }
 
   // That function is the same for all configuration panels.

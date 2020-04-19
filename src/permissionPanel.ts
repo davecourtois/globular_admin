@@ -161,7 +161,7 @@ export class PermissionExplorer extends Panel {
     // The name of the file.
     this.content = this.div.appendElement({ tag: "div", class: "row" }).down()
       .appendElement({ tag: "div", class: "card-content" }).down()
-      .appendElement({ tag: "span", id: "card-title", innerHtml: ressourceInfo.name, class: "card-title" })
+      .appendElement({ tag: "span", id: "card-title", "style": "font-size: medium; font-weight: inherit;", innerHtml: ressourceInfo.name, class: "card-title" })
       .appendElement({ tag: "div" }).down()
 
     // Now I will get the permission for the file/folder... and diplay it.

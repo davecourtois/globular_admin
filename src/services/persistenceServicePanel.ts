@@ -140,7 +140,6 @@ export class PersistenceServicePanel extends ServicePanel {
 
     onlogout() {
         super.onlogout();
-        console.log("---------> logout...")
     }
 
     cancel(){

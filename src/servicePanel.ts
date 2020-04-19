@@ -1,15 +1,18 @@
 import { ConfigurationPanel } from "./configurationPanel";
 import { IServiceConfig, IConfig } from "globular-web-client";
-import { randomUUID } from "./utility";
+import { randomUUID, rgbToHsl } from "./utility";
 import { createElement } from "./element";
 import {
   stopService,
   eventHub,
   startService,
   saveService,
-  readFullConfig,
-  getErrorMessage
+  getErrorMessage,
+  uninstallService,
+  refreshToken,
+  globular
 } from "./backend";
+import { UninstallServiceRequest } from "globular-web-client/lib/admin/admin_pb";
 
 /**
  * That class is use to display service configuration.
@@ -30,11 +33,13 @@ export class ServicePanel extends ConfigurationPanel {
   private proxyConfig: any;
   private tlsConfig: any;
   public stateDiv: any;
+  private editable: boolean;
+  private listeners: Map<string, Array<string>>;
 
   constructor(service: IServiceConfig, id: string, name: string) {
     super(service, name, randomUUID());
 
-    // So Here I will display common service function...
+    this.listeners = new Map<string, Array<string>>();
 
     // Set the domain propertie.
     this.domainConfig = this.appendTextualConfig("Domain");
@@ -123,6 +128,7 @@ export class ServicePanel extends ConfigurationPanel {
     this.stopBtn = this.actionBtnGroup.getChildById("stop_btn");
     this.startBtn = this.actionBtnGroup.getChildById("start_btn");
 
+
     // display the start button and hide stop if the service is not running.
     if (service.State != "running") {
       this.stopBtn.element.style.display = "none";
@@ -132,18 +138,26 @@ export class ServicePanel extends ConfigurationPanel {
     // Actions..
     this.uninstallBtn.element.onclick = (evt: any) => {
       evt.stopPropagation();
+      uninstallService(this.config, () => {
+        delete globular.config.Services[this.config.Id]
+        eventHub.publish("uninstall_service_event", this.config.Id, true)
+        M.toast({ html: "Service " + this.config.Id + " was uninstalled successfully!", displayLength: 3000 });
+      },
+        (err: any) => {
+          M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
+        });
+
     };
 
     this.stopBtn.element.onclick = (evt: any) => {
       evt.stopPropagation();
       stopService(id, () => {
         // Here I will set the start button...
-        console.log("stop_service_event_" + id);
         eventHub.publish("stop_service_event_" + id, id, false);
       },
-      (err: any) => {
-        M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
-      });
+        (err: any) => {
+          M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
+        });
     };
 
     /**
@@ -153,7 +167,10 @@ export class ServicePanel extends ConfigurationPanel {
       "stop_service_event_" + id,
       (uuid: string) => {
         /** Subscriber id. todo diconnect on logout...*/
-        //console.log("stop_service_event_" + id, uuid);
+        if (!this.listeners.has("stop_service_event_" + id)) {
+          this.listeners.set("stop_service_event_" + id, new Array<string>())
+        }
+        this.listeners.get("stop_service_event_" + id).push(uuid)
       },
       (evt: any) => {
         this.stopBtn.element.style.display = "none";
@@ -169,17 +186,22 @@ export class ServicePanel extends ConfigurationPanel {
       startService(id, () => {
         // Here I will set the start button...
         eventHub.publish("start_service_event_" + id, id, false);
+
       },
-      (err: any) => {
-              
-        M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
-      });
+        (err: any) => {
+
+          M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
+        });
     };
 
     eventHub.subscribe(
       "start_service_event_" + id,
       (uuid: string) => {
         //console.log("start_service_event_" + id, uuid);
+        if (!this.listeners.has("start_service_event_" + id)) {
+          this.listeners.set("start_service_event_" + id, new Array<string>())
+        }
+        this.listeners.get("start_service_event_" + id).push(uuid)
       },
       (evt: any) => {
         this.stopBtn.element.style.display = "";
@@ -190,10 +212,15 @@ export class ServicePanel extends ConfigurationPanel {
     );
 
     // Here I will update the configuration on save event.
+    let stop_
     eventHub.subscribe(
       "save_service_config_event_" + id,
       (uuid: string) => {
         //console.log("save_service_config_event_" + id, uuid);
+        if (!this.listeners.has("save_service_config_event_" + id)) {
+          this.listeners.set("save_service_config_event_" + id, new Array<string>())
+        }
+        this.listeners.get("save_service_config_event_" + id).push(uuid)
       },
       (configStr: string) => {
         this.config = JSON.parse(configStr);
@@ -212,24 +239,43 @@ export class ServicePanel extends ConfigurationPanel {
     );
   }
 
-  onlogin(data: any) {
-    super.onlogin(data);
-    this.actionBtnGroup.element.style.display = "";
-    this.stateDiv.element.style.display = "none";
+  setStateDiv(div: any) {
+    this.stateDiv = div;
+    if (this.editable) {
+      this.stateDiv.element.style.display = "none";
+    } else {
+      this.stateDiv.element.style.display = "";
+    }
+  }
 
-    readFullConfig((config: IConfig) => {
-      // Set the service configuration.
-      this.config = config.Services[this.config.Id];
-    },
-    (err: any) => {
-      M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
-    });
+  onlogin(data: any) {
+    super.onlogin(data)
+  
+    if (this.config != undefined) {
+      this.actionBtnGroup.element.style.display = "";
+      this.stateDiv.element.style.display = "none";
+      this.config = data.Services[this.config.Id];
+      this.editable = true;
+    }else{
+      console.log("service panel have empty configuration! ", this)
+    }
   }
 
   onlogout() {
-    super.onlogout();
+    super.onlogout()
     this.actionBtnGroup.element.style.display = "none";
     this.stateDiv.element.style.display = "";
+    this.editable = true;
+  }
+
+  close() {
+    super.close()
+    // close the listener.
+    this.listeners.forEach((listeners: Array<string>, event: string) => {
+      listeners.forEach((uuid: string) => {
+        eventHub.unSubscribe(event, uuid);
+      })
+    })
   }
 
   save() {
@@ -244,8 +290,8 @@ export class ServicePanel extends ConfigurationPanel {
         JSON.stringify(service),
         false
       );
-    },(err: any) => {
-              
+    }, (err: any) => {
+
       M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
     });
   }

@@ -1,10 +1,14 @@
 import { ServicePanel } from "../servicePanel"
 import { IServiceConfig } from "globular-web-client"
+import { ConfigurationLine } from "../configurationPanel";
 
 /**
  * The sql service admin configuration interface.
  */
 export class DnsServicePanel extends ServicePanel {
+    private dnsPort: ConfigurationLine;
+    private storageDataPath: ConfigurationLine;
+    private managedDomains: ConfigurationLine;
 
     constructor(service: IServiceConfig, id: string, name: string) {
         super(service, id, name)
@@ -13,28 +17,25 @@ export class DnsServicePanel extends ServicePanel {
     onlogin(data: any) {
         super.onlogin(data);
 
-        // Do nothing in case the connections are ready exist.
-        if (this.content.getChildById("connections_div") != undefined) {
-            return;
+        // simply append the root variable.
+        if (this.dnsPort == undefined) {
+            this.dnsPort = this.appendTextualConfig("DnsPort", "DNS Port", "number", 1, 0, 64000);
+            this.dnsPort.unlock()
         }
 
-        // simply append the root variable.
-        let dnsPort = this.appendTextualConfig("DnsPort", "DNS Port", "number", 1, 0, 64000);
-        dnsPort.unlock()
+        if (this.storageDataPath == undefined) {
+            this.storageDataPath = this.appendTextualConfig("StorageDataPath", "Storage Data Path");
+            this.storageDataPath.unlock()
+        }
 
-        let storageDataPath = this.appendTextualConfig("StorageDataPath", "Storage Data Path");
-        storageDataPath.unlock()
-
-        let storageDataDomain = this.appendTextualConfig("StorageService", "Storage Address");
-        storageDataDomain.unlock()
-
-        let managedDomains = this.appendStringListConfig("Domains", "Managed Domains");
-        managedDomains.unlock()
+        if (this.managedDomains == undefined) {
+            this.managedDomains = this.appendStringListConfig("Domains", "Managed Domains");
+            this.managedDomains.unlock()
+        }
 
     }
 
     onlogout() {
         super.onlogout();
-        console.log("---------> logout...")
     }
 }
