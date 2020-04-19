@@ -44,7 +44,7 @@ export class LogsPanel extends Panel {
 
         if (this.editable) {
           header.element.firstChild.className = "col s11"
-          let deleteBtn = header.appendElement({ tag: "i", class: "material-icons col s1", style:"text-align: right;", innerHtml: "delete" }).down()
+          let deleteBtn = header.appendElement({ tag: "i", class: "material-icons col s1", style: "text-align: right;", innerHtml: "delete" }).down()
           deleteBtn.element.onclick = (evt: any) => {
             evt.stopPropagation()
             // Here I will 
@@ -84,13 +84,13 @@ export class LogsPanel extends Panel {
       }
 
       if (this.editable == true) {
-        let deleteBtn = row.appendElement({ tag: "i", class: "material-icons col s1", style:"text-align: right;", innerHtml: "delete" }).down()
-        
-        deleteBtn.element.onmouseenter = function(){
+        let deleteBtn = row.appendElement({ tag: "i", class: "material-icons col s1", style: "text-align: right;", innerHtml: "delete" }).down()
+
+        deleteBtn.element.onmouseenter = function () {
           this.style.cursor = "pointer";
         }
 
-        deleteBtn.element.onmouseout = function(){
+        deleteBtn.element.onmouseout = function () {
           this.style.cursor = "default";
         }
 
@@ -222,7 +222,9 @@ export class LogManager extends Panel {
           this.consoles.push(info)
           this.servicesConsole.displayLogs(this.consoles);
           // diplay the message in the toast to get attention of the admin.
-          M.toast({ html: evt.message.replace(new RegExp('\r?\n', 'g'), "<br />"), displayLength: 4000 });
+          if (evt.message != undefined) {
+            M.toast({ html: evt.message.replace(new RegExp('\r?\n', 'g'), "<br />"), displayLength: 4000 });
+          }
         }
 
       }, false)

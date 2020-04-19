@@ -4,7 +4,7 @@
 import { Panel } from "./panel";
 import * as M from "materialize-css";
 import "materialize-css/sass/materialize.scss";
-import { eventHub, updateAccountEmail, updateAccountPassword,  getErrorMessage} from './backend';
+import { eventHub, updateAccountEmail, updateAccountPassword, getErrorMessage } from './backend';
 import {
   getAllRoles,
   GetAllAccountsInfo,
@@ -26,15 +26,15 @@ export class AccountManager extends Panel {
   constructor(id: string) {
     super(id);
     this.roles = {}
-    getAllRoles((roles: any)=>{
-      for(var i=0; i < roles.length; i++){
+    getAllRoles((roles: any) => {
+      for (var i = 0; i < roles.length; i++) {
         this.roles[roles[i]._id] = roles[i]
       }
       this.displayAccounts();
-    }, (err:any)=>{
+    }, (err: any) => {
       console.log(err)
     })
-    
+
 
     // Emit when user click on the path
     eventHub.subscribe(
@@ -43,12 +43,12 @@ export class AccountManager extends Panel {
       (evt: any) => {
         // Set the dir to display.
         // Here I must retreive the directory from the given path.
-        getAllRoles((roles: any)=>{
-          for(var i=0; i < roles.length; i++){
+        getAllRoles((roles: any) => {
+          for (var i = 0; i < roles.length; i++) {
             this.roles[roles[i]._id] = roles[i]
           }
           this.displayAccounts();
-        }, (err:any)=>{
+        }, (err: any) => {
           console.log(err)
         })
       },
@@ -111,46 +111,53 @@ export class AccountManager extends Panel {
       email_div.removeAllChilds()
       email_div.element.innerHTML = ""
 
+      let email_input_id = randomUUID()
+
       email_div.appendElement({ tag: "input-field" }).down()
-        .appendElement({ tag: "input", id: "email_input", value: account.email, type: "email", class: "validate" })
+        .appendElement({ tag: "input", id: email_input_id, value: account.email, type: "email", class: "validate" })
         .appendElement({ tag: "span" })
 
       // Set the password change button.
       new_password_div.element.className = confirm_password_div.element.className = password_div.element.className = "row"
 
+      let password_input_id = randomUUID();
+
       // The password div
       password_div.appendElement({ tag: "input-field" }).down()
         .appendElement({ tag: "div", class: "col s2", innerHtml: "password" })
         .appendElement({ tag: "div", class: "col s10" }).down()
-        .appendElement({ tag: "input", type: "password", id: "password_input", class: "validate" })
+        .appendElement({ tag: "input", type: "password", id: password_input_id, class: "validate" })
         .appendElement({ tag: "span" })
 
+      let new_password_input_id = randomUUID()
       new_password_div.appendElement({ tag: "input-field" }).down()
         .appendElement({ tag: "div", class: "col s2", innerHtml: "new password" })
         .appendElement({ tag: "div", class: "col s10" }).down()
-        .appendElement({ tag: "input", type: "password", id: "new_password_input", class: "validate" })
+        .appendElement({ tag: "input", type: "password", id: new_password_input_id, class: "validate" })
         .appendElement({ tag: "span" })
 
       // The confirmation password
+      let confirm_password_input_id = randomUUID()
       confirm_password_div
         .appendElement({ tag: "div", class: "col s2", innerHtml: "confirm password" })
         .appendElement({ tag: "div", class: "col s10" }).down()
         .appendElement({ tag: "input-field" }).down()
-        .appendElement({ tag: "input", type: "password", id: "confirm_password_input", class: "validate" })
+        .appendElement({ tag: "input", type: "password", id: confirm_password_input_id, class: "validate" })
         .appendElement({ tag: "span" })
 
       // Now  i will set the action.
-      email_div.getChildById("email_input").element.onkeyup = (evt: any) => {
+
+      email_div.getChildById(email_input_id).element.onkeyup = (evt: any) => {
         if (evt.keyCode == 13) {
           // here the user want to change it email.
-          updateAccountEmail(account._id, account.email, email_div.getChildById("email_input").element.value,
+          updateAccountEmail(account._id, account.email, email_div.getChildById(email_input_id).element.value,
             () => {
               // keep the email in the account!
-              account.email = email_div.getChildById("email_input").element.value
+              account.email = email_div.getChildById(email_input_id).element.value
               M.toast({ html: "your email was updated!", displayLength: 2000 });
             },
             (err: any) => {
-              
+
               M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
             }
           );
@@ -158,12 +165,12 @@ export class AccountManager extends Panel {
       }
 
       // Now the update password...
-      confirm_password_div.getChildById("confirm_password_input").element.onkeyup = (evt: any) => {
+      confirm_password_div.getChildById(confirm_password_input_id).element.onkeyup = (evt: any) => {
         if (evt.keyCode == 13) {
           // here the user want to change it email.
-          let confirm_pwd = confirm_password_div.getChildById("confirm_password_input").element.value
-          let old_pwd = password_div.getChildById("password_input").element.value
-          let new_pwd = new_password_div.getChildById("new_password_input").element.value
+          let confirm_pwd = confirm_password_div.getChildById(confirm_password_input_id).element.value
+          let old_pwd = password_div.getChildById(password_input_id).element.value
+          let new_pwd = new_password_div.getChildById(new_password_input_id).element.value
 
           // Update the account password.
           updateAccountPassword(account._id, old_pwd, new_pwd, confirm_pwd,
@@ -172,7 +179,7 @@ export class AccountManager extends Panel {
               M.toast({ html: "your password was updated!", displayLength: 2000 });
             },
             (err: any) => {
-              
+
               M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
             }
           );
@@ -186,7 +193,7 @@ export class AccountManager extends Panel {
       // Now the roles...
       if (account.roles != undefined) {
         for (var j = 0; j < account.roles.length; j++) {
-          if(this.roles[account.roles[j].$id]!=undefined){
+          if (this.roles[account.roles[j].$id] != undefined) {
             roles_ul.appendElement({
               tag: "li",
               class: "collection-item",
@@ -263,7 +270,7 @@ export class AccountManager extends Panel {
                 this.displayAccount(content, account);
               },
               (err: any) => {
-                
+
                 M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
               }
             );
@@ -274,7 +281,7 @@ export class AccountManager extends Panel {
           });
         },
         (err: any) => {
-          
+
           M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
         }
       );
@@ -283,7 +290,7 @@ export class AccountManager extends Panel {
       if (account.roles != undefined) {
         for (var j = 0; j < account.roles.length; j++) {
           let role = account.roles[j];
-          if(this.roles[ role.$id] != undefined){
+          if (this.roles[role.$id] != undefined) {
             let deleteBtn = roles_ul
               .appendElement({ tag: "li", class: "collection-item" })
               .down()
@@ -296,7 +303,7 @@ export class AccountManager extends Panel {
               .appendElement({
                 tag: "div",
                 class: "col s11",
-                innerHtml: this.roles[ role.$id].name
+                innerHtml: this.roles[role.$id].name
               })
               .appendElement({
                 tag: "i",
@@ -339,7 +346,7 @@ export class AccountManager extends Panel {
                   this.displayAccount(content, account);
                 },
                 (err: any) => {
-                  
+
                   M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
                 }
               );
@@ -364,7 +371,7 @@ export class AccountManager extends Panel {
         class: "material-icons col s1",
         title: "Create new account",
         innerHtml: "person_add",
-        style:"margin-top: 10px; text-align: end;"
+        style: "margin-top: 10px; text-align: end;"
       })
       .down();
 
@@ -400,6 +407,11 @@ export class AccountManager extends Panel {
 
       let content = modal.getChildById("content");
 
+      let user_name_id = randomUUID();
+      let user_email_id = randomUUID();
+      let user_password_id = randomUUID();
+      let user_password_validate_id = randomUUID();
+
       // Here I will set the account values.
       content
         .appendElement({ tag: "div", class: "row" })
@@ -409,13 +421,13 @@ export class AccountManager extends Panel {
         .appendElement({
           tag: "input",
           placeholder: "",
-          id: "user_name",
+          id: user_name_id,
           type: "text",
           class: "validate"
         })
         .appendElement({
           tag: "label",
-          for: "user_name",
+          for: user_name_id,
           innerHtml: "Username"
         })
         .up()
@@ -424,7 +436,7 @@ export class AccountManager extends Panel {
         .appendElement({
           tag: "input",
           placeholder: "",
-          id: "user_email",
+          id: user_email_id,
           type: "email",
           class: "validate"
         })
@@ -435,12 +447,12 @@ export class AccountManager extends Panel {
         .appendElement({
           tag: "input",
           placeholder: "",
-          id: "user_password",
+          id: user_password_id,
           type: "password"
         })
         .appendElement({
           tag: "label",
-          for: "user_password",
+          for: user_password_id,
           innerHtml: "Password"
         })
         .up()
@@ -449,22 +461,22 @@ export class AccountManager extends Panel {
         .appendElement({
           tag: "input",
           placeholder: "",
-          id: "user_password_validate",
+          id: user_password_validate_id,
           type: "password"
         })
         .appendElement({
           tag: "label",
-          for: "user_password_validate",
+          for: user_password_validate_id,
           innerHtml: "Password validate"
         })
         .up();
 
       let createAccountBtn = modal.getChildById("create_account_btn");
       createAccountBtn.element.onclick = () => {
-        let username = modal.getChildById("user_name").element.value;
-        let email = modal.getChildById("user_email").element.value;
-        let pwd = modal.getChildById("user_password").element.value;
-        let pwd_ = modal.getChildById("user_password_validate").element.value;
+        let username = modal.getChildById(user_name_id).element.value;
+        let email = modal.getChildById(user_email_id).element.value;
+        let pwd = modal.getChildById(user_password_id).element.value;
+        let pwd_ = modal.getChildById(user_password_validate_id).element.value;
 
         // Here I will register the account.
         registerAccount(
@@ -531,7 +543,7 @@ export class AccountManager extends Panel {
                   this.displayAccounts();
                 },
                 (err: any) => {
-                  
+
                   M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
                 }
               );
@@ -551,7 +563,7 @@ export class AccountManager extends Panel {
         M.Collapsible.init(ul.element);
       },
       (err: any) => {
-        
+
         M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
       }
     );

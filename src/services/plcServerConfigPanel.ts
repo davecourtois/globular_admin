@@ -148,7 +148,6 @@ export class PlcServerConfigPanel extends ServicePanel {
 
     onlogout() {
         super.onlogout();
-        console.log("---------> logout...")
     }
 
 

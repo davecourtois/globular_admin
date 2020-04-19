@@ -135,7 +135,6 @@ export class SmtpServicePanel extends ServicePanel {
 
     onlogout() {
         super.onlogout();
-        console.log("---------> logout...")
     }
 
 

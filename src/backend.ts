@@ -1610,7 +1610,6 @@ export function installService(
       application: application, domain: domain
     })
     .then((rsp: InstallServiceResponse) => {
-      console.log("---> service install");
       callback();
     }).catch(
       (err: any) => {

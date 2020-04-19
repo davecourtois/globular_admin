@@ -138,7 +138,6 @@ export class SqlServicePanel extends ServicePanel {
 
     onlogout() {
         super.onlogout();
-        console.log("---------> logout...")
     }
 
 

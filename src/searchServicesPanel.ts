@@ -83,7 +83,6 @@ class ServiceDescriptorPanel extends Panel {
         //console.log("start_service_event_" + id, uuid);
       },
       (evt: any) => {
-        console.log("----> test")
         this.setButtons()
       },
       true
@@ -95,7 +94,6 @@ class ServiceDescriptorPanel extends Panel {
         //console.log("start_service_event_" + id, uuid);
       },
       (evt: any) => {
-        console.log("----> test")
         this.setButtons()
       },
       true

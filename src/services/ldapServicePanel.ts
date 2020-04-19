@@ -135,7 +135,6 @@ export class LdapServicePanel extends ServicePanel {
 
     onlogout() {
         super.onlogout();
-        console.log("---------> logout...")
     }
 
 
