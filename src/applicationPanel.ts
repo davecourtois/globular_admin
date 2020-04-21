@@ -78,7 +78,7 @@ export class ApplicationManager extends Panel {
       // Here I will append the actions list.
       let action_input = actions_div.prependElement({ tag: "div", class: "row" }).down()
         .appendElement({ tag: "div", class: "input-field col s12" }).down()
-        .appendElement({ tag: "input", id:randomUUID(), class: "autocomplete", placeholder: "New Action" }).down()
+        .appendElement({ tag: "input", id: randomUUID(), class: "autocomplete", placeholder: "New Action" }).down()
 
       getAllActions(
         (actions: any) => {
@@ -121,7 +121,7 @@ export class ApplicationManager extends Panel {
                 this.displayApplication(content, application)
               },
               (err: any) => {
-                
+
                 M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
               }
             );
@@ -131,7 +131,7 @@ export class ApplicationManager extends Panel {
 
         },
         (err: any) => {
-          
+
           M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
         })
 
@@ -144,11 +144,11 @@ export class ApplicationManager extends Panel {
             .appendElement({ tag: "div", class: "col s11", innerHtml: action })
             .appendElement({ tag: "i", class: "tiny material-icons col s1", innerHtml: "remove" }).down()
 
-          deleteBtn.element.onmouseenter = function(){
+          deleteBtn.element.onmouseenter = function () {
             this.style.cursor = "pointer"
           }
 
-          deleteBtn.element.onmouseleave = function(){
+          deleteBtn.element.onmouseleave = function () {
             this.style.cursor = "default"
           }
 
@@ -162,13 +162,13 @@ export class ApplicationManager extends Panel {
                 });
 
                 // remove the action from the actions list
-                application.actions.splice( application.actions.indexOf(action),1); 
+                application.actions.splice(application.actions.indexOf(action), 1);
 
                 // refresh the panel.
                 this.displayApplication(content, application)
               },
               (err: any) => {
-                
+
                 M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
               })
           }
@@ -177,55 +177,69 @@ export class ApplicationManager extends Panel {
     }
   }
 
+  // Redisplay the roles.
+  refresh() {
+    this.displayApplications()
+  }
+
   displayApplications() {
     // clear the panel before recreate information inside it.
     this.div.removeAllChilds()
+    this.div.element.className = "row"
+
     GetAllApplicationsInfo((applications: Array<any>) => {
-      // Here I will get the list of all applications.
+      // must be one in the page.
+      if(document.getElementById("applications_content_div")!= undefined){
+        return
+      }
+
       let ul = this.div
-        .appendElement({ tag: "div", class: "row" }).down()
-        .appendElement({ tag: "div", class: "col s12 /*m10 offset-m1*/" }).down()
+        .appendElement({ tag: "div", class: "col s12 /*m10 offset-m1*/", id:"applications_content_div" }).down()
         .appendElement({ tag: "ul", class: "collapsible" }).down()
 
       for (var i = 0; i < applications.length; i++) {
-        let li = ul.appendElement({ tag: "li" }).down()
-        let header = li.appendElement({ tag: "div", class: "collapsible-header" }).down()
-        let content = li.appendElement({ tag: "div", class: "collapsible-body" }).down()
-        let application =  applications[i]
-        if (this.editable) {
-          
-          // Here I will display button to edit applications...
-          // The delete icon.
-          // the application header.
-          header.appendElement({ tag: "span", class: "col s11", innerHtml: application._id })
-          let deleteBtn = header.appendElement({ tag: "i", class: "material-icons col s1", innerHtml: "delete" }).down()
+        let application = applications[i]
+        if (document.getElementById(application._id + "_li") == undefined) {
+          let li = ul.appendElement({ tag: "li", id: application._id + "_li" }).down()
+          let header = li.appendElement({ tag: "div", class: "collapsible-header" }).down()
+          let content = li.appendElement({ tag: "div", class: "collapsible-body" }).down()
 
-          // Now the remove application action.
-          deleteBtn.element.onclick = ()=>{
-            DeleteApplication(application._id, 
-              ()=>{
-                M.toast({ html: "Application " + application._id + " have been removed!", displayLength: 2000 });
-                // refresh the interface.
-                this.displayApplications()
-              },
-              (err: any) => {
-                
-                M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
-              })
+          if (this.editable) {
+
+            // Here I will display button to edit applications...
+            // The delete icon.
+            // the application header.
+            header.appendElement({ tag: "span", class: "col s11", innerHtml: application._id })
+            let deleteBtn = header.appendElement({ tag: "i", class: "material-icons col s1", innerHtml: "delete" }).down()
+
+            // Now the remove application action.
+            deleteBtn.element.onclick = () => {
+              DeleteApplication(application._id,
+                () => {
+                  M.toast({ html: "Application " + application._id + " have been removed!", displayLength: 2000 });
+                  // refresh the interface.
+                  this.displayApplications()
+                },
+                (err: any) => {
+
+                  M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
+                })
+            }
+
+          } else {
+            header.appendElement({ tag: "span", class: "col s12", innerHtml: application._id })
           }
 
-        } else {
-          header.appendElement({ tag: "span", class: "col s12", innerHtml: application._id })
+          // Display the application.
+          this.displayApplication(content, application)
         }
-        // Display the application.
-        this.displayApplication(content, application)
       }
 
       // init all collapsible panels...
       M.Collapsible.init(ul.element)
     },
       (err: any) => {
-        
+
         M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
       });
   }

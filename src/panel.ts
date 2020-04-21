@@ -72,4 +72,9 @@ export class Panel {
   show(){
     this.div.style.display = ""
   }
+
+  // that function is use to refresh a panel content.
+  refresh(){
+     // overide...
+  }
 }

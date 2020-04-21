@@ -1,5 +1,5 @@
 import { Panel } from "./panel";
-import { findServices, installService, getErrorMessage, eventHub, uninstallService, refreshToken, globular } from "./backend";
+import { findServices, installService, getErrorMessage, eventHub, uninstallService, globular } from "./backend";
 import { ServiceDescriptor } from "globular-web-client/lib/services/services_pb";
 import { randomUUID } from "./utility";
 
@@ -24,13 +24,29 @@ export class SearchServicesPanel extends Panel {
   search(keywords: Array<string>) {
     this.resultsPanel.removeAllChilds();
     findServices(keywords, (services: Array<ServiceDescriptor>) => {
+      // First of all I will regroup service by their publisher id and
+      // service id.
+      let servicesMap = new Map<String, Array<ServiceDescriptor>>();
       for (var i = 0; i < services.length; i++) {
-        let descriptorPanel = new ServiceDescriptorPanel(services[i]);
+        let id = services[i].getPublisherid() + "_" + services[i].getId()
+        if (!servicesMap.has(id)) {
+          servicesMap.set(id, new Array<ServiceDescriptor>())
+        }
+        servicesMap.get(id).push(services[i])
+      }
+
+      // Now I will display the services.
+      servicesMap.forEach((descriptors: Array<ServiceDescriptor>) => {
+        // sort by version number.
+        descriptors.sort((a, b) => (a.getVersion() > b.getVersion()) ? 1 : ((b.getVersion() > a.getVersion()) ? -1 : 0))
+        let descriptorPanel = new ServiceDescriptorPanel(descriptors);
         descriptorPanel.setParent(this.resultsPanel);
         if (this.isAdmin) {
           descriptorPanel.onlogin(globular.config);
         }
-      }
+      })
+
+
     });
   }
 
@@ -47,7 +63,8 @@ export class SearchServicesPanel extends Panel {
  * Display the description of a services.
  */
 class ServiceDescriptorPanel extends Panel {
-  private descriptor: ServiceDescriptor;
+  private descriptors: Array<ServiceDescriptor>;
+  private index: number;
   private content: any;
   private installBtn: any;
   private uninstallBtn: any;
@@ -55,20 +72,20 @@ class ServiceDescriptorPanel extends Panel {
   private btnGroup: any;
   private idInput: any;
   private idDiv: any;
+  private versionDiv: any;
 
-  constructor(descriptor: ServiceDescriptor) {
+  constructor(descriptors: Array<ServiceDescriptor>) {
     // Set the panel id.
     super(
-      "service_description_panel_" +
-      descriptor.getPublisherid() +
-      "_" +
-      descriptor.getId() +
-      "_" +
-      descriptor.getVersion()
+      "service_description_panel_" + randomUUID()
     );
 
     // keep track of the service diplayed.
-    this.descriptor = descriptor;
+    this.descriptors = descriptors;
+    this.index = this.descriptors.length - 1; // by default display the last available version.
+
+    // Set the index to install service version if any...
+    this.setCurrentIndex()
 
     let install_btn_id = randomUUID()
     let id_input = randomUUID()
@@ -99,6 +116,10 @@ class ServiceDescriptorPanel extends Panel {
       true
     );
 
+    // get the service descriptor.
+    let descriptor = this.getServiceDescriptor();
+
+
     // Display general information.
     this.div
       .appendElement({ tag: "div", class: "row service_descriptor_panel" })
@@ -121,7 +142,7 @@ class ServiceDescriptorPanel extends Panel {
         tag: "div",
         class: "card-action row",
         id: "btn_group",
-        style: "text-align: right; display: none; align-items: baseline;"
+        style: "text-align: right; display: none; align-items: baseline; justify-content: flex-end;"
       })
       .down()
       .appendElement({ tag: "div", id: id_div, class: "input-field col s4 offset-s6" })
@@ -129,6 +150,7 @@ class ServiceDescriptorPanel extends Panel {
       .appendElement({
         tag: "input",
         id: id_input,
+        syle: "margin-left: 0px;",
         placeholder: "service id",
         title: "the is of the service on the server.",
         type: "text"
@@ -140,6 +162,7 @@ class ServiceDescriptorPanel extends Panel {
         id: install_btn_id,
         href: "javascript:void(0)",
         class: "waves-effect waves-light btn col s2",
+        syle: "margin-left: 0px;",
         innerHtml: "Install"
       })
       .appendElement({
@@ -147,7 +170,7 @@ class ServiceDescriptorPanel extends Panel {
         id: update_btn_id,
         href: "javascript:void(0)",
         class: "waves-effect waves-light btn col s2",
-        style: "display: none;",
+        style: "display: none; margin-left: 0px;",
         innerHtml: "Update"
       })
       .appendElement({
@@ -155,7 +178,7 @@ class ServiceDescriptorPanel extends Panel {
         id: uninstall_btn_id,
         href: "javascript:void(0)",
         class: "waves-effect waves-light btn col s2",
-        style: "display: none;",
+        style: "display: none; margin-left: 0px;",
         innerHtml: "Uninstall"
       })
 
@@ -167,6 +190,8 @@ class ServiceDescriptorPanel extends Panel {
     this.btnGroup = this.div.getChildById("btn_group");
     this.idInput = this.div.getChildById(id_input);
     this.idDiv = this.div.getChildById(id_div);
+
+    let version_div_id = randomUUID()
 
     // Display the publisher id.
     this.content
@@ -186,7 +211,7 @@ class ServiceDescriptorPanel extends Panel {
       })
       .down();
 
-    this.content
+    this.versionDiv = this.content
       .appendElement({ tag: "div", class: "row" })
       .down()
       .appendElement({
@@ -197,7 +222,7 @@ class ServiceDescriptorPanel extends Panel {
       })
       .appendElement({
         tag: "div",
-        id: "publisher_div",
+        id: version_div_id,
         class: "col s12 m6",
         innerHtml: descriptor.getVersion()
       })
@@ -214,14 +239,20 @@ class ServiceDescriptorPanel extends Panel {
       })
       .appendElement({
         tag: "div",
-        id: "publisher_div",
+        id: "description_div",
         class: "col s12 m6",
         innerHtml: descriptor.getDescription()
       })
       .down();
 
+
+
     // Now actions...
     this.installBtn.element.onclick = () => {
+
+      // get the service descriptor.
+      let descriptor = this.getServiceDescriptor();
+
       installService(
         descriptor.getDiscoveriesList()[0],
         descriptor.getId(),
@@ -229,16 +260,10 @@ class ServiceDescriptorPanel extends Panel {
         descriptor.getVersion(),
         () => {
           // here I will refresh the token and set the full config...
-          refreshToken(
-            () => {
-              eventHub.publish("install_service_event", descriptor.getId(), true)
-              M.toast({ html: "Service " + descriptor.getId() + " installed successfully!", displayLength: 3000 });
-              // refresh the panel again to set the new service to admin mode.
-              eventHub.publish("onlogin", globular.config, true)
-            },
-            (err: any) => {
-              M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
-            })
+          eventHub.publish("install_service_event", descriptor.getId(), true)
+          M.toast({ html: "Service " + descriptor.getId() + " installed successfully!", displayLength: 3000 });
+          // refresh the panel again to set the new service to admin mode.
+          eventHub.publish("onlogin", globular.config, true)
         },
         (err: any) => {
           M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
@@ -254,6 +279,10 @@ class ServiceDescriptorPanel extends Panel {
       } else {
         this.installBtn.element.classList.add("disabled");
       }
+
+      // get the service descriptor.
+      let descriptor = this.getServiceDescriptor();
+
       if (evt.keyCode == 13) {
         installService(
           descriptor.getDiscoveriesList()[0],
@@ -261,17 +290,10 @@ class ServiceDescriptorPanel extends Panel {
           descriptor.getPublisherid(),
           descriptor.getVersion(),
           () => {
-            refreshToken(
-              () => {
-                eventHub.publish("install_service_event", descriptor.getId(), true)
-                M.toast({ html: "Service " + descriptor.getId() + " installed successfully!", displayLength: 3000 });
-                // refresh the panel again to set the new service to admin mode.
-                eventHub.publish("onlogin", globular.config, true)
-              },
-              (err: any) => {
-                M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
-              })
-
+            eventHub.publish("install_service_event", descriptor.getId(), true)
+            M.toast({ html: "Service " + descriptor.getId() + " installed successfully!", displayLength: 3000 });
+            // refresh the panel again to set the new service to admin mode.
+            eventHub.publish("onlogin", globular.config, true)
           },
           (err: any) => {
             M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
@@ -281,47 +303,100 @@ class ServiceDescriptorPanel extends Panel {
     };
   }
 
+  setCurrentIndex() {
+    // Set the index to install service version if any...
+    for (var i = 0; i < this.descriptors.length; i++) {
+      if (globular.config.Services[this.descriptors[i].getId()] != undefined) {
+        if (globular.config.Services[this.descriptors[i].getId()].PublisherId == this.descriptors[i].getPublisherid()) {
+          if (globular.config.Services[this.descriptors[i].getId()].Version == this.descriptors[i].getVersion()) {
+            this.index = i;
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  getServiceDescriptor(): ServiceDescriptor {
+    let descriptor: ServiceDescriptor
+    descriptor = this.descriptors[this.index]; // get the last element.
+    return descriptor;
+  }
+
   setButtons() {
     // Display textual input
     this.btnGroup.element.style.display = "flex";
 
     // look better without it... uncomment if necessary.
     M.updateTextFields();
-    this.idInput.element.value = this.descriptor.getId();
+    this.idInput.element.value = this.getServiceDescriptor().getId();
 
-    if (globular.config.Services[this.descriptor.getId()] != undefined) {
+    if (globular.config.Services[this.getServiceDescriptor().getId()] != undefined) {
 
-
-      // The service is already install.
-      let service = globular.config.Services[this.descriptor.getId()];
+      // if the service is already install.
+      let service = globular.config.Services[this.getServiceDescriptor().getId()];
       this.uninstallBtn.element.style.display = "block";
 
-      if (this.descriptor.getVersion() != service.Version) {
+      if (this.getServiceDescriptor().getVersion() != service.Version) {
         this.updateBtn.element.style.display = "block";
+      } else {
+        this.updateBtn.element.style.display = "none";
       }
 
       this.installBtn.element.style.display = "none";
       this.idDiv.element.style.display = "none";
 
+      // The unistall action.
       this.uninstallBtn.element.onclick = (evt: any) => {
         evt.stopPropagation();
-        uninstallService(service, () => {
-          delete globular.config.Services[this.descriptor.getId()]
-          eventHub.publish("uninstall_service_event", this.descriptor.getId(), true)
-          M.toast({ html: "Service " + this.descriptor.getId() + " was uninstalled successfully!", displayLength: 3000 });
-       
-        },
+        uninstallService(service,
+          true, () => {
+            eventHub.publish("uninstall_service_event", this.getServiceDescriptor().getId(), true)
+            M.toast({ html: "Service " + this.getServiceDescriptor().getId() + " was uninstalled successfully!", displayLength: 3000 });
+          },
           (err: any) => {
 
             M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
           });
-
       };
-    }else{
+
+      // The update action.
+      this.updateBtn.element.onclick = (evt: any) => {
+        evt.stopPropagation();
+        uninstallService(service, false,
+          () => {
+            // Now I will simply install the service.
+            this.installBtn.element.click();
+            this.updateBtn.element.style.display = "none"
+          },
+          (err: any) => {
+
+            M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
+          });
+      }
+    } else {
       this.installBtn.element.style.display = "";
       this.idDiv.element.style.display = "";
       this.uninstallBtn.element.style.display = "none";
       this.updateBtn.element.style.display = "none";
+    }
+
+    // So here I will get the list of available verisons and diplay it in a select element.
+    if (this.descriptors.length > 0) {
+      this.versionDiv.removeAllChilds()
+      this.versionDiv.element.innerHTML = ""
+      let versionSelector = this.versionDiv.appendElement({ tag: "select", style: "display: block;" }).down()
+      this.descriptors.forEach((descriptor: ServiceDescriptor, index) => {
+        versionSelector.appendElement({ tag: "option", value: index, innerHtml: descriptor.getVersion() })
+      })
+
+      // Set the value to current version...
+      versionSelector.element.value = this.index;
+
+      versionSelector.element.onchange = () => {
+        this.index = versionSelector.element.value
+        this.setButtons()
+      }
     }
   }
 
@@ -333,5 +408,7 @@ class ServiceDescriptorPanel extends Panel {
   onlogout() {
     // display values.
     this.btnGroup.element.style.display = "none";
+    this.setCurrentIndex()
+    this.versionDiv.element.innerHTML = this.getServiceDescriptor().getVersion() // set back the actual version.
   }
 }

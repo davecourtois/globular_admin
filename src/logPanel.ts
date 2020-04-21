@@ -73,14 +73,20 @@ export class LogsPanel extends Panel {
 
     let body = this.ul.getChildById(info.getMethod() + "_body")
     if (body != undefined) {
+      let msg = info.getMessage().replace(new RegExp('\r?\n', 'g'), '<br />')
+      if(msg.length == 0){
+        return
+      }
+
       let row = body.appendElement({ tag: "div", class: "row ", style: "margin: 0px; border-bottom: solid 1px rgba(51,51,51,0.12);" }).down();
       let p: any;
+
       if (info.getMethod().startsWith("/")) {
         let time = new Date(info.getDate() * 1000).toDateString() + " " + new Date(info.getDate() * 1000).toLocaleTimeString()
         p = row.appendElement({ tag: "span", class: "col s3", innerHtml: time })
-          .appendElement({ tag: "p", class: "col s9", style: "overflow-y: scroll; margin-top: 0px;", innerHtml: info.getMessage().replace(new RegExp('\r?\n', 'g'), '<br />') }).down()
+          .appendElement({ tag: "p", class: "col s9", style: "overflow-y: scroll; margin-top: 0px;", innerHtml: msg }).down()
       } else {
-        p = row.appendElement({ tag: "p", class: "col s12", style: "overflow-y: scroll; margin-top: 4px; margin-bottom: 4px;", innerHtml: info.getMessage().replace(new RegExp('\r?\n', 'g'), '<br />') }).down()
+          p = row.appendElement({ tag: "p", class: "col s12", style: "overflow-y: scroll; margin-top: 4px; margin-bottom: 4px;", innerHtml:  msg}).down()
       }
 
       if (this.editable == true) {

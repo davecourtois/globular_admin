@@ -175,13 +175,22 @@ export class PeerManager extends Panel {
     }
   }
 
+  refresh(){
+    this.displayPeers()
+  }
+
   displayPeers() {
     // clear the panel before recreate information inside it.
     this.div.removeAllChilds()
+
     GetAllPeersInfo("", (Peers: Array<any>) => {
+      if(document.getElementById("peers_content_div") != undefined){
+        return 
+      }
+      
       // Here I will get the list of all Peers.
       let ul = this.div
-        .appendElement({ tag: "div", class: "row" }).down()
+        .appendElement({ tag: "div", class: "row", id:"peers_content_div" }).down()
         .appendElement({ tag: "div", class: "col s12 /*m10 offset-m1*/" }).down()
         .appendElement({ tag: "ul", class: "collapsible" }).down()
 

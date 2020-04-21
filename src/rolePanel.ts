@@ -206,23 +206,31 @@ export class RolePanel extends Panel {
     }
   }
 
+  // Redisplay the roles.
+  refresh(){
+    this.displayRoles()
+  }
+
   displayRoles() {
     // clear the panel before recreate information inside it.
     this.div.removeAllChilds();
+    this.div.element.className = "row"
 
     getAllRoles(
       (roles: Array<any>) => {
-        // Here I will get the list of all applications.
-        let div = this.div.appendElement({ tag: "div", class: "row" }).down();
+        // must be only one in the page.
+        if(document.getElementById("roles_content_div")!= undefined){
+          return
+        }
 
-        let ul = div
-          .appendElement({ tag: "div", class: "col s11" })
+        let ul = this.div
+          .appendElement({ tag: "div", class: "col s11", id:"roles_content_div"})
           .down()
           .appendElement({ tag: "ul", class: "collapsible" })
           .down();
 
         if (this.editable) {
-          let newRoleBtn = div
+          let newRoleBtn = this.div
             .prependElement({
               tag: "i",
               id: "append_role_btn",
@@ -291,7 +299,7 @@ export class RolePanel extends Panel {
                 );
               } else if (evt.keyCode == 27) {
                 // Cancel event.
-                div.parentNode.parentNode.removeChild(div.parentNode);
+                this.div.parentNode.parentNode.removeChild(this.div.parentNode);
               }
             };
           };

@@ -9,8 +9,11 @@ import {
   saveService,
   getErrorMessage,
   uninstallService,
+  installService,
+  globular,
+  GetServiceDescriptors,
   refreshToken,
-  globular
+  readFullConfig
 } from "./backend";
 import { UninstallServiceRequest } from "globular-web-client/lib/admin/admin_pb";
 
@@ -19,6 +22,7 @@ import { UninstallServiceRequest } from "globular-web-client/lib/admin/admin_pb"
  */
 export class ServicePanel extends ConfigurationPanel {
   private uninstallBtn: any;
+  private updateBtn: any;
   private stopBtn: any;
   private startBtn: any;
   public actionBtnGroup: any;
@@ -101,6 +105,14 @@ export class ServicePanel extends ConfigurationPanel {
     this.actionBtnGroup
       .appendElement({
         tag: "a",
+        id: "update_btn",
+        href: "javascript:void(0)",
+        class: "waves-effect waves-light btn-flat",
+        innerHtml: "Update",
+        style: "margin-right: 2px; display: none"
+      })
+      .appendElement({
+        tag: "a",
         id: "uninstall_btn",
         href: "javascript:void(0)",
         class: "waves-effect waves-light btn-flat",
@@ -127,7 +139,7 @@ export class ServicePanel extends ConfigurationPanel {
     this.uninstallBtn = this.actionBtnGroup.getChildById("uninstall_btn");
     this.stopBtn = this.actionBtnGroup.getChildById("stop_btn");
     this.startBtn = this.actionBtnGroup.getChildById("start_btn");
-
+    this.updateBtn = this.actionBtnGroup.getChildById("update_btn")
 
     // display the start button and hide stop if the service is not running.
     if (service.State != "running") {
@@ -136,9 +148,11 @@ export class ServicePanel extends ConfigurationPanel {
     }
 
     // Actions..
+
+    // Uninstall
     this.uninstallBtn.element.onclick = (evt: any) => {
       evt.stopPropagation();
-      uninstallService(this.config, () => {
+      uninstallService(this.config, true, () => {
         delete globular.config.Services[this.config.Id]
         eventHub.publish("uninstall_service_event", this.config.Id, true)
         M.toast({ html: "Service " + this.config.Id + " was uninstalled successfully!", displayLength: 3000 });
@@ -186,7 +200,6 @@ export class ServicePanel extends ConfigurationPanel {
       startService(id, () => {
         // Here I will set the start button...
         eventHub.publish("start_service_event_" + id, id, false);
-
       },
         (err: any) => {
 
@@ -212,7 +225,6 @@ export class ServicePanel extends ConfigurationPanel {
     );
 
     // Here I will update the configuration on save event.
-    let stop_
     eventHub.subscribe(
       "save_service_config_event_" + id,
       (uuid: string) => {
@@ -239,6 +251,22 @@ export class ServicePanel extends ConfigurationPanel {
     );
   }
 
+  refresh(){
+    // Set the config.
+    this.config = globular.config.Services[this.config.Id]
+
+    // set field values.
+    this.keepAliveConfig.reset();
+    this.domainConfig.reset();
+    this.publisherConfig.reset();
+    this.versionConfig.reset();
+    this.keepUpdataConfig.reset();
+    this.keepAliveConfig.reset();
+    this.portConfig.reset();
+    this.proxyConfig.reset();
+    this.tlsConfig.reset();
+  }
+
   setStateDiv(div: any) {
     this.stateDiv = div;
     if (this.editable) {
@@ -250,13 +278,61 @@ export class ServicePanel extends ConfigurationPanel {
 
   onlogin(data: any) {
     super.onlogin(data)
-  
+
     if (this.config != undefined) {
       this.actionBtnGroup.element.style.display = "";
       this.stateDiv.element.style.display = "none";
       this.config = data.Services[this.config.Id];
       this.editable = true;
-    }else{
+
+      // So here I will get information to see if or not a new service 
+      // version is available and show the update button if it's the case.
+      GetServiceDescriptors(this.config.Id, this.config.PublisherId,
+        (descriptors: Array<any>) => {
+          descriptors.sort((a, b) => (a.version > b.version) ? 1 : ((b.version > a.version) ? -1 : 0))
+          if (descriptors.length > 0) {
+            let descriptor = descriptors[descriptors.length - 1]
+            if (this.config.Version < descriptor.version) {
+              // In that case I will dsiplay the update button
+              this.updateBtn.element.style.display = "inline"
+
+              // Update the service to the last version.
+              this.updateBtn.element.onclick = (evt: any) => {
+                uninstallService(this.config, false, () => {
+
+                  installService(
+                    descriptor.discoveries[0],
+                    descriptor.id,
+                    descriptor.publisherid,
+                    descriptor.version,
+                    () => {
+                      // here I will refresh the token and set the full config...
+                      eventHub.publish("install_service_event", descriptor.id, true)
+                      M.toast({ html: "Service " + descriptor.id + "  installed successfully!", displayLength: 3000 });
+
+                      // refresh the panel again to set the new service to admin mode.
+                      eventHub.publish("onlogin", globular.config, true)
+                    },
+                    (err: any) => {
+                      M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
+                    }
+                  );
+                },
+                  (err: any) => {
+                    M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
+                  });
+              }
+
+            } else {
+              this.updateBtn.element.style.display = "none"
+            }
+          }
+        },
+        (err: any) => {
+          M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
+        });
+
+    } else {
       console.log("service panel have empty configuration! ", this)
     }
   }

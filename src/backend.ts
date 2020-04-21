@@ -92,7 +92,9 @@ import {
 import {
   FindServicesDescriptorRequest,
   FindServicesDescriptorResponse,
-  ServiceDescriptor
+  ServiceDescriptor,
+  GetServiceDescriptorRequest,
+  GetServiceDescriptorResponse
 } from "globular-web-client/lib/services/services_pb";
 import {
   RenameRequest,
@@ -176,9 +178,8 @@ export function readFullConfig(
         application: application, domain: domain
       })
       .then(rsp => {
-        config = JSON.parse(rsp.getResult());
-        globular.config = config; // set the globular config with the full config.
-        callback(config);
+        globular.config = JSON.parse(rsp.getResult());; // set the globular config with the full config.
+        callback(globular.config);
       })
       .catch(err => {
         errorCallback(err);
@@ -1109,6 +1110,7 @@ export function refreshToken(callback:(token:any)=>void, errorCallback: (err: an
       localStorage.setItem("user_name", (<any>decoded).username);
 
       readFullConfig((config: any) => {
+
         // Publish local login event.
         eventHub.publish("onlogin", config, true); // return the full config...
         
@@ -1566,6 +1568,32 @@ export function DeletePeer(
 // Services
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
+export function GetServiceDescriptors(serviceId:string, publisherId:string, callback: (descriptors:Array<any>)=>void, errorCallback:(err:any)=>void){
+  let rqst = new FindRqst();
+  rqst.setCollection("Services");
+  rqst.setDatabase("local_ressource");
+  rqst.setId("local_ressource");
+  rqst.setQuery(`{"id":"${serviceId}", "publisherid":"${publisherId}"}`); // means all values.
+
+  var stream = globular.persistenceService.find(rqst, {
+    application: application, domain: domain
+  });
+
+  let services = new Array<any>()
+
+  stream.on("data", (rsp: FindResp) => {
+    services = services.concat(JSON.parse(rsp.getJsonstr()))
+  });
+
+  stream.on("status", function (status) {
+    if (status.code == 0) {
+      callback(services);
+    } else {
+      errorCallback({ "message": status.details })
+    }
+  });
+}
+
 /**
  * Find services by keywords.
  * @param query
@@ -1582,7 +1610,8 @@ export function findServices(
   globular.servicesDicovery
     .findServices(rqst, { application: application, domain: domain })
     .then((rsp: FindServicesDescriptorResponse) => {
-      callback(rsp.getResultsList());
+      let results = rsp.getResultsList()
+      callback(results);
     })
     .catch((err: any) => {
       console.log(err);
@@ -1610,7 +1639,7 @@ export function installService(
       application: application, domain: domain
     })
     .then((rsp: InstallServiceResponse) => {
-      callback();
+      readFullConfig(callback, errorCallback)
     }).catch(
       (err: any) => {
         errorCallback(err);
@@ -1687,6 +1716,7 @@ export function saveService(
 
 export function uninstallService(
   service: GlobularWebClient.IServiceConfig,
+  deletePermissions: boolean,
   callback: () => void,
   errorCallback: (err: any) => void
 ) {
@@ -1694,6 +1724,7 @@ export function uninstallService(
   rqst.setServiceid(service.Id)
   rqst.setPublisherid(service.PublisherId)
   rqst.setVersion(service.Version)
+  rqst.setDeletepermissions(deletePermissions)
 
   globular.adminService
     .uninstallService(rqst, {
@@ -1701,6 +1732,7 @@ export function uninstallService(
       application: application, domain: domain
     })
     .then((rsp: UninstallServiceResponse) => {
+      delete globular.config.Services[service.Id]
       // The service with updated values...
       callback();
     })

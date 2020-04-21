@@ -357,10 +357,17 @@ export class AccountManager extends Panel {
     }
   }
 
+  /**
+   * 
+   */
+  refresh(){
+    this.displayAccounts()
+  }
+
   displayAccounts() {
     // clear the panel before recreate information inside it.
     this.div.removeAllChilds();
-    let div = this.div.appendElement({ tag: "div", class: "row" }).down();
+    let div = this.div.appendElement({ tag: "div", class: "row", id:"accounts_content_div" }).down();
 
     let newAccountBtn = div
       .appendElement({ tag: "a", class: "modal-trigger", href: "#modal1" })

@@ -6,10 +6,6 @@ import { SearchServicesPanel } from "./searchServicesPanel";
 import { ServicePanel } from "./servicePanel";
 import { RolePanel } from "./rolePanel";
 import { randomUUID, fireResize } from "./utility";
-import { AccountManager } from "./accountPanel";
-import { FileManager } from "./filePanel";
-import { ApplicationManager } from "./applicationPanel";
-import { LogManager } from "./logPanel";
 import { createElement } from './element.js'
 import { SqlServicePanel } from "./services/sqlServicePanel";
 import { SmtpServicePanel } from "./services/smtpServicePanel";
@@ -19,9 +15,15 @@ import { FileServicePanel } from './services/fileServicePanel';
 import { PlcServerConfigPanel } from './services/plcServerConfigPanel';
 import { PlcExporterConfigPanel } from "./services/plcExporterConfigPanel";
 import { PlcLinkConfigPanel } from "./services/plcLinkConfigPanel";
-import { RessourceManager } from "./ressourcePanel";
 import { PeerManager } from "./peersPanel";
 import { DnsServicePanel } from "./services/dnsServicePanel";
+import { AccountManager } from "./accountPanel";
+import { FileManager } from "./filePanel";
+import { RessourceManager } from "./ressourcePanel";
+import { ApplicationManager } from "./applicationPanel";
+import { LogManager } from "./logPanel";
+import { Account } from "globular-web-client/lib/ressource/ressource_pb";
+import { ServiceManager } from "./servicesPanel";
 
 
 export class MainPage {
@@ -45,12 +47,14 @@ export class MainPage {
   private generalInfoPanel: GeneralInfoPanel;
   private searchServicesPanel: SearchServicesPanel;
   private rolePanel: RolePanel;
-  private accountPanel: AccountManager;
-  private filePanel: FileManager;
-  private ressourcePanel: RessourceManager;
-  private applicationPanel: ApplicationManager;
-  private logPanel: LogManager;
-  private PeerPanel: PeerManager;
+  private accountsManager: AccountManager;
+  private filesManager: FileManager;
+  private ressourcesManager: RessourceManager;
+  private applicationsManager: ApplicationManager;
+  private logsManager: LogManager;
+  private peersManager: PeerManager;
+  private servicesManager: ServiceManager;
+
   private servicesPanel: Map<string, ServicePanel>;
 
   constructor() {
@@ -487,11 +491,21 @@ export class MainPage {
         innerHtml: "Applications"
       })
       .up()
-      .appendElement({ tag: "li", class: "tab col s1" })
+      .appendElement({ tag: "li", class: "tab col s2" })
       .down()
       .appendElement({
         tag: "a",
         id: "main_tabs_tab_5",
+        class: "grey-text text-darken-4",
+        href: "javascript:void(0)",
+        innerHtml: "Services"
+      })
+      .up()
+      .appendElement({ tag: "li", class: "tab col s1" })
+      .down()
+      .appendElement({
+        tag: "a",
+        id: "main_tabs_tab_6",
         class: "grey-text text-darken-4",
         href: "javascript:void(0)",
         innerHtml: "Files"
@@ -501,7 +515,7 @@ export class MainPage {
       .down()
       .appendElement({
         tag: "a",
-        id: "main_tabs_tab_6",
+        id: "main_tabs_tab_7",
         class: "grey-text text-darken-4",
         href: "javascript:void(0)",
         innerHtml: "Ressources"
@@ -511,7 +525,7 @@ export class MainPage {
       .down()
       .appendElement({
         tag: "a",
-        id: "main_tabs_tab_7",
+        id: "main_tabs_tab_8",
         class: "grey-text text-darken-3",
         href: "javascript:void(0)",
         innerHtml: "Logs"
@@ -520,34 +534,56 @@ export class MainPage {
     // Initialyse various panels.
     if (this.generalInfoPanel == null) {
       this.generalInfoPanel = new GeneralInfoPanel(globular.config);
+    }else{
+      this.generalInfoPanel.refresh()
     }
 
     if (this.rolePanel == null) {
       this.rolePanel = new RolePanel(randomUUID());
+    }else{
+      this.rolePanel.refresh()
     }
 
-    if (this.filePanel == null) {
-      this.filePanel = new FileManager(randomUUID());
+    if (this.filesManager == null) {
+      this.filesManager = new FileManager(randomUUID());
+    }else{
+      this.filesManager.refresh()
     }
 
-    if (this.ressourcePanel == null) {
-      this.ressourcePanel = new RessourceManager();
+    if (this.ressourcesManager == null) {
+      this.ressourcesManager = new RessourceManager();
+    }else{
+      this.ressourcesManager.refresh()
     }
 
-    if (this.accountPanel == null) {
-      this.accountPanel = new AccountManager(randomUUID());
+    if (this.accountsManager == null) {
+      this.accountsManager = new AccountManager(randomUUID());
+    }else{
+      this.accountsManager.refresh()
     }
 
-    if (this.logPanel == null) {
-      this.logPanel = new LogManager(randomUUID());
+    if (this.logsManager == null) {
+      this.logsManager = new LogManager(randomUUID());
+    }else{
+      this.logsManager.refresh()
     }
 
-    if (this.applicationPanel == null) {
-      this.applicationPanel = new ApplicationManager(randomUUID());
+    if (this.applicationsManager == null) {
+      this.applicationsManager = new ApplicationManager(randomUUID());
+    }else{
+      this.applicationsManager.refresh()
     }
 
-    if (this.PeerPanel == null) {
-      this.PeerPanel = new PeerManager(randomUUID());
+    if (this.servicesManager == null){
+      this.servicesManager = new ServiceManager(randomUUID());
+    }else{
+      this.servicesManager.refresh()
+    }
+
+    if (this.peersManager == null) {
+      this.peersManager = new PeerManager(randomUUID());
+    }else{
+      this.peersManager.refresh()
     }
 
     // Set tabs.
@@ -559,7 +595,7 @@ export class MainPage {
     let tab_1_content = this.container
       .appendElement({ tag: "div", style: "display: none" })
       .down();
-    this.accountPanel.setParent(tab_1_content);
+    this.accountsManager.setParent(tab_1_content);
 
     let tab_2_content = this.container
       .appendElement({ tag: "div", style: "display: none" })
@@ -569,27 +605,33 @@ export class MainPage {
     let tab_3_content = this.container
       .appendElement({ tag: "div", style: "display: none" })
       .down();
-    this.PeerPanel.setParent(tab_3_content);
+    this.peersManager.setParent(tab_3_content);
 
     let tab_4_content = this.container
       .appendElement({ tag: "div", style: "display: none" })
       .down();
-    this.applicationPanel.setParent(tab_4_content);
+    this.applicationsManager.setParent(tab_4_content);
 
+    
     let tab_5_content = this.container
       .appendElement({ tag: "div", style: "display: none" })
       .down();
-    this.filePanel.setParent(tab_5_content);
+    this.servicesManager.setParent(tab_5_content);
 
     let tab_6_content = this.container
       .appendElement({ tag: "div", style: "display: none" })
       .down();
-    this.ressourcePanel.setParent(tab_6_content);
+    this.filesManager.setParent(tab_6_content);
 
     let tab_7_content = this.container
       .appendElement({ tag: "div", style: "display: none" })
       .down();
-    this.logPanel.setParent(tab_7_content);
+    this.ressourcesManager.setParent(tab_7_content);
+
+    let tab_8_content = this.container
+      .appendElement({ tag: "div", style: "display: none" })
+      .down();
+    this.logsManager.setParent(tab_8_content);
 
     // Init the materialyse tabs.
     M.Tabs.init(document.getElementById("main_tabs"));
@@ -604,6 +646,7 @@ export class MainPage {
       tab_5_content.element.style.display = "none";
       tab_6_content.element.style.display = "none";
       tab_7_content.element.style.display = "none";
+      tab_8_content.element.style.display = "none";
     };
 
     this.container.getChildById("main_tabs_tab_1").element.onclick = () => {
@@ -615,6 +658,7 @@ export class MainPage {
       tab_5_content.element.style.display = "none";
       tab_6_content.element.style.display = "none";
       tab_7_content.element.style.display = "none";
+      tab_8_content.element.style.display = "none";
     };
 
     this.container.getChildById("main_tabs_tab_2").element.onclick = () => {
@@ -626,6 +670,7 @@ export class MainPage {
       tab_5_content.element.style.display = "none";
       tab_6_content.element.style.display = "none";
       tab_7_content.element.style.display = "none";
+      tab_8_content.element.style.display = "none";
     };
 
     this.container.getChildById("main_tabs_tab_3").element.onclick = () => {
@@ -637,6 +682,7 @@ export class MainPage {
       tab_5_content.element.style.display = "none";
       tab_6_content.element.style.display = "none";
       tab_7_content.element.style.display = "none";
+      tab_8_content.element.style.display = "none";
     };
 
     this.container.getChildById("main_tabs_tab_4").element.onclick = () => {
@@ -648,6 +694,7 @@ export class MainPage {
       tab_5_content.element.style.display = "none";
       tab_6_content.element.style.display = "none";
       tab_7_content.element.style.display = "none";
+      tab_8_content.element.style.display = "none";
     };
 
     this.container.getChildById("main_tabs_tab_5").element.onclick = () => {
@@ -659,6 +706,7 @@ export class MainPage {
       tab_5_content.element.style.display = "";
       tab_6_content.element.style.display = "none";
       tab_7_content.element.style.display = "none";
+      tab_8_content.element.style.display = "none";
     };
 
     this.container.getChildById("main_tabs_tab_6").element.onclick = () => {
@@ -670,6 +718,7 @@ export class MainPage {
       tab_5_content.element.style.display = "none";
       tab_6_content.element.style.display = "";
       tab_7_content.element.style.display = "none";
+      tab_8_content.element.style.display = "none";
     };
 
     this.container.getChildById("main_tabs_tab_7").element.onclick = () => {
@@ -681,6 +730,19 @@ export class MainPage {
       tab_5_content.element.style.display = "none";
       tab_6_content.element.style.display = "none";
       tab_7_content.element.style.display = "";
+      tab_8_content.element.style.display = "none";
+    };
+
+    this.container.getChildById("main_tabs_tab_8").element.onclick = () => {
+      tab_0_content.element.style.display = "none";
+      tab_1_content.element.style.display = "none";
+      tab_2_content.element.style.display = "none";
+      tab_3_content.element.style.display = "none";
+      tab_4_content.element.style.display = "none";
+      tab_5_content.element.style.display = "none";
+      tab_6_content.element.style.display = "none";
+      tab_7_content.element.style.display = "none";
+      tab_8_content.element.style.display = "";
     };
 
     // add resize handler
@@ -802,6 +864,7 @@ export class MainPage {
           this.servicesPanel.set(key, servicePanel);
         }else{
           servicePanel = this.servicesPanel.get(key)
+          servicePanel.refresh()
         }
 
         // Here I will create the tab...
