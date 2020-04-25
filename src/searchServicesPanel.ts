@@ -45,8 +45,9 @@ export class SearchServicesPanel extends Panel {
           descriptorPanel.onlogin(globular.config);
         }
       })
-
-
+    },
+    (err: any) => {
+      M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
     });
   }
 
@@ -396,6 +397,10 @@ class ServiceDescriptorPanel extends Panel {
       versionSelector.element.onchange = () => {
         this.index = versionSelector.element.value
         this.setButtons()
+      }
+
+      versionSelector.element.onclick = (evt: any)=>{
+        evt.stopPropagation()
       }
     }
   }

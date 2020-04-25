@@ -4,11 +4,11 @@ import { createElement } from "./element";
 export class Panel {
   private _div: any;
 
-  protected get div(): any {
+  public get div(): any {
     return this._div;
   }
 
-  protected set div(div: any) {
+  public set div(div: any) {
     this._div=div;
   }
 

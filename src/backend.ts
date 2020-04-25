@@ -94,7 +94,10 @@ import {
   FindServicesDescriptorResponse,
   ServiceDescriptor,
   GetServiceDescriptorRequest,
-  GetServiceDescriptorResponse
+  GetServiceDescriptorResponse,
+  GetServicesDescriptorRequest,
+  GetServicesDescriptorResponse,
+  SetServiceDescriptorRequest
 } from "globular-web-client/lib/services/services_pb";
 import {
   RenameRequest,
@@ -1568,30 +1571,59 @@ export function DeletePeer(
 // Services
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
-export function GetServiceDescriptors(serviceId:string, publisherId:string, callback: (descriptors:Array<any>)=>void, errorCallback:(err:any)=>void){
-  let rqst = new FindRqst();
-  rqst.setCollection("Services");
-  rqst.setDatabase("local_ressource");
-  rqst.setId("local_ressource");
-  rqst.setQuery(`{"id":"${serviceId}", "publisherid":"${publisherId}"}`); // means all values.
+export function GetServiceDescriptor(serviceId:string, publisherId:string, callback: (descriptors:Array<ServiceDescriptor>)=>void, errorCallback:(err:any)=>void){
+  let rqst = new GetServiceDescriptorRequest
+  rqst.setServiceid(serviceId);
+  rqst.setPublisherid(publisherId);
 
-  var stream = globular.persistenceService.find(rqst, {
+  globular.servicesDicovery.getServiceDescriptor(rqst, {
+    token: localStorage.getItem("user_token"),
+    application: application, domain: domain
+  })
+  .then((rsp: GetServiceDescriptorResponse) => {
+    callback(rsp.getResultsList())
+  }).catch(
+    (err: any) => {
+      errorCallback(err);
+    }
+  );
+}
+
+export function GetServicesDescriptor(callback: (descriptors:Array<ServiceDescriptor>)=>void, errorCallback:(err:any)=>void){
+  let rqst = new GetServicesDescriptorRequest
+
+  var stream = globular.servicesDicovery.getServicesDescriptor(rqst, {
     application: application, domain: domain
   });
 
-  let services = new Array<any>()
+  let descriptors = new Array<ServiceDescriptor>()
 
-  stream.on("data", (rsp: FindResp) => {
-    services = services.concat(JSON.parse(rsp.getJsonstr()))
+  stream.on("data", (rsp: GetServicesDescriptorResponse) => {
+    descriptors = descriptors.concat(rsp.getResultsList())
   });
 
   stream.on("status", function (status) {
     if (status.code == 0) {
-      callback(services);
+      callback(descriptors);
     } else {
       errorCallback({ "message": status.details })
     }
   });
+}
+
+export function SetServicesDescriptor(descriptor:ServiceDescriptor, callback: ()=>void, errorCallback:(err:any)=>void){
+  let rqst = new SetServiceDescriptorRequest
+  rqst.setDescriptor(descriptor);
+
+  globular.servicesDicovery.setServiceDescriptor(rqst, {
+    token: localStorage.getItem("user_token"),
+    application: application, domain: domain
+  }).then(callback)
+  .catch(
+    (err: any) => {
+      errorCallback(err);
+    }
+  );
 }
 
 /**
@@ -1601,7 +1633,8 @@ export function GetServiceDescriptors(serviceId:string, publisherId:string, call
  */
 export function findServices(
   keywords: Array<string>,
-  callback: (results: Array<ServiceDescriptor>) => void
+  callback: (results: Array<ServiceDescriptor>) => void,
+  errorCallback:(err:any)=>void
 ) {
   let rqst = new FindServicesDescriptorRequest();
   rqst.setKeywordsList(keywords);
@@ -1613,9 +1646,11 @@ export function findServices(
       let results = rsp.getResultsList()
       callback(results);
     })
-    .catch((err: any) => {
-      console.log(err);
-    });
+    .catch(
+      (err: any) => {
+        errorCallback(err);
+      }
+    );
 }
 
 export function installService(
@@ -1739,6 +1774,40 @@ export function uninstallService(
     .catch((err: any) => {
       errorCallback(err)
     });
+}
+
+/**
+ * Return the list of service bundles.
+ * @param callback 
+ */
+export function GetServiceBundles(publisherId: string, serviceId: string, version:string, callback: (
+  bundles: Array<any>) => void,
+  errorCallback: (err: any) => void
+) {
+  let rqst = new FindRqst();
+  rqst.setCollection("ServiceBundle");
+  rqst.setDatabase("local_ressource");
+  rqst.setId("local_ressource");
+  rqst.setQuery(`{}`); // means all values.
+
+  var stream = globular.persistenceService.find(rqst, {
+    application: application, domain: domain
+  });
+
+  let bundles = new Array<any>()
+
+  stream.on("data", (rsp: FindResp) => {
+    bundles = bundles.concat(JSON.parse(rsp.getJsonstr()))
+  });
+
+  stream.on("status", function (status) {
+    if (status.code == 0) {
+      // filter localy.
+      callback(bundles.filter(bundle => String(bundle._id).startsWith(publisherId + '%' + serviceId + '%' + version)));
+    } else {
+      errorCallback({ "message": status.details })
+    }
+  });
 }
 
 // Get the object pointed by a reference.

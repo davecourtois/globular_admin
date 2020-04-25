@@ -11,11 +11,12 @@ import {
   uninstallService,
   installService,
   globular,
-  GetServiceDescriptors,
+  GetServiceDescriptor,
   refreshToken,
   readFullConfig
 } from "./backend";
 import { UninstallServiceRequest } from "globular-web-client/lib/admin/admin_pb";
+import { ServiceDescriptor } from "globular-web-client/lib/services/services_pb";
 
 /**
  * That class is use to display service configuration.
@@ -287,12 +288,12 @@ export class ServicePanel extends ConfigurationPanel {
 
       // So here I will get information to see if or not a new service 
       // version is available and show the update button if it's the case.
-      GetServiceDescriptors(this.config.Id, this.config.PublisherId,
-        (descriptors: Array<any>) => {
-          descriptors.sort((a, b) => (a.version > b.version) ? 1 : ((b.version > a.version) ? -1 : 0))
+      GetServiceDescriptor(this.config.Id, this.config.PublisherId,
+        (descriptors: Array<ServiceDescriptor>) => {
+          descriptors.sort((a, b) => (a.getVersion() > b.getVersion()) ? 1 : ((b.getVersion() > a.getVersion()) ? -1 : 0))
           if (descriptors.length > 0) {
             let descriptor = descriptors[descriptors.length - 1]
-            if (this.config.Version < descriptor.version) {
+            if (this.config.Version < descriptor.getVersion()) {
               // In that case I will dsiplay the update button
               this.updateBtn.element.style.display = "inline"
 
@@ -301,14 +302,14 @@ export class ServicePanel extends ConfigurationPanel {
                 uninstallService(this.config, false, () => {
 
                   installService(
-                    descriptor.discoveries[0],
-                    descriptor.id,
-                    descriptor.publisherid,
-                    descriptor.version,
+                    descriptor.getDiscoveriesList()[0],
+                    descriptor.getId(),
+                    descriptor.getPublisherid(),
+                    descriptor.getVersion(),
                     () => {
                       // here I will refresh the token and set the full config...
-                      eventHub.publish("install_service_event", descriptor.id, true)
-                      M.toast({ html: "Service " + descriptor.id + "  installed successfully!", displayLength: 3000 });
+                      eventHub.publish("install_service_event", descriptor.getId(), true)
+                      M.toast({ html: "Service " + descriptor.getId() + "  installed successfully!", displayLength: 3000 });
 
                       // refresh the panel again to set the new service to admin mode.
                       eventHub.publish("onlogin", globular.config, true)
