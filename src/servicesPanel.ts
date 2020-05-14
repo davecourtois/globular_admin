@@ -83,8 +83,8 @@ export class ServiceManager extends Panel {
       descriptors.sort((a, b) => (a.getVersion() > b.getVersion()) ? 1 : ((b.getVersion() > a.getVersion()) ? -1 : 0))
       let li = ul.appendElement({ tag: "li" }).down()
       let header = li.appendElement({ tag: "div", class: "collapsible-header", style: "align-items: center; padding: 0px;" }).down()
-      header.appendElement({ tag: "span", class: "col s10", innerHtml: serviceId })
-      let versionSelector = header.appendElement({ tag: "select", class: "col s2", style: "display: inline;" }).down()
+      header.appendElement({ tag: "span", class: "col s8 m10", innerHtml: serviceId })
+      let versionSelector = header.appendElement({ tag: "select", class: "col s4 m2", style: "display: inline;" }).down()
 
       let body = li.appendElement({ tag: "div", class: "collapsible-body" }).down()
       let editors = new Array<ServiceDescriptorEditor>();

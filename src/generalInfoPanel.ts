@@ -169,7 +169,7 @@ export class GeneralInfoPanel extends ConfigurationPanel {
   }
 
   // create control...
-  onlogin(data: any) {
+  onlogin(config: any) {
  
     this.nameConfigLine.unlock();
     this.domainConfigLine.unlock();
@@ -179,10 +179,13 @@ export class GeneralInfoPanel extends ConfigurationPanel {
     this.discoveriesConfigLine.unlock();
     this.domainsConfigLine.unlock();
 
+    // set the config with the data.
+  
     // Here I will try to get the ldap information to synchronise user/group
-    for (var serviceId in this.config.Services) {
-      if (this.config.Services[serviceId].Name == "ldap_server") {
-        this.ldapServices[serviceId] = this.config.Services[serviceId]
+    for (var serviceId in config.Services) {
+      if (config.Services[serviceId].Name == "ldap_server") {
+        console.log(config.Services[serviceId])
+        this.ldapServices[serviceId] = config.Services[serviceId]
       }
     }
 
@@ -201,8 +204,8 @@ export class GeneralInfoPanel extends ConfigurationPanel {
         .appendElement({ tag: "ul", class: "collapsible", style: "box-shadow: none;" }).down()
 
       // Now in each ul I will append the synchronization panel.
-      for (var id in this.config.LdapSyncInfos) {
-        let syncInfos = this.config.LdapSyncInfos[id]
+      for (var id in config.LdapSyncInfos) {
+        let syncInfos = config.LdapSyncInfos[id]
         for (var i = 0; i < syncInfos.length; i++) {
           this.createLdapSynInfoPanel(ul, syncInfos[i])
         }
