@@ -1,8 +1,9 @@
 import { Panel } from "./panel";
-import { GetAllApplicationsInfo, getAllActions, getErrorMessage, AppendActionToApplication, RemoveActionFromApplication, DeleteApplication } from "./backend";
+import { GetAllApplicationsInfo, getAllActions, getErrorMessage, AppendActionToApplication, RemoveActionFromApplication, DeleteApplication, eventHub, SaveApplication } from './backend';
 import * as M from "materialize-css";
 import "materialize-css/sass/materialize.scss";
 import { randomUUID } from "./utility";
+import { IConfig } from 'globular-web-client';
 
 /**
  * This class is use to manage file on the server.
@@ -56,12 +57,26 @@ export class ApplicationManager extends Panel {
       .appendElement({ tag: "div", class: "col s2", innerHtml: "link" })
       .appendElement({ tag: "a", class: "col s10", href: url, innerHtml: url }).up()
       .appendElement({ tag: "div", class: "row" }).down()
+      .appendElement({ tag: "input", id: "icon_selector", type: "file", style: "display: none;" })
+      .appendElement({ tag: "div", class: "col s2", innerHtml: "icon" })
+      .appendElement({ tag: "div", id: "icon_div", class: "col s10" }).down()
+      .appendElement({ tag: "i", id: "icon_lnk", class: "material-icons", innerHtml: "image" })
+      .appendElement({ tag: "img", id: "icon_img", style: "display: none;" }).up().up()
+      .appendElement({ tag: "div", class: "row" }).down()
       .appendElement({ tag: "div", class: "col s2", innerHtml: "actions" })
       .appendElement({ tag: "div", id: "actions_div", class: "col s10" }).down()
       .appendElement({ tag: "div", class: "row" }).down()
       .appendElement({ tag: "div", id: "actions_ul", class: "collection col s12" })
 
 
+    let imageBtn = content.getChildById("icon_img")
+    if (application.icon != undefined) {
+      imageBtn.element.src = application.icon
+      imageBtn.element.style.display = "";
+      content.getChildById("icon_lnk").element.style.display = "none"
+    }
+
+    // So here I will 
     let actions_div = content.getChildById("actions_div")
     let actions_ul = content.getChildById("actions_ul")
 
@@ -74,6 +89,60 @@ export class ApplicationManager extends Panel {
         }
       }
     } else {
+
+    // Display the file selection window.
+    imageBtn.element.onclick = content.getChildById("icon_lnk").element.onclick = (evt: any) => {
+      evt.stopPropagation()
+      content.getChildById("icon_selector").element.click()
+    }
+
+    imageBtn.element.onmouseover = content.getChildById("icon_lnk").element.onmouseover = (evt: any) => {
+      content.getChildById("icon_lnk").element.style.cursor = "pointer"
+      imageBtn.element.style.cursor = "pointer"
+    }
+
+    imageBtn.element.onmouseleave = content.getChildById("icon_lnk").element.onmouseleave = (evt: any) => {
+      content.getChildById("icon_lnk").element.style.cursor = "default"
+      imageBtn.element.style.cursor = "default"
+    }
+
+    // The profile image selection.
+    content.getChildById("icon_selector").element.onchange = (evt: any) => {
+      var r = new FileReader();
+      var file = evt.target.files[0];
+      r.onload = () => {
+        // Here I will set the image to a size of 64x64 pixel instead of keep the original size.
+        var img = new Image();
+        img.onload = () => {
+          var thumbSize = 64;
+          var canvas = document.createElement("canvas");
+          canvas.width = thumbSize;
+          canvas.height = thumbSize;
+          var c = canvas.getContext("2d");
+          c.drawImage(img, 0, 0, thumbSize, thumbSize);
+
+          application.icon = canvas.toDataURL("image/png");
+          imageBtn.element.src = application.icon;
+          imageBtn.element.style.display = "";
+          content.getChildById("icon_lnk").element.style.display = "none"
+
+          SaveApplication(application,
+            () => {
+              M.toast({ html: "applicaition ico was saved!", displayLength: 2000 });
+            },
+            (err: any) => {
+              M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
+            })
+        };
+        img.src = r.result.toString();
+      };
+
+      try {
+        r.readAsDataURL(file); // read as BASE64 format
+      } catch (err) {
+        console.log(err)
+      }
+    };
 
       // Here I will append the actions list.
       let action_input = actions_div.prependElement({ tag: "div", class: "row" }).down()
@@ -189,12 +258,12 @@ export class ApplicationManager extends Panel {
 
     GetAllApplicationsInfo((applications: Array<any>) => {
       // must be one in the page.
-      if(document.getElementById("applications_content_div")!= undefined){
+      if (document.getElementById("applications_content_div") != undefined) {
         return
       }
 
       let ul = this.div
-        .appendElement({ tag: "div", class: "col s12 /*m10 offset-m1*/", id:"applications_content_div" }).down()
+        .appendElement({ tag: "div", class: "col s12 /*m10 offset-m1*/", id: "applications_content_div" }).down()
         .appendElement({ tag: "ul", class: "collapsible" }).down()
 
       for (var i = 0; i < applications.length; i++) {

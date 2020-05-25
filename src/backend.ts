@@ -87,7 +87,9 @@ import {
   FindOneResp,
   AggregateRqst,
   PingConnectionRqst,
-  PingConnectionRsp
+  PingConnectionRsp,
+  ReplaceOneRqst,
+  ReplaceOneRsp
 } from "globular-web-client/lib/persistence/persistencepb/persistence_pb";
 import {
   FindServicesDescriptorRequest,
@@ -1094,7 +1096,7 @@ export function authenticate(
  * @param callback On success callback
  * @param errorCallback On error callback
  */
-export function refreshToken(callback:(token:any)=>void, errorCallback: (err: any) => void) {
+export function refreshToken(callback: (token: any) => void, errorCallback: (err: any) => void) {
   let rqst = new RefreshTokenRqst();
   rqst.setToken(localStorage.getItem("user_token"));
 
@@ -1116,7 +1118,7 @@ export function refreshToken(callback:(token:any)=>void, errorCallback: (err: an
 
         // Publish local login event.
         eventHub.publish("onlogin", config, true); // return the full config...
-        
+
         callback(decoded);
       }, (err: any) => {
         errorCallback(err)
@@ -1478,6 +1480,30 @@ export function DeleteApplication(
 
 }
 
+export function SaveApplication(
+  application: any,
+  callback: () => void,
+  errorCallback: (err: any) => void
+) {
+  let rqst = new ReplaceOneRqst;
+  rqst.setCollection("Applications");
+  rqst.setDatabase("local_ressource");
+  rqst.setId("local_ressource");
+  rqst.setValue(JSON.stringify(application))
+  rqst.setQuery(`{"_id":"${application._id}"}`); // means all values.
+
+  globular.persistenceService.replaceOne(rqst, { token: localStorage.getItem("user_token"), application: application, domain: domain })
+    .then((rsp: ReplaceOneRsp) => {
+      eventHub.publish("update_application_info_event", JSON.stringify(application), false);
+      callback()
+    })
+    .catch((err: any) => {
+      console.log(err)
+      errorCallback(err);
+    });
+
+}
+
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // Peers
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -1571,7 +1597,7 @@ export function DeletePeer(
 // Services
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
-export function GetServiceDescriptor(serviceId:string, publisherId:string, callback: (descriptors:Array<ServiceDescriptor>)=>void, errorCallback:(err:any)=>void){
+export function GetServiceDescriptor(serviceId: string, publisherId: string, callback: (descriptors: Array<ServiceDescriptor>) => void, errorCallback: (err: any) => void) {
   let rqst = new GetServiceDescriptorRequest
   rqst.setServiceid(serviceId);
   rqst.setPublisherid(publisherId);
@@ -1580,16 +1606,16 @@ export function GetServiceDescriptor(serviceId:string, publisherId:string, callb
     token: localStorage.getItem("user_token"),
     application: application, domain: domain
   })
-  .then((rsp: GetServiceDescriptorResponse) => {
-    callback(rsp.getResultsList())
-  }).catch(
-    (err: any) => {
-      errorCallback(err);
-    }
-  );
+    .then((rsp: GetServiceDescriptorResponse) => {
+      callback(rsp.getResultsList())
+    }).catch(
+      (err: any) => {
+        errorCallback(err);
+      }
+    );
 }
 
-export function GetServicesDescriptor(callback: (descriptors:Array<ServiceDescriptor>)=>void, errorCallback:(err:any)=>void){
+export function GetServicesDescriptor(callback: (descriptors: Array<ServiceDescriptor>) => void, errorCallback: (err: any) => void) {
   let rqst = new GetServicesDescriptorRequest
 
   var stream = globular.servicesDicovery.getServicesDescriptor(rqst, {
@@ -1611,7 +1637,7 @@ export function GetServicesDescriptor(callback: (descriptors:Array<ServiceDescri
   });
 }
 
-export function SetServicesDescriptor(descriptor:ServiceDescriptor, callback: ()=>void, errorCallback:(err:any)=>void){
+export function SetServicesDescriptor(descriptor: ServiceDescriptor, callback: () => void, errorCallback: (err: any) => void) {
   let rqst = new SetServiceDescriptorRequest
   rqst.setDescriptor(descriptor);
 
@@ -1619,11 +1645,11 @@ export function SetServicesDescriptor(descriptor:ServiceDescriptor, callback: ()
     token: localStorage.getItem("user_token"),
     application: application, domain: domain
   }).then(callback)
-  .catch(
-    (err: any) => {
-      errorCallback(err);
-    }
-  );
+    .catch(
+      (err: any) => {
+        errorCallback(err);
+      }
+    );
 }
 
 /**
@@ -1634,7 +1660,7 @@ export function SetServicesDescriptor(descriptor:ServiceDescriptor, callback: ()
 export function findServices(
   keywords: Array<string>,
   callback: (results: Array<ServiceDescriptor>) => void,
-  errorCallback:(err:any)=>void
+  errorCallback: (err: any) => void
 ) {
   let rqst = new FindServicesDescriptorRequest();
   rqst.setKeywordsList(keywords);
@@ -1780,7 +1806,7 @@ export function uninstallService(
  * Return the list of service bundles.
  * @param callback 
  */
-export function GetServiceBundles(publisherId: string, serviceId: string, version:string, callback: (
+export function GetServiceBundles(publisherId: string, serviceId: string, version: string, callback: (
   bundles: Array<any>) => void,
   errorCallback: (err: any) => void
 ) {
