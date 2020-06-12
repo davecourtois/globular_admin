@@ -97,8 +97,10 @@ export class ConfigurationLine {
      * Editable mode.
      */
     unlock() {
-        this.valueEditor.element.style.display = ""
-        this.valueDiv.element.style.display = "none"
+        if(this.valueEditor!=undefined){
+            this.valueEditor.element.style.display = ""
+            this.valueDiv.element.style.display = "none"
+        }
     }
 
     /**

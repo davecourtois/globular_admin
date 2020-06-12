@@ -8,7 +8,6 @@ body{
 
 
 /** Defaul login dialog size on large and medium screen **/
-
 .card-panel {
 	width: 500px;
 	height: 355px;
@@ -16,7 +15,6 @@ body{
 
 
 /** Here is the mobile css specific values. **/
-
 @media only screen and (max-device-width: 480px) {
 	.card-panel {
 		width: auto;
@@ -26,7 +24,6 @@ body{
 
 
 /** Align the control and it label vertically **/
-
 .configuration_panel .row .col.s6 {
 	height: 100%;
 }

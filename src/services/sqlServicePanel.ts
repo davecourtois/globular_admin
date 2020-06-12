@@ -47,7 +47,7 @@ export class SqlServicePanel extends ServicePanel {
         }
 
         newConnectionBtn.element.onclick =  ()=> {
-            let connection = {Id:"newConnection", Name:"newConnection", Driver:"odbc", Charset:"utf8", User:"", Password:"", Port:0}
+            let connection = {Id:"newConnection", Host:"localhost", Name:"newConnection", Driver:"odbc", Charset:"utf8", User:"", Password:"", Port:0}
             let li = this.createConnectionConfigPanel(ul, connection)
             
             let idInput = li.getChildById("id_input")
