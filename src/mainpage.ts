@@ -791,7 +791,7 @@ export class MainPage {
 
     for (var key in globular.config.Services) {
       if (globular.config.Services[key].PublisherId != null) {
-        let title = key.replace("_", " ");
+        let title = globular.config.Services[key].Name /*key.replace("_", " ");*/
         let servicePanel: ServicePanel;
 
         if (!this.servicesPanel.has(key)) {

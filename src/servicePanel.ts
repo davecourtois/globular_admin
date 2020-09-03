@@ -156,7 +156,7 @@ export class ServicePanel extends ConfigurationPanel {
       uninstallService(this.config, true, () => {
         delete globular.config.Services[this.config.Id]
         eventHub.publish("uninstall_service_event", this.config.Id, true)
-        M.toast({ html: "Service " + this.config.Id + " was uninstalled successfully!", displayLength: 3000 });
+        M.toast({ html: "Service " + this.config.Name + ":" + this.config.Id + " was uninstalled successfully!", displayLength: 3000 });
       },
         (err: any) => {
           M.toast({ html: getErrorMessage(err.message), displayLength: 2000 });
