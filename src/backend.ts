@@ -140,12 +140,13 @@ export function getErrorMessage(err: any): string {
 }
 
 export async function initServices(callback: () => void, errorCallback: (err: any) => void) {
+
   config = {
     Protocol: window.location.protocol.replace(":", ""),
     Domain: window.location.hostname,
     PortHttps: window.location.port,
-    AdminPort: 10001,
-    AdminProxy: 10002,
+    AdminPort: 10002,
+    AdminProxy: 10003,
     Services: {} // empty for start.
   };
 
