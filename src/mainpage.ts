@@ -469,16 +469,6 @@ export class MainPage {
         innerHtml: "Roles"
       })
       .up()
-      .appendElement({ tag: "li", class: "tab col s1" })
-      .down()
-      .appendElement({
-        tag: "a",
-        id: "main_tabs_tab_3",
-        class: "grey-text text-darken-3",
-        href: "javascript:void(0)",
-        innerHtml: "Peers"
-      })
-      .up()
       .appendElement({ tag: "li", class: "tab col s2" })
       .down()
       .appendElement({
@@ -650,17 +640,6 @@ export class MainPage {
       tab_0_content.element.style.display = "none";
       tab_1_content.element.style.display = "none";
       tab_2_content.element.style.display = "";
-      tab_4_content.element.style.display = "none";
-      tab_5_content.element.style.display = "none";
-      tab_6_content.element.style.display = "none";
-      tab_7_content.element.style.display = "none";
-      tab_8_content.element.style.display = "none";
-    };
-
-    this.container.getChildById("main_tabs_tab_3").element.onclick = () => {
-      tab_0_content.element.style.display = "none";
-      tab_1_content.element.style.display = "none";
-      tab_2_content.element.style.display = "none";
       tab_4_content.element.style.display = "none";
       tab_5_content.element.style.display = "none";
       tab_6_content.element.style.display = "none";
