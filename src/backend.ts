@@ -16,7 +16,7 @@ import {
 import {
   QueryRangeRequest,
   QueryRequest
-} from "globular-web-client/lib/monitoring/monitoringpb/monitoring_pb";
+} from "globular-web-client/lib/monitoring/monitoring_pb";
 import { randomUUID, includeJavascript } from "./utility";
 import {
   RegisterAccountRqst,
@@ -69,14 +69,7 @@ import {
   RemoveActionPermissionRqst,
   GetRessourcesRqst,
   RemoveRessourceRqst,
-  DeleteLogRqst,
-  GetPeersRqst,
-  GetPeersRsp,
-  Peer,
-  AddPeerActionRqst,
-  AddPeerActionRsp,
-  RemovePeerActionRqst,
-  DeletePeerRqst
+  DeleteLogRqst
 } from "globular-web-client/lib/ressource/ressource_pb";
 import * as jwt from "jwt-decode";
 import {
@@ -90,7 +83,7 @@ import {
   PingConnectionRsp,
   ReplaceOneRqst,
   ReplaceOneRsp
-} from "globular-web-client/lib/persistence/persistencepb/persistence_pb";
+} from "globular-web-client/lib/persistence/persistence_pb";
 import {
   FindServicesDescriptorRequest,
   FindServicesDescriptorResponse,
@@ -110,8 +103,8 @@ import {
   CreateArchiveResponse,
   CreateDirRequest,
   ReadDirRequest,
-} from "globular-web-client/lib/file/filepb/file_pb";
-import { TagType, ReadTagRqst } from "globular-web-client/lib/plc/plcpb/plc_pb";
+} from "globular-web-client/lib/file/file_pb";
+import { TagType, ReadTagRqst } from "globular-web-client/lib/plc/plc_pb";
 
 // Create a new connection with the backend.
 export let globular: GlobularWebClient.Globular;
@@ -384,7 +377,7 @@ export function getRessourcePermissions(
       callback(permissions);
 
     })
-    .catch(error => {
+    .catch((error:any)  => {
       if (errorCallback != undefined) {
         errorCallback(error);
       }
@@ -446,7 +439,7 @@ export function setRessourcePermission(
     .then((rsp: SetPermissionRsp) => {
       callback();
     })
-    .catch(error => {
+    .catch((error:any)  => {
       if (errorCallback != undefined) {
         errorCallback(error);
       }
@@ -484,7 +477,7 @@ export function deleteRessourcePermissions(
     .then((rsp: DeletePermissionsRsp) => {
       callback();
     })
-    .catch(error => {
+    .catch((error:any)  => {
       if (errorCallback != undefined) {
         errorCallback(error);
       }
@@ -524,7 +517,7 @@ export function renameFile(
     .then((rsp: RenameResponse) => {
       callback();
     })
-    .catch(error => {
+    .catch((error:any) => {
       if (errorCallback != undefined) {
         errorCallback(error);
       }
@@ -557,7 +550,7 @@ export function deleteFile(
     .then((rsp: RenameResponse) => {
       callback();
     })
-    .catch(error => {
+    .catch((error:any)  => {
       if (errorCallback != undefined) {
         errorCallback(error);
       }
@@ -589,7 +582,7 @@ export function deleteDir(
     .then((rsp: RenameResponse) => {
       callback();
     })
-    .catch(error => {
+    .catch((error:any)  => {
       if (errorCallback != undefined) {
         errorCallback(error);
       }
@@ -619,7 +612,7 @@ export function createArchive(path: string, name: string, callback: (path: strin
     (rsp: CreateArchiveResponse) => {
       callback(rsp.getResult())
     }
-  ).catch(error => {
+  ).catch((error:any)  => {
     if (errorCallback != undefined) {
       errorCallback(error);
     }
@@ -719,11 +712,11 @@ export function readDir(path: string, callback: (dir: any) => void, errorCallbac
     application: application, domain: domain
   });
 
-  stream.on("data", rsp => {
+  stream.on("data", (rsp:any) => {
     uint8array = mergeTypedArraysUnsafe(uint8array, rsp.getData())
   });
 
-  stream.on("status", function (status) {
+  stream.on("status", function (status:any) {
     if (status.code == 0) {
       var jsonStr = new TextDecoder("utf-8").decode(uint8array);
       var content = JSON.parse(jsonStr)
@@ -815,12 +808,12 @@ export function query(
       token: localStorage.getItem("user_token"),
       application: application, domain: domain
     })
-    .then(resp => {
+    .then((resp:any) => {
       if (callback != undefined) {
         callback(JSON.parse(resp.getValue()));
       }
     })
-    .catch(error => {
+    .catch((error:any)  => {
       if (errorCallback != undefined) {
         errorCallback(error);
       }
@@ -851,12 +844,12 @@ export function queryRange(
     token: localStorage.getItem("user_token"),
     application: application, domain: domain
   });
-  stream.on("data", rsp => {
+  stream.on("data", (rsp:any) => {
     buffer.value += rsp.getValue();
     buffer.warning = rsp.getWarnings();
   });
 
-  stream.on("status", function (status) {
+  stream.on("status", function (status:any) {
     if (status.code == 0) {
       callback(JSON.parse(buffer.value));
     } else {
@@ -1042,7 +1035,7 @@ export function updateAccountPassword(accountId: string, old_password: string, n
     }).then(rsp => {
       callback()
     })
-    .catch(error => {
+    .catch((error:any)  => {
       if (errorCallback != undefined) {
         errorCallback(error);
       }
@@ -1220,7 +1213,7 @@ export function GetAllAccountsInfo(callback: (
     accounts = accounts.concat(JSON.parse(rsp.getJsonstr()))
   });
 
-  stream.on("status", function (status) {
+  stream.on("status", function (status:any) {
     if (status.code == 0) {
       callback(accounts);
     } else {
@@ -1274,7 +1267,7 @@ export function getAllRoles(
     roles = roles.concat(JSON.parse(rsp.getJsonstr()));
   });
 
-  stream.on("status", function (status) {
+  stream.on("status", function (status:any) {
     if (status.code == 0) {
       callback(roles);
     } else {
@@ -1505,95 +1498,7 @@ export function SaveApplication(
 
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////
-// Peers
-///////////////////////////////////////////////////////////////////////////////////////////////
-export function GetAllPeersInfo(
-  query: string,
-  callback: (peers: Peer[]) => void,
-  errorCallback: (err: any) => void
-) {
-  let rqst = new GetPeersRqst();
-  rqst.setQuery(query)
 
-  let peers = new Array<Peer>();
-
-  let stream = globular.ressourceService.getPeers(rqst, {
-    token: localStorage.getItem("user_token"),
-    application: application, domain: domain
-  });
-
-  // Get the stream and set event on it...
-  stream.on("data", (rsp: GetPeersRsp) => {
-    peers = peers.concat(rsp.getPeersList());
-  });
-
-  stream.on("status", status => {
-    if (status.code == 0) {
-      callback(peers);
-    } else {
-      errorCallback({ "message": status.details })
-    }
-  });
-}
-
-export function AppendActionToPeer(
-  id: string,
-  action: string,
-  callback: () => void,
-  errorCallback: (err: any) => void
-) {
-  let rqst = new AddPeerActionRqst;
-  rqst.setPeerid(id)
-  rqst.setAction(action)
-  globular.ressourceService.addPeerAction(rqst, { token: localStorage.getItem("user_token"), application: application, domain: domain })
-    .then((rsp: AddPeerActionRsp) => {
-      callback()
-    })
-    .catch((err: any) => {
-      console.log(err)
-      errorCallback(err);
-    });
-
-}
-
-export function RemoveActionFromPeer(
-  id: string,
-  action: string,
-  callback: () => void,
-  errorCallback: (err: any) => void
-) {
-  let rqst = new RemovePeerActionRqst;
-  rqst.setPeerid(id)
-  rqst.setAction(action)
-  globular.ressourceService.removePeerAction(rqst, { token: localStorage.getItem("user_token"), application: application, domain: domain })
-    .then((rsp: AddApplicationActionRsp) => {
-      callback()
-    })
-    .catch((err: any) => {
-      console.log(err)
-      errorCallback(err);
-    });
-
-}
-
-export function DeletePeer(
-  peer: Peer,
-  callback: () => void,
-  errorCallback: (err: any) => void
-) {
-  let rqst = new DeletePeerRqst;
-  rqst.setPeer(peer)
-  globular.ressourceService.deletePeer(rqst, { token: localStorage.getItem("user_token"), application: application, domain: domain })
-    .then((rsp: AddApplicationActionRsp) => {
-      callback()
-    })
-    .catch((err: any) => {
-      console.log(err)
-      errorCallback(err);
-    });
-
-}
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // Services
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -1827,7 +1732,7 @@ export function GetServiceBundles(publisherId: string, serviceId: string, versio
     bundles = bundles.concat(JSON.parse(rsp.getJsonstr()))
   });
 
-  stream.on("status", function (status) {
+  stream.on("status", function (status:any) {
     if (status.code == 0) {
       // filter localy.
       callback(bundles.filter(bundle => String(bundle._id).startsWith(publisherId + '%' + serviceId + '%' + version)));
@@ -1883,11 +1788,11 @@ export function readUserData(query: string, callback: (results: any) => void, er
   let results = new Array();
 
   // Get the stream and set event on it...
-  stream.on("data", rsp => {
+  stream.on("data", (rsp:any) => {
     results = results.concat(JSON.parse(rsp.getJsonstr()));
   });
 
-  stream.on("status", status => {
+  stream.on("status", (status:any) => {
     if (status.code == 0) {
       callback(results);
     } else {
@@ -1920,11 +1825,11 @@ export function readErrors(callback: (results: any) => void, errorCallback: (err
   let results = new Array();
 
   // Get the stream and set event on it...
-  stream.on("data", rsp => {
+  stream.on("data", (rsp:any) => {
     results = results.concat(JSON.parse(rsp.getJsonstr()));
   });
 
-  stream.on("status", status => {
+  stream.on("status", (status:any) => {
     if (status.code == 0) {
       callback(results);
     } else {
@@ -1952,11 +1857,11 @@ export function readAllActionPermission(callback: (results: any) => void, errorC
   let results = new Array();
 
   // Get the stream and set event on it...
-  stream.on("data", rsp => {
+  stream.on("data", (rsp:any) => {
     results = results.concat(JSON.parse(rsp.getJsonstr()));
   });
 
-  stream.on("status", status => {
+  stream.on("status", (status:any) => {
     if (status.code == 0) {
       callback(results);
     } else {
@@ -2131,11 +2036,11 @@ export function getNumbeOfLogsByMethod(callback: (resuts: Array<any>) => void, e
   let results = new Array();
 
   // Get the stream and set event on it...
-  stream.on("data", rsp => {
+  stream.on("data", (rsp:any) => {
     results = results.concat(JSON.parse(rsp.getJsonstr()));
   });
 
-  stream.on("status", status => {
+  stream.on("status", (status:any) => {
     if (status.code == 0) {
       callback(results);
     } else {

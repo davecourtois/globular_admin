@@ -202,13 +202,13 @@ export class LogManager extends Panel {
         // If the method start with / it's a grpc action log
         if (evt.method.startsWith("/")) {
           if (evt.message != undefined) {
-            info.setType(LogType.ERROR)
+            info.setType(LogType.ERROR_MESSAGE)
             this.errors.push(info)
             this.errorsPanel.displayLogs(this.errors);
             // diplay the message in the toast to get attention of the admin.
             M.toast({ html: evt.message.replace(new RegExp('\r?\n', 'g'), "<br />"), displayLength: 4000 });
           } else {
-            info.setType(LogType.INFO)
+            info.setType(LogType.INFO_MESSAGE)
             this.logs.push(info)
             let row = new Array<any>();
             row.push(info.getMethod())
@@ -224,7 +224,7 @@ export class LogManager extends Panel {
             fireResize();
           }
         } else { // It's a services console log.
-          info.setType(LogType.INFO)
+          info.setType(LogType.INFO_MESSAGE)
           this.consoles.push(info)
           this.servicesConsole.displayLogs(this.consoles);
           // diplay the message in the toast to get attention of the admin.
@@ -392,7 +392,7 @@ export class LogManager extends Panel {
       }
 
       table.menu.getChildById("delete-all-data-menu-item").element.action = () => {
-        clearAllLog(LogType.INFO, () => {
+        clearAllLog(LogType.INFO_MESSAGE, () => {
           M.toast({ html: "All logs are deleted!", displayLength: 2000 });
           table.data = []
           table.filtered = []
