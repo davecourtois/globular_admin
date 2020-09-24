@@ -183,8 +183,7 @@ export class GeneralInfoPanel extends ConfigurationPanel {
   
     // Here I will try to get the ldap information to synchronise user/group
     for (var serviceId in config.Services) {
-      if (config.Services[serviceId].Name == "ldap_server") {
-        console.log(config.Services[serviceId])
+      if (config.Services[serviceId].Name == "ldap.LdapService") {
         this.ldapServices[serviceId] = config.Services[serviceId]
       }
     }

@@ -30,7 +30,7 @@ export class PlcLinkConfigPanel extends ServicePanel {
         this.plcServicesIds = new Array<string>()
 
         for (var id in data.Services) {
-            if (id.startsWith("plc_server_")) {
+            if (id.startsWith("plc.PlcService")) {
                 this.plcServices.set(id, data.Services[id])
                 this.plcServicesIds.push(id)
             }

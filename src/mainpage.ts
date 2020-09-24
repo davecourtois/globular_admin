@@ -729,7 +729,6 @@ export class MainPage {
   }
 
   showServicesPanel(container: any) {
-    console.log("--------------> 732")
     // The tab div...
     let div = container
       .appendElement({
