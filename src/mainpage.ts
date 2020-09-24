@@ -571,6 +571,7 @@ export class MainPage {
     // Set tabs.
     let tab_0_content = this.container.appendElement({ tag: "div" }).down();
     this.generalInfoPanel.setParent(tab_0_content);
+
     this.showServicesPanel(tab_0_content);
 
     // The tab content.
@@ -728,6 +729,7 @@ export class MainPage {
   }
 
   showServicesPanel(container: any) {
+    console.log("--------------> 732")
     // The tab div...
     let div = container
       .appendElement({
@@ -753,43 +755,43 @@ export class MainPage {
 
         if (!this.servicesPanel.has(key)) {
           // Here I will instantiate the correct service configuration interface.
-          if (globular.config.Services[key].Name == "sql_server") {
+          if (globular.config.Services[key].Name == "sql.SqlService") {
             servicePanel = new SqlServicePanel(
               globular.config.Services[key],
               key,
               title
             );
-          } else if (globular.config.Services[key].Name == "smtp_server") {
+          } else if (globular.config.Services[key].Name == "smtp.SmtpService") {
             servicePanel = new SmtpServicePanel(
               globular.config.Services[key],
               key,
               title
             );
-          } else if (globular.config.Services[key].Name == "ldap_server") {
+          } else if (globular.config.Services[key].Name == "ldap.LdapService") {
             servicePanel = new LdapServicePanel(
               globular.config.Services[key],
               key,
               title
             );
-          } else if (globular.config.Services[key].Name == "persistence_server") {
+          } else if (globular.config.Services[key].Name == "persistence.PersistenceService") {
             servicePanel = new PersistenceServicePanel(
               globular.config.Services[key],
               key,
               title
             );
-          } else if (globular.config.Services[key].Name == "file_server") {
+          } else if (globular.config.Services[key].Name == "file.FileService") {
             servicePanel = new FileServicePanel(
               globular.config.Services[key],
               key,
               title
             );
-          } else if (globular.config.Services[key].Name == "dns_server") {
+          } else if (globular.config.Services[key].Name == "dns.DnsService") {
             servicePanel = new DnsServicePanel(
               globular.config.Services[key],
               key,
               title
             );
-          } else if (globular.config.Services[key].Name.startsWith("plc_server_")) {
+          } else if (globular.config.Services[key].Name == "plc.PlcService") {
             servicePanel = new PlcServerConfigPanel(
               globular.config.Services[key],
               key,
@@ -801,7 +803,7 @@ export class MainPage {
               key,
               title
             );
-          } else if (globular.config.Services[key].Name.startsWith("plc_link")) {
+          } else if (globular.config.Services[key].Name == "plc.PlcLinkService") {
             servicePanel = new PlcLinkConfigPanel(
               globular.config.Services[key],
               key,

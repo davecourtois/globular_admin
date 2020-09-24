@@ -14,6 +14,7 @@ export class SqlServicePanel extends ServicePanel {
     }
 
     onlogin(data: any) {
+
         super.onlogin(data);
 
         // Do nothing in case the connections are ready exist.
