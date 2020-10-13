@@ -1,6 +1,6 @@
 import { Panel } from "./panel";
 import { findServices, installService, getErrorMessage, eventHub, uninstallService, globular } from "./backend";
-import { ServiceDescriptor } from "globular-web-client/lib/services/services_pb";
+import { ServiceDescriptor } from "globular-web-client/services/services_pb";
 import { randomUUID } from "./utility";
 
 /**

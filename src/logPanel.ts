@@ -5,7 +5,7 @@ import * as M from "materialize-css";
 import "materialize-css/sass/materialize.scss";
 
 import { getErrorMessage, getAllActions, eventHub, readLogs, clearAllLog, deleteLog, globular } from "./backend";
-import { LogInfo, LogType } from "globular-web-client/lib/ressource/ressource_pb";
+import { LogInfo, LogType } from "globular-web-client/ressource/ressource_pb";
 import { fireResize } from "./utility.js";
 import "@davecourtois/elementui/components/table/table.js";
 

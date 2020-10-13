@@ -1,6 +1,6 @@
 import { ConfigurationPanel } from "./configurationPanel";
-import { IServiceConfig, IConfig } from "globular-web-client";
-import { randomUUID, rgbToHsl } from "./utility";
+import { IServiceConfig } from "globular-web-client";
+import { randomUUID } from "./utility";
 import { createElement } from "./element";
 import {
   stopService,
@@ -11,12 +11,9 @@ import {
   uninstallService,
   installService,
   globular,
-  GetServiceDescriptor,
-  refreshToken,
-  readFullConfig
+  GetServiceDescriptor
 } from "./backend";
-import { UninstallServiceRequest } from "globular-web-client/lib/admin/admin_pb";
-import { ServiceDescriptor } from "globular-web-client/lib/services/services_pb";
+import { ServiceDescriptor } from "globular-web-client/services/services_pb";
 
 /**
  * That class is use to display service configuration.

@@ -21,7 +21,7 @@ import { FileManager } from "./filePanel";
 import { RessourceManager } from "./ressourcePanel";
 import { ApplicationManager } from "./applicationPanel";
 import { LogManager } from "./logPanel";
-import { Account } from "globular-web-client/lib/ressource/ressource_pb";
+import { Account } from "globular-web-client/ressource/ressource_pb";
 import { ServiceManager } from "./servicesPanel";
 
 

@@ -2,7 +2,7 @@ import { Panel } from "./panel";
 import { PermissionExplorer, PermissionPanel } from "./permissionPanel";
 import { getAllActions, getErrorMessage, readAllActionPermission, setActionPermission, removeActionPermission, globular, getRessources, eventHub, removeRessource } from "./backend";
 import { randomUUID, rgbToHsl } from "./utility";
-import { Ressource } from "globular-web-client/lib/ressource/ressource_pb";
+import { Ressource } from "globular-web-client/ressource/ressource_pb";
 
 let emptyPath = "...";
 /**

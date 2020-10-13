@@ -1,7 +1,7 @@
 import { Panel } from "./panel";
 import { eventHub, getErrorMessage, getRessourcePermissions, GetAllAccountsInfo, setRessourcePermission, OwnerType, getAllRoles, GetAllApplicationsInfo, deleteRessourcePermissions, getRessourceOwners, setRessourceOwners, deleteRessourceOwners } from "./backend";
 import { randomUUID } from "./utility";
-import { RessourcePermission } from "globular-web-client/lib/ressource/ressource_pb";
+import { RessourcePermission } from "globular-web-client/ressource/ressource_pb";
 
 /**
  * Control permission.

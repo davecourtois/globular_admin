@@ -2,7 +2,7 @@ import { Panel } from "./panel";
 import { getErrorMessage, GetServicesDescriptor, globular, SetServicesDescriptor, GetServiceBundles } from "./backend";
 import * as M from "materialize-css";
 import "materialize-css/sass/materialize.scss";
-import { ServiceDescriptor } from "globular-web-client/lib/services/services_pb";
+import { ServiceDescriptor } from "globular-web-client/services/services_pb";
 import { ConfigurationPanel, ConfigurationStringListLine, ConfigurationLongTextLine } from "./configurationPanel";
 
 /**
