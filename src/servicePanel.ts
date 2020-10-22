@@ -1,5 +1,5 @@
 import { ConfigurationPanel } from "./configurationPanel";
-import { IServiceConfig } from "globular-web-client";
+import { IServiceConfig, Globular } from "globular-web-client";
 import { randomUUID } from "./utility";
 import { createElement } from "./element";
 import {

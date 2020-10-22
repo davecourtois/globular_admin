@@ -8,6 +8,7 @@ import { getErrorMessage, getAllActions, eventHub, readLogs, clearAllLog, delete
 import { LogInfo, LogType } from "globular-web-client/ressource/ressource_pb";
 import { fireResize } from "./utility.js";
 import "@davecourtois/elementui/components/table/table.js";
+import { Globular } from "globular-web-client";
 
 /**
  * Display log informations
