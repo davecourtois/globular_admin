@@ -1,7 +1,6 @@
 import { ServicePanel } from "../servicePanel"
 import { IServiceConfig } from "globular-web-client"
 import { ConfigurationPanel } from "../configurationPanel";
-import { SetEmailResponse } from "globular-web-client/admin/admin_pb";
 
 /**
  * The sql service admin configuration interface.
