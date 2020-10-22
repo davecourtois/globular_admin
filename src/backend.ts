@@ -134,34 +134,21 @@ export function getErrorMessage(err: any): string {
 
 export async function initServices(callback: () => void, errorCallback: (err: any) => void) {
 
-  config = {
-    Protocol: window.location.protocol.replace(":", ""),
-    Domain: window.location.hostname,
-    PortHttps: window.location.port,
-    AdminPort: 10001,
-    AdminProxy: 10002,
-    Services: {} // empty for start.
-  };
+  // Set the url to config.
+  let url = window.location.protocol.replace(":", "") + "://"
+  url +=  window.location.hostname + ":"
+  url += window.location.port + "/"
+  url += "config"
 
   // Create a new connection with the backend.
-  globular = new GlobularWebClient.Globular(config);
-  let rqst = new GetConfigRequest();
-  if (globular.adminService !== undefined) {
-    globular.adminService
-      .getConfig(rqst, { domain: domain, applicaiton: application })
-      .then(rsp => {
-        let config = JSON.parse(rsp.getResult());
-        // init the services from the configuration retreived.
-        globular = new GlobularWebClient.Globular(config);
+  globular = new GlobularWebClient.Globular(url, ()=>{
         // create the event hub and set globular.eventService to enable
         // network events.
         eventHub = new GlobularWebClient.EventHub(globular.eventService);
+
         callback();
-      })
-      .catch(err => {
-        errorCallback(err);
-      });
-  }
+  }, errorCallback);
+
 }
 
 // let config = globular.adminService.GetConfig()
@@ -1899,7 +1886,7 @@ export function getRessources(path: string, name: string, callback: (results: Re
 }
 
 export function setActionPermission(action: string, permission: number, callback: (results: any) => void, errorCallback: (err: any) => void) {
-  let rqst = new SetActionPermissionRqst
+  /*let rqst = new SetActionPermissionRqst
   rqst.setAction(action)
   rqst.setPermission(permission)
 
@@ -1910,7 +1897,8 @@ export function setActionPermission(action: string, permission: number, callback
   }).then(callback)
     .catch((err: any) => {
       errorCallback(err)
-    })
+    })*/
+    errorCallback("Not implemented!")
 }
 
 export function removeActionPermission(action: string, callback: (results: any) => void, errorCallback: (err: any) => void) {

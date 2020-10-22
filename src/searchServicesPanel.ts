@@ -2,6 +2,7 @@ import { Panel } from "./panel";
 import { findServices, installService, getErrorMessage, eventHub, uninstallService, globular } from "./backend";
 import { ServiceDescriptor } from "globular-web-client/services/services_pb";
 import { randomUUID } from "./utility";
+import { Globular } from "globular-web-client";
 
 /**
  * Search panel is use to retreive services on registerd discoveries.
@@ -42,6 +43,7 @@ export class SearchServicesPanel extends Panel {
         let descriptorPanel = new ServiceDescriptorPanel(descriptors);
         descriptorPanel.setParent(this.resultsPanel);
         if (this.isAdmin) {
+          
           descriptorPanel.onlogin(globular.config);
         }
       })

@@ -23,6 +23,7 @@ import { ApplicationManager } from "./applicationPanel";
 import { LogManager } from "./logPanel";
 import { Account } from "globular-web-client/ressource/ressource_pb";
 import { ServiceManager } from "./servicesPanel";
+import { Globular } from "globular-web-client";
 
 
 export class MainPage {

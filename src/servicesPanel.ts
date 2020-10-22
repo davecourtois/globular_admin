@@ -4,6 +4,7 @@ import * as M from "materialize-css";
 import "materialize-css/sass/materialize.scss";
 import { ServiceDescriptor } from "globular-web-client/services/services_pb";
 import { ConfigurationPanel, ConfigurationStringListLine, ConfigurationLongTextLine } from "./configurationPanel";
+import { Globular } from "globular-web-client";
 
 /**
  * This class is use to manage file on the server.

@@ -43,7 +43,7 @@
     "@polymer/paper-input": "^3.2.0",
     "@types/jwt-decode": "^2.2.1",
     "@types/materialize-css": "^1.0.6",
-    "globular-web-client": "^1.1.52",
+    "globular-web-client": "^1.1.66",
     "jwt-decode": "^2.2.0",
     "materialize-css": "^1.0.0"
   },
