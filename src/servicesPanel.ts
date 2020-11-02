@@ -4,7 +4,6 @@ import * as M from "materialize-css";
 import "materialize-css/sass/materialize.scss";
 import { ServiceDescriptor } from "globular-web-client/services/services_pb";
 import { ConfigurationPanel, ConfigurationStringListLine, ConfigurationLongTextLine } from "./configurationPanel";
-import { Globular } from "globular-web-client";
 
 /**
  * This class is use to manage file on the server.
@@ -141,7 +140,6 @@ class ServiceDescriptorEditor extends ConfigurationPanel {
   private dicoveriesConfigLine: ConfigurationStringListLine
   private repositoriesConfigLine: ConfigurationStringListLine
   private keywordsConfigLine: ConfigurationStringListLine
-  private editable: boolean;
   private descriptor: ServiceDescriptor;
 
 
@@ -178,7 +176,7 @@ class ServiceDescriptorEditor extends ConfigurationPanel {
     this.div.getChildsByClassName("card-title")[0].element.style.display = "none";
 
     // Now I will retreive the list of bundle associated with this service.
-    GetServiceBundles(descriptor.getPublisherid(), descriptor.getId(), descriptor.getVersion(),
+    GetServiceBundles(descriptor.getPublisherid(), descriptor.getName(), descriptor.getId(), descriptor.getVersion(),
     (bundles: Array<any>) => {
       // set table.
       let table = this.cardContent.appendElement({tag:"div", class :"row"}).down()

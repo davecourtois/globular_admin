@@ -162,12 +162,12 @@ class ActionPermissionManager extends Panel {
 
           // call after the ressource actions are retreived.
           let callback = () => {
-            
-              M.Autocomplete.init(document.getElementById(uuid), {
-                data: data,
-                onAutocomplete: onAutocomplete
-              });
-            
+
+            M.Autocomplete.init(document.getElementById(uuid), {
+              data: data,
+              onAutocomplete: onAutocomplete
+            });
+
           }
 
           readAllActionPermission(
@@ -423,13 +423,20 @@ class RessourcesPanel extends Panel {
   onlogin(data: any) {
     // overide...
     this.editable = true;
-    this.div.getChildById("name_title").element.className = "col m6"
+    let titleDiv = this.div.getChildById("name_title")
+    if (titleDiv != undefined) {
+      titleDiv.element.className = "col m6"
+    }
+
   }
 
   onlogout() {
     // overide...
     this.editable = false;
-    this.div.getChildById("name_title").element.className = "col m7"
+    let titleDiv = this.div.getChildById("name_title")
+    if (titleDiv != undefined) {
+      titleDiv.element.className = "col m7"
+    }
   }
 
   /**

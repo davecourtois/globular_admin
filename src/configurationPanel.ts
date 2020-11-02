@@ -1,3 +1,4 @@
+import { globular } from './backend';
 import { Panel } from './panel';
 import { randomUUID } from './utility';
 
@@ -97,7 +98,7 @@ export class ConfigurationLine {
      * Editable mode.
      */
     unlock() {
-        if(this.valueEditor!=undefined){
+        if (this.valueEditor != undefined) {
             this.valueEditor.element.style.display = ""
             this.valueDiv.element.style.display = "none"
         }
@@ -245,7 +246,7 @@ export class ConfigurationLongTextLine extends ConfigurationLine {
         this.valueDiv = this.content.appendElement({ tag: "div", "id": this.id + "_div", class: "col s12 m8", innerHtml: value.toString() }).down()
 
         // Set the value editor.
-        this.valueEditor = this.content.appendElement({ tag: "textarea", "id": this.id + "_input", style: "display: none; padding: 5px; height: 100px;", rows:"9", type:"text", class: "col s12 m8", innerHtml: value }).down()
+        this.valueEditor = this.content.appendElement({ tag: "textarea", "id": this.id + "_input", style: "display: none; padding: 5px; height: 100px;", rows: "9", type: "text", class: "col s12 m8", innerHtml: value }).down()
 
         this.valueEditor.element.onchange = () => {
             // set the value in the interface.
@@ -335,7 +336,7 @@ export class ConfigurationMultipleOptionsSingleChoiceLine extends ConfigurationL
         for (var i = 0; i < options.length; i++) {
             this.valueEditor
                 .appendElement({ "tag": "label", "id": this.id + "_" + options[i] + "_label", "style": "padding-right: 15px;" }).down()
-                .appendElement({ "tag": "input", "id": this.id + "_" + options[i] + "_input", "name":  this.id + "_" + name + "_group", "type": "radio" })
+                .appendElement({ "tag": "input", "id": this.id + "_" + options[i] + "_input", "name": this.id + "_" + name + "_group", "type": "radio" })
                 .appendElement({ "tag": "span", "innerHtml": options[i] }).up()
 
             let input = this.content.getChildById(this.id + "_" + options[i] + "_input")
@@ -363,7 +364,7 @@ export class ConfigurationMultipleOptionsSingleChoiceLine extends ConfigurationL
                 let input = this.content.getChildById(this.id + "_" + options[i] + "_input")
                 input.element.checked = false
             }
-            let input = this.valueEditor.getChildById(this.id + "_" +v + "_input")
+            let input = this.valueEditor.getChildById(this.id + "_" + v + "_input")
             input.element.checked = true;
         }
 
@@ -407,8 +408,8 @@ export class ConfigurationStringListLine extends ConfigurationLine {
             }
             let appendEditor = (index: number, value: string) => {
                 let li = ul.appendElement({ "tag": "li", "class": "collection-item", "style": "padding: 0px;" }).down()
-                let removeBtn = li.appendElement({ "tag": "label", "id": this.id + "_" +  index + "_label", "style": "display: flex; align-items: center;" }).down()
-                    .appendElement({ "tag": "input", "id": this.id + "_" + index + "_input", "name": this.id  + "_" + name + "_group", "type": "text", "value": value })
+                let removeBtn = li.appendElement({ "tag": "label", "id": this.id + "_" + index + "_label", "style": "display: flex; align-items: center;" }).down()
+                    .appendElement({ "tag": "input", "id": this.id + "_" + index + "_input", "name": this.id + "_" + name + "_group", "type": "text", "value": value })
                     .appendElement({ "tag": "i", "class": "tiny material-icons", "innerHtml": "remove", "style": "z-index: 10;" }).down()
                 removeBtn.element.onmouseover = () => {
                     removeBtn.element.style.cursor = "pointer"
@@ -477,18 +478,39 @@ export class ConfigurationStringListLine extends ConfigurationLine {
  * That class will contain the general server information.
  */
 export class ConfigurationPanel extends Panel {
-    public config: any;
+
+    public set config(val: any) {
+        if (this.config_id.length > 0) {
+            globular.config.Services[this.config_id] = val;
+        } else {
+            globular.config = val
+        }
+
+    }
+
+    public get config(): any {
+        
+        if (this.config_id.length > 0) {
+            return globular.config.Services[this.config_id];
+        } else {
+            return globular.config
+        }
+    }
+
     public content: any;
     public btnGroup: any;
     private saveBtn: any;
     private cancelBtn: any;
     private configurationLines: Array<ConfigurationLine>
 
-    constructor(config: any, title: string, id: string) {
+    constructor(config: any, title: string, id: string, private config_id= "") {
+  
         super(id);
 
         // Keep a pointer to the config.
-        this.config = config;
+        if (config.Id != undefined) {
+            this.config_id = config.Id;
+        }
 
         // Keep textual control
         this.configurationLines = new Array<ConfigurationLine>()
@@ -600,19 +622,20 @@ export class ConfigurationPanel extends Panel {
 
     // create control...
     onlogin(data: any) {
-        if (this.config == undefined) {
+        if (this.config_id.length == 0) {
             return // nothing that we can do here.
         }
         super.onlogin(data)
 
         // set the config with the full values.
+        let config: any;
         if (data.Services != undefined) {
-            this.config = data.Services[this.config.Id]
+            config = data.Services[this.config_id]
         } else {
-            this.config = data
+            config = data
         }
 
-        if (this.config != undefined) {
+        if (config != undefined) {
             // Display textual input
             for (var i = 0; i < this.configurationLines.length; i++) {
                 this.configurationLines[i].unlock()
@@ -620,14 +643,13 @@ export class ConfigurationPanel extends Panel {
             this.btnGroup.element.style.display = ""
         } else {
             this.close() // disconnect listners.
-            this.config = null;
-
+            this.config_id = "";
             console.log(this.id, " has null config!")
         }
     }
 
     onlogout() {
-        if (this.config == undefined) {
+        if (this.config_id.length == 0) {
             return // nothing that we can do here.
         }
 

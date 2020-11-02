@@ -21,8 +21,9 @@ import { FileManager } from "./filePanel";
 import { RessourceManager } from "./ressourcePanel";
 import { ApplicationManager } from "./applicationPanel";
 import { LogManager } from "./logPanel";
-import { Account } from "globular-web-client/ressource/ressource_pb";
+import { PeerManager } from "./peersPanel";
 import { ServiceManager } from "./servicesPanel";
+
 import { Globular } from "globular-web-client";
 
 
@@ -53,7 +54,7 @@ export class MainPage {
   private applicationsManager: ApplicationManager;
   private logsManager: LogManager;
   private servicesManager: ServiceManager;
-
+  private PeerPanel: PeerManager;
   private servicesPanel: Map<string, ServicePanel>;
 
   constructor() {
@@ -470,6 +471,16 @@ export class MainPage {
         innerHtml: "Roles"
       })
       .up()
+      .appendElement({ tag: "li", class: "tab col s1" })
+      .down()
+      .appendElement({
+        tag: "a",
+        id: "main_tabs_tab_3",
+        class: "grey-text text-darken-3",
+        href: "javascript:void(0)",
+        innerHtml: "Peers"
+      })
+      .up()
       .appendElement({ tag: "li", class: "tab col s2" })
       .down()
       .appendElement({
@@ -569,6 +580,10 @@ export class MainPage {
       this.servicesManager.refresh()
     }
 
+    if (this.PeerPanel == null) {
+      this.PeerPanel = new PeerManager(randomUUID());
+    }
+
     // Set tabs.
     let tab_0_content = this.container.appendElement({ tag: "div" }).down();
     this.generalInfoPanel.setParent(tab_0_content);
@@ -585,6 +600,11 @@ export class MainPage {
       .appendElement({ tag: "div", style: "display: none" })
       .down();
     this.rolePanel.setParent(tab_2_content);
+
+    let tab_3_content = this.container
+    .appendElement({ tag: "div", style: "display: none" })
+    .down();
+  this.PeerPanel.setParent(tab_3_content);
 
     let tab_4_content = this.container
       .appendElement({ tag: "div", style: "display: none" })
@@ -620,6 +640,7 @@ export class MainPage {
       tab_0_content.element.style.display = "";
       tab_1_content.element.style.display = "none";
       tab_2_content.element.style.display = "none";
+      tab_3_content.element.style.display = "none";
       tab_4_content.element.style.display = "none";
       tab_5_content.element.style.display = "none";
       tab_6_content.element.style.display = "none";
@@ -631,6 +652,7 @@ export class MainPage {
       tab_0_content.element.style.display = "none";
       tab_1_content.element.style.display = "";
       tab_2_content.element.style.display = "none";
+      tab_3_content.element.style.display = "none";
       tab_4_content.element.style.display = "none";
       tab_5_content.element.style.display = "none";
       tab_6_content.element.style.display = "none";
@@ -642,6 +664,19 @@ export class MainPage {
       tab_0_content.element.style.display = "none";
       tab_1_content.element.style.display = "none";
       tab_2_content.element.style.display = "";
+      tab_3_content.element.style.display = "none";
+      tab_4_content.element.style.display = "none";
+      tab_5_content.element.style.display = "none";
+      tab_6_content.element.style.display = "none";
+      tab_7_content.element.style.display = "none";
+      tab_8_content.element.style.display = "none";
+    };
+
+    this.container.getChildById("main_tabs_tab_3").element.onclick = () => {
+      tab_0_content.element.style.display = "none";
+      tab_1_content.element.style.display = "none";
+      tab_2_content.element.style.display = "none";
+      tab_3_content.element.style.display = "";
       tab_4_content.element.style.display = "none";
       tab_5_content.element.style.display = "none";
       tab_6_content.element.style.display = "none";
@@ -653,6 +688,7 @@ export class MainPage {
       tab_0_content.element.style.display = "none";
       tab_1_content.element.style.display = "none";
       tab_2_content.element.style.display = "none";
+      tab_3_content.element.style.display = "none";
       tab_4_content.element.style.display = "";
       tab_5_content.element.style.display = "none";
       tab_6_content.element.style.display = "none";
@@ -664,6 +700,7 @@ export class MainPage {
       tab_0_content.element.style.display = "none";
       tab_1_content.element.style.display = "none";
       tab_2_content.element.style.display = "none";
+      tab_3_content.element.style.display = "none";
       tab_4_content.element.style.display = "none";
       tab_5_content.element.style.display = "";
       tab_6_content.element.style.display = "none";
@@ -675,6 +712,7 @@ export class MainPage {
       tab_0_content.element.style.display = "none";
       tab_1_content.element.style.display = "none";
       tab_2_content.element.style.display = "none";
+      tab_3_content.element.style.display = "none";
       tab_4_content.element.style.display = "none";
       tab_5_content.element.style.display = "none";
       tab_6_content.element.style.display = "";
@@ -686,6 +724,7 @@ export class MainPage {
       tab_0_content.element.style.display = "none";
       tab_1_content.element.style.display = "none";
       tab_2_content.element.style.display = "none";
+      tab_3_content.element.style.display = "none";
       tab_4_content.element.style.display = "none";
       tab_5_content.element.style.display = "none";
       tab_6_content.element.style.display = "none";
@@ -697,6 +736,7 @@ export class MainPage {
       tab_0_content.element.style.display = "none";
       tab_1_content.element.style.display = "none";
       tab_2_content.element.style.display = "none";
+      tab_3_content.element.style.display = "none";
       tab_4_content.element.style.display = "none";
       tab_5_content.element.style.display = "none";
       tab_6_content.element.style.display = "none";

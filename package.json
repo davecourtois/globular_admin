@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "webpack --mode production && cp index.html dist  && cp style.css dist && Globular deploy -u=sa -p=adminadmin -name=admin -path=dist -a=omniscient.app"
+    "build": "webpack --mode production && cp index.html dist  && cp style.css dist && Globular deploy -u=sa -p=400zm89a -name=admin -path=dist -a=hub.globular.io"
   },
   "repository": {
     "type": "git",
@@ -43,7 +43,7 @@
     "@polymer/paper-input": "^3.2.0",
     "@types/jwt-decode": "^2.2.1",
     "@types/materialize-css": "^1.0.6",
-    "globular-web-client": "^1.1.67",
+    "globular-web-client": "^1.1.71",
     "jwt-decode": "^2.2.0",
     "materialize-css": "^1.0.0"
   },

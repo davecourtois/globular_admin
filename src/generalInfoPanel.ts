@@ -1,6 +1,6 @@
 import { IConfig } from "globular-web-client";
-import { ConfigurationPanel, ConfigurationLine, ConfigurationTextLine, ConfigurationMultipleOptionsSingleChoiceLine, ConfigurationStringListLine } from "./configurationPanel";
-import { saveConfig, readFullConfig, getErrorMessage } from "./backend";
+import { ConfigurationPanel, ConfigurationTextLine, ConfigurationMultipleOptionsSingleChoiceLine, ConfigurationStringListLine } from "./configurationPanel";
+import { saveConfig, getErrorMessage } from "./backend";
 import { LdapSyncServicePanel } from "./services/ldapSyncServicePanel";
 
 /**
@@ -237,7 +237,6 @@ export class GeneralInfoPanel extends ConfigurationPanel {
   // That function is the same for all configuration panels.
   save() {
     super.save();
-
     // Now I will save the configuration.
     saveConfig(this.config, (config: IConfig) => {
       M.toast({ html: "The configuration was saved!" });

@@ -69,7 +69,15 @@ import {
   RemoveActionPermissionRqst,
   GetRessourcesRqst,
   RemoveRessourceRqst,
-  DeleteLogRqst
+  DeleteLogRqst,
+  GetPeersRqst,
+  GetPeersRsp,
+  Peer,
+  AddPeerActionRqst,
+  AddPeerActionRsp,
+  RemovePeerActionRqst,
+  DeletePeerRqst, 
+  RegisterPeerRqst
 } from "globular-web-client/ressource/ressource_pb";
 import * as jwt from "jwt-decode";
 import {
@@ -1060,9 +1068,13 @@ export function authenticate(
 
       readFullConfig((config: any) => {
         // Publish local login event.
+        globular.config = config; // keep it full config...
+        console.log(config)
+        
         eventHub.publish("onlogin", config, true); // return the full config...
         callback(decoded);
       }, (err: any) => {
+        console.log(err)
         errorCallback(err)
       })
     })
@@ -1485,6 +1497,109 @@ export function SaveApplication(
 
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////
+// Peers
+///////////////////////////////////////////////////////////////////////////////////////////////
+
+export function CreatePeer(name: string, callback:()=>void, errorCallback:(err: any)=>void){
+  let rqst = new RegisterPeerRqst;
+  let peer = new Peer
+  peer.setDomain(name);
+
+  rqst.setPeer(peer)
+  globular.ressourceService.registerPeer(rqst, {
+    token: localStorage.getItem("user_token"),
+    application: application, domain: domain
+  })
+  .then(callback)
+  .catch(errorCallback);
+
+}
+
+export function GetAllPeersInfo(
+  callback: (peers: Peer[]) => void,
+  errorCallback: (err: any) => void
+) {
+  let rqst = new GetPeersRqst();
+  rqst.setQuery('{}')
+  let peers = new Array<Peer>();
+
+  let stream = globular.ressourceService.getPeers(rqst, {
+    token: localStorage.getItem("user_token"),
+    application: application, domain: domain
+  });
+
+  // Get the stream and set event on it...
+  stream.on("data", (rsp: GetPeersRsp) => {
+    peers = peers.concat(rsp.getPeersList());
+  });
+
+  stream.on("status", status => {
+    if (status.code == 0) {
+      callback(peers);
+    } else {
+      errorCallback({ "message": status.details })
+    }
+  });
+}
+
+export function AppendActionToPeer(
+  domain: string,
+  action: string,
+  callback: () => void,
+  errorCallback: (err: any) => void
+) {
+  let rqst = new AddPeerActionRqst;
+  rqst.setDomain(domain)
+  rqst.setAction(action)
+  globular.ressourceService.addPeerAction(rqst, { token: localStorage.getItem("user_token"), application: application, domain: domain })
+    .then((rsp: AddPeerActionRsp) => {
+      callback()
+    })
+    .catch((err: any) => {
+      console.log(err)
+      errorCallback(err);
+    });
+
+}
+
+export function RemoveActionFromPeer(
+  domain: string,
+  action: string,
+  callback: () => void,
+  errorCallback: (err: any) => void
+) {
+  let rqst = new RemovePeerActionRqst;
+  rqst.setDomain(domain)
+  rqst.setAction(action)
+  globular.ressourceService.removePeerAction(rqst, { token: localStorage.getItem("user_token"), application: application, domain: domain })
+    .then((rsp: AddApplicationActionRsp) => {
+      callback()
+    })
+    .catch((err: any) => {
+      console.log(err)
+      errorCallback(err);
+    });
+
+}
+
+export function DeletePeer(
+  peer: Peer,
+  callback: () => void,
+  errorCallback: (err: any) => void
+) {
+  let rqst = new DeletePeerRqst;
+  rqst.setPeer(peer)
+  globular.ressourceService.deletePeer(rqst, { token: localStorage.getItem("user_token"), application: application, domain: domain })
+    .then((rsp: AddApplicationActionRsp) => {
+      callback()
+    })
+    .catch((err: any) => {
+      console.log(err)
+      errorCallback(err);
+    });
+
+}
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
 // Services
@@ -1555,6 +1670,28 @@ export function findServices(
   callback: (results: Array<ServiceDescriptor>) => void,
   errorCallback: (err: any) => void
 ) {
+  let dicovery = globular.config.Discoveries[0]
+  let url = globular.config.Protocol + "://" + dicovery + "/config"
+  let remote = new GlobularWebClient.Globular(url, ()=>{
+    let rqst = new FindServicesDescriptorRequest();
+    rqst.setKeywordsList(keywords);
+  
+    // Find services by keywords.
+    remote.servicesDicovery
+      .findServices(rqst, { application: application, domain: domain + ":" + window.location.port })
+      .then((rsp: FindServicesDescriptorResponse) => {
+        let results = rsp.getResultsList()
+        callback(results);
+      })
+      .catch(
+        (err: any) => {
+          errorCallback(err);
+        }
+      );
+  },(err:any)=>{
+    errorCallback(err)
+  })
+  /*
   let rqst = new FindServicesDescriptorRequest();
   rqst.setKeywordsList(keywords);
 
@@ -1570,6 +1707,7 @@ export function findServices(
         errorCallback(err);
       }
     );
+    */
 }
 
 export function installService(
@@ -1699,7 +1837,7 @@ export function uninstallService(
  * Return the list of service bundles.
  * @param callback 
  */
-export function GetServiceBundles(publisherId: string, serviceId: string, version: string, callback: (
+export function GetServiceBundles(publisherId: string, serviceName: string, serviceId: string, version: string, callback: (
   bundles: Array<any>) => void,
   errorCallback: (err: any) => void
 ) {
@@ -1722,7 +1860,7 @@ export function GetServiceBundles(publisherId: string, serviceId: string, versio
   stream.on("status", function (status:any) {
     if (status.code == 0) {
       // filter localy.
-      callback(bundles.filter(bundle => String(bundle._id).startsWith(publisherId + '%' + serviceId + '%' + version)));
+      callback(bundles.filter(bundle => String(bundle._id).startsWith(publisherId + '%' + serviceName + '%' + version + '%' + serviceId )));
     } else {
       errorCallback({ "message": status.details })
     }
