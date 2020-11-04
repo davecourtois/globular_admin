@@ -480,23 +480,14 @@ export class ConfigurationStringListLine extends ConfigurationLine {
 export class ConfigurationPanel extends Panel {
 
     public set config(val: any) {
-        if (this.config_id.length > 0) {
-            globular.config.Services[this.config_id] = val;
-        } else {
-            globular.config = val
-        }
-
+        this.config_ = val;
     }
 
     public get config(): any {
-        
-        if (this.config_id.length > 0) {
-            return globular.config.Services[this.config_id];
-        } else {
-            return globular.config
-        }
+        return this.config_;
     }
 
+    public config_: any;
     public content: any;
     public btnGroup: any;
     private saveBtn: any;
@@ -504,13 +495,15 @@ export class ConfigurationPanel extends Panel {
     private configurationLines: Array<ConfigurationLine>
 
     constructor(config: any, title: string, id: string, private config_id= "") {
-  
+        
         super(id);
 
         // Keep a pointer to the config.
         if (config.Id != undefined) {
             this.config_id = config.Id;
         }
+
+        this.config_ = config;
 
         // Keep textual control
         this.configurationLines = new Array<ConfigurationLine>()
