@@ -28,7 +28,6 @@ class LdapUsersSyncServicePanel extends ConfigurationPanel {
     onlogin(data: any) {
         super.onlogin(data);
 
-        // simply append the root variable.
         this.baseTextLine.unlock()
         this.queryTextLine.unlock()
         this.idTextLine.unlock()
@@ -37,6 +36,7 @@ class LdapUsersSyncServicePanel extends ConfigurationPanel {
 
     onlogout() {
         super.onlogout();
+
         this.baseTextLine.lock()
         this.queryTextLine.lock()
         this.idTextLine.lock()

@@ -24,8 +24,6 @@ import { LogManager } from "./logPanel";
 import { PeerManager } from "./peersPanel";
 import { ServiceManager } from "./servicesPanel";
 
-import { Globular } from "globular-web-client";
-
 
 export class MainPage {
   private div: any;

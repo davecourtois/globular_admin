@@ -61,7 +61,6 @@ export class PersistenceServicePanel extends ServicePanel {
             let idSpan = li.getChildById("id_span")
             idSpan.element.style.display = "none"
         }
-
     }
 
     createConnectionConfigPanel(ul:any, connection: any ): any{
