@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "webpack --mode production && cp index.html dist  && cp style.css dist && Globular deploy -u=sa -p=adminadmin -name=admin -path=dist -a=globular.live"
+    "build": "webpack --mode production && cp index.html dist  && cp style.css dist && Globular deploy -u=sa -p=adminadmin -name=admin -path=dist -a=localhost"
   },
   "repository": {
     "type": "git",
